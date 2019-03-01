@@ -28,6 +28,7 @@ I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i 
 - Udklipslogger
 - Skærmbillede
 - Netværkstrafik
+- Netværkskonfiguration
 - Browser type
 - Kørende programmer på maskinen
 - Virtuel maskine checker
@@ -37,13 +38,14 @@ I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i 
 DDP fungere ved af såkaldte "workers", der er en til hver af de indbyggede funktioner programmet har. De sender den data de indsamler til en "CommunicationManager", som sender det videre til en server.
 
 # Keylogger
-Ï det oplæg omkring DDP vi fik på fik vi ingenting at om der var en keylogger i programmet. Havde læst om at der var en på Alexander Norups [blog][alex-norup], var lidt skeptisk hvilket også var en af motivationerne til at tjekke efter selv.
+I det oplæg omkring DDP vi fik på fik vi ingenting at om der var en keylogger i programmet. Havde læst om at der var en på Alexander Norups [blog][alex-norup], var lidt skeptisk hvilket også var en af motivationerne til at tjekke efter selv.
 Keyloggeren består af to klasser, `KeyloggerHelper.cs` og `KeyloggerWorker.cs`. `KeyloggerHelper.cs` er det bibliotek som de har skrevet for at kunne indsamle tastetryk.`KeyloggerWorker.cs`står for at udføre selve indsamlingen og sende det til "CommunicationManager".
 
-#### KeyloggerWorker.cs
-Den mest interessante af de to klasser er `KeyloggerWorker.cs`, fordi det er den der gør det meste af arbejdet.
+Den mest interessante af de to klasser er `KeyloggerWorker.cs`, fordi det er den der gør det meste af arbejdet hvor `KeyloggerHelper.cs` bare er et bibliotek for at gøre tingene nemmere.
 
 ```cs
+private StringBuilder _builder = new StringBuilder();
+...
 private void KeyloggerHelper_KeyPressed(object sender, KeyEventArgs e)
 {
   if (!char.IsLetterOrDigit((char) e.KeyCode))
@@ -66,43 +68,209 @@ protected override List<DataPackage> GetDataPackages()
 }
 ```
 Det som den gør er simplere en det umiddelbart ser ud. Den tjekker om der er noget i udklipsholderen, er der ikke det logger den "no text". Hvis der er noget i udklipsholderen, gemmer den det i logfilen.
+
 # Skærmbillede
+På samme måde som der var to klasser ved keyloggeren er der også to klasser i spil ved skærmbillede funktionen. `ScreenCaptureTool.cs` og `ScreenshotWorker.cs` hvor workeren var den mest interessante ved keyloggeren, så er det her `ScreenCaptureTool.cs` der er mest interessant.
+
+```cs
+public static Image CaptureScreenNew()
+{
+  try
+  {
+    Rectangle bounds = Screen.PrimaryScreen.Bounds;
+    Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height);
+    Size blockRegionSize = new Size(bitmap.Width, bitmap.Height);
+    using (Graphics graphics = Graphics.FromImage((Image) bitmap))
+    {
+      graphics.CopyFromScreen(0, 0, 0, 0, blockRegionSize);
+      return (Image) bitmap;
+    }
+  }
+  catch (Exception ex)
+  {
+    StaticFileLogger.Current.LogEvent("ScreenCaptureTool.CaptureScreenNew()", "Exception taking screenshot", string.Format("Error is: '{0}'", (object) ex.ToString()), EventLogEntryType.Information);
+    return ScreenCaptureTool.WriteExceptionToImage(ex);
+  }
+}
+```
+Funktionen `CaptureScreenNew` forsøger først at lave et bitmap billede af hele skærmen. Hvis dette ikke lykkes har de skrevet funktionen `WriteExceptionToImage`, der vises her:
+```cs
+private static Image WriteExceptionToImage(Exception ex)
+{
+  Bitmap bitmap = new Bitmap(800, 600);
+  Size size = bitmap.Size;
+  size.Height -= 20;
+  size.Width -= 20;
+  RectangleF layoutRectangle = new RectangleF(new PointF(10f, 10f), (SizeF) size);
+  using (Graphics graphics = Graphics.FromImage((Image) bitmap))
+  {
+    GraphicsUnit pageUnit = GraphicsUnit.Pixel;
+    graphics.FillRectangle(Brushes.Wheat, bitmap.GetBounds(ref pageUnit));
+    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+    graphics.DrawString(ex.ToString(), new Font("Tahoma", 10f), Brushes.Black, layoutRectangle);
+  }
+  return (Image) bitmap;
+}
+```
+`WriteExceptionToImage` Skaber et billede der viser fejl-beskeden som et billede, dette er bare fejlsikring. Grunden til at de har valgt at gøre det sådan er i tilfældet af bugs. Dette gør at teknikere har informationer de kan arbejde ud fra, uden at skulle tænke på evt. data der kunne være på screenshots.
+
+```cs
+private static ImageCodecInfo GetEncoder(ImageFormat format)
+{
+  foreach (ImageCodecInfo imageDecoder in ImageCodecInfo.GetImageDecoders())
+  {
+    if (imageDecoder.FormatID == format.Guid)
+      return imageDecoder;
+  }
+  return (ImageCodecInfo) null;
+}
+```
+`GetEncoder` laver bitmap værdierne om til et hvilket som helst billedtype.
+
+```cs
+public static byte[] ImageToByteArray(Image imageIn, int jpgCompressionLevel = 30)
+{
+  MemoryStream memoryStream = new MemoryStream();
+  EncoderParameters encoderParams = new EncoderParameters(1);
+  encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, (long) jpgCompressionLevel);
+  imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);
+  return memoryStream.ToArray();
+}
+```
+`ImageToByteArray` tager imod to argumenter, et billede og et kompressionsniveau for jpg billedet. Den vigtigste del af denne funktion er `imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);`. Det er sker her er at det billede som
 
 # Netværkstrafik
+```cs
+protected override List<DataPackage> GetDataPackages()
+{
+  CurrentBrowserUrlsTool.GetHarvestedUrlsFromRunningProcessesAndEmptyTheList().ToList<string>().ForEach((Action<string>) (url => this._urls.Add(url)));
+  List<string> list = this._urls.ToList<string>();
+  list.Sort();
+  byte[] bytes = Encoding.UTF8.GetBytes(string.Join(";", (IEnumerable<string>) list));
+  this._urls.Clear();
+  return new List<DataPackage>()
+  {
+    new DataPackage(DataPackage.ColTypeEnum.Sites, new bool?(false), bytes, new DateTime?(DataPackageEnvelopeAwsReceiver.ServerTime), new long?((long) this.GetAndIncrementWorkSequence()))
+  };
+}
+```
+
+# Netværkskonfiguration
+```cs
+internal string GetNetworkConfigurationData()
+{
+  this._builder.Clear();
+  NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+  this._numberOfInterfacesAtLastCount = ((IEnumerable<NetworkInterface>) networkInterfaces).Count<NetworkInterface>();
+  // ISSUE: reference to a compiler-generated field
+  // ISSUE: reference to a compiler-generated field
+  // ISSUE: reference to a compiler-generated field
+  // ISSUE: method pointer
+  ((IEnumerable<NetworkInterface>) Enumerable.OrderBy<NetworkInterface, OperationalStatus>((IEnumerable<M0>) ((IEnumerable<NetworkInterface>) networkInterfaces).ToList<NetworkInterface>(), (Func<M0, M1>) (NetworkConfigRetrieverWorker.\u003C\u003Ec.\u003C\u003E9__6_0 ?? (NetworkConfigRetrieverWorker.\u003C\u003Ec.\u003C\u003E9__6_0 = new Func<NetworkInterface, OperationalStatus>((object) NetworkConfigRetrieverWorker.\u003C\u003Ec.\u003C\u003E9, __methodptr(\u003CGetNetworkConfigurationData\u003Eb__6_0)))))).ToList<NetworkInterface>().ForEach((Action<NetworkInterface>) (nwi => this._builder.Append(nwi.GetStateAsString())));
+  return this._builder.ToString();
+}
+```
 
 # Browser type
+```cs
+private static Dictionary<string, CurrentBrowserUrlsTool.BrowserType> _processSearchStringsForBrowsertypes = new Dictionary<string, CurrentBrowserUrlsTool.BrowserType>()
+{
+  {
+    "chrome",
+    CurrentBrowserUrlsTool.BrowserType.GOOGLE_CHROME
+  },
+  {
+    "iexplore",
+    CurrentBrowserUrlsTool.BrowserType.INTERNET_EXPLORER
+  },
+  {
+    "firefox",
+    CurrentBrowserUrlsTool.BrowserType.FIREFOX
+  },
+  {
+    "applicationframehost",
+    CurrentBrowserUrlsTool.BrowserType.MICROSOFT_EDGE
+  }
+};
+```
+
+```cs
+private static CurrentBrowserUrlsTool.BrowserType Parse(string processName)
+{
+  processName = processName.ToLower();
+  if (processName.Contains("chrome"))
+    return CurrentBrowserUrlsTool.BrowserType.GOOGLE_CHROME;
+  if (processName.Contains("applicationframehost"))
+    return CurrentBrowserUrlsTool.BrowserType.MICROSOFT_EDGE;
+  if (processName.Contains("iexplore"))
+    return CurrentBrowserUrlsTool.BrowserType.INTERNET_EXPLORER;
+  return processName.Contains("firefox") ? CurrentBrowserUrlsTool.BrowserType.FIREFOX : CurrentBrowserUrlsTool.BrowserType.Empty;
+}
+```
 
 # Kørende programmer på maskinen
+```cs
+private int _lastNumberOfRunningProcesses = 0;
+...
+protected override List<DataPackage> GetDataPackages()
+{
+  Process[] processes = Process.GetProcesses();
+  this._lastNumberOfRunningProcesses = ((IEnumerable<Process>) processes).Count<Process>();
+  string s = "";
+  foreach (Process process in processes)
+  {
+    s = s + "Id=" + (object) process.Id + ",Name =" + process.ProcessName + ",";
+    try
+    {
+      s = s + "Description=" + process.MainModule.FileVersionInfo.FileDescription + ";";
+    }
+    catch (Exception ex)
+    {
+      if (ex.ToString() != "")
+        s += "Description=;";
+    }
+  }
+  return new List<DataPackage>()
+  {
+    new DataPackage(DataPackage.ColTypeEnum.Plist, new bool?(false), Encoding.UTF8.GetBytes(s), new DateTime?(DataPackageEnvelopeAwsReceiver.ServerTime), new long?((long) this.GetAndIncrementWorkSequence()))
+  };
+}
+```
 
 # Virtuel maskine checker
+```cs
+public bool AmIRunningInsideAVirtualMachine()
+{
+  bool flag = false;
+  try
+  {
+    foreach (ManagementBaseObject managementBaseObject in new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_BaseBoard").Get())
+      flag = managementBaseObject["Manufacturer"].ToString().ToLower() == "microsoft corporation".ToLower();
+    return flag;
+  }
+  catch
+  {
+    return flag;
+  }
+}
+```
 
 # Maskine fingeraftryk
+
+
+## DPV.exe.config
 
 # Server
 
 ## Regler og love
 
+## Diskussion
+
 ## Konklusion
 
 
-
-To add new posts, simply add a file in the `_posts` directory that follows the convention `YYYY-MM-DD-name-of-post.ext` and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.
-
-Jekyll also offers powerful support for code snippets:
-
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
-{% endhighlight %}
-
-Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
-
-[jekyll-docs]: https://jekyllrb.com/docs/home
-[jekyll-gh]:   https://github.com/jekyll/jekyll
-[jekyll-talk]: https://talk.jekyllrb.com/
 [uvm-info]: https://uvm.dk/gymnasiale-uddannelser/proever-og-eksamen/netproever/den-digitale-proevevagt/om-den-digitale-proevevagt
 [fb-debat]: https://www.facebook.com/jeanette.feldballe/posts/10214797289978061
 [alex-norup]: https://www.alexandernorup.com/DigitalProvevagt?fbclid=IwAR2Hp_fDZHZh4FALcVJCnciM-w3z1kMafh_bilPboIlLpeylNJhdKIvYCYY
