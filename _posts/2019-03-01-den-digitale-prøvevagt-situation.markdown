@@ -160,18 +160,18 @@ protected override List<DataPackage> GetDataPackages()
 # Netværkskonfiguration
 ```cs
 internal string GetNetworkConfigurationData()
-		{
-			this._builder.Clear();
-			NetworkInterface[] allNetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-			this._numberOfInterfacesAtLastCount = allNetworkInterfaces.Count<NetworkInterface>();
-			(from nwi in allNetworkInterfaces.ToList<NetworkInterface>()
-			orderby nwi.OperationalStatus
-			select nwi).ToList<NetworkInterface>().ForEach(delegate(NetworkInterface nwi)
-			{
-				this._builder.Append(nwi.GetStateAsString());
-			});
-			return this._builder.ToString();
-		}
+{
+  this._builder.Clear();
+  NetworkInterface[] allNetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+  this._numberOfInterfacesAtLastCount = allNetworkInterfaces.Count<NetworkInterface>();
+  (from nwi in allNetworkInterfaces.ToList<NetworkInterface>()
+  orderby nwi.OperationalStatus
+  select nwi).ToList<NetworkInterface>().ForEach(delegate(NetworkInterface nwi)
+  {
+    this._builder.Append(nwi.GetStateAsString());
+  });
+  return this._builder.ToString();
+}
 ```
 
 # Browser type
