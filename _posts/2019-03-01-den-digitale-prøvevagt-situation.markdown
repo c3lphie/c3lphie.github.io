@@ -160,17 +160,18 @@ protected override List<DataPackage> GetDataPackages()
 # Netværkskonfiguration
 ```cs
 internal string GetNetworkConfigurationData()
-{
-  this._builder.Clear();
-  NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-  this._numberOfInterfacesAtLastCount = ((IEnumerable<NetworkInterface>) networkInterfaces).Count<NetworkInterface>();
-  // ISSUE: reference to a compiler-generated field
-  // ISSUE: reference to a compiler-generated field
-  // ISSUE: reference to a compiler-generated field
-  // ISSUE: method pointer
-  ((IEnumerable<NetworkInterface>) Enumerable.OrderBy<NetworkInterface, OperationalStatus>((IEnumerable<M0>) ((IEnumerable<NetworkInterface>) networkInterfaces).ToList<NetworkInterface>(), (Func<M0, M1>) (NetworkConfigRetrieverWorker.\u003C\u003Ec.\u003C\u003E9__6_0 ?? (NetworkConfigRetrieverWorker.\u003C\u003Ec.\u003C\u003E9__6_0 = new Func<NetworkInterface, OperationalStatus>((object) NetworkConfigRetrieverWorker.\u003C\u003Ec.\u003C\u003E9, __methodptr(\u003CGetNetworkConfigurationData\u003Eb__6_0)))))).ToList<NetworkInterface>().ForEach((Action<NetworkInterface>) (nwi => this._builder.Append(nwi.GetStateAsString())));
-  return this._builder.ToString();
-}
+		{
+			this._builder.Clear();
+			NetworkInterface[] allNetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+			this._numberOfInterfacesAtLastCount = allNetworkInterfaces.Count<NetworkInterface>();
+			(from nwi in allNetworkInterfaces.ToList<NetworkInterface>()
+			orderby nwi.OperationalStatus
+			select nwi).ToList<NetworkInterface>().ForEach(delegate(NetworkInterface nwi)
+			{
+				this._builder.Append(nwi.GetStateAsString());
+			});
+			return this._builder.ToString();
+		}
 ```
 
 # Browser type
