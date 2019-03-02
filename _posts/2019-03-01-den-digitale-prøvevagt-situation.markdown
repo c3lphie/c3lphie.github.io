@@ -5,15 +5,20 @@ date:   2019-03-01 11:47:34 +0100
 categories: Write-ups
 ---
 ## Indledning
-Som mange nok ved har Undervisningsministeriet besluttet at der skal fokuseres mere på snyd, og forbyggelse af dette. Dette resulterer i at for at kunne gå op til en eksamen, så skal der downloades og installeres et stykke software der kan holde øje med hver enkelte pc. Undervisningsministeriet har gjordt det til et krav at bruge dette software ved navnet "Den Digitale Prøvevagt", forkortet til "DDP".
+Som mange nok ved, har Undervisningsministeriet besluttet, at der skal fokuseres mere på snyd, og forebyggelse af dette. Derfor har Undervisningsministeriet udviklet et program der overvåger eksaminandens pc under hele eksamensperioden. Dette program hentes, installeres og køres inden eksamensstart. Undervisningsministeriet har gjort det til et krav at bruge dette software ved navnet "Den Digitale Prøvevagt", forkortet til "DDP".
 Programmet virker, i skrivende stund, kun til Windows og MacOS. Har man et andet styresystem en de to f.eks. en Linux distribution får eleven enten en låne bærbar tildelt, eller så tager de prøven med skærpet tilsyn. Når prøven slutter vil programmet stoppe. Herefter kan eleven vælge og afinstallere DDP, eller lade være hvis der er flere skriftlige prøver han/hun skal til.
-Nægter man at downloade og installere DDP så kan man ikke gå op til eksamenen og derved dumper man.
+Nægter man at hente, installere og køre DDP under eksamenstiden så kan man ikke gå op til eksamen og derved dumper man.
+
+> Det er et krav, at alle gymnasiale institutioner benytter ministeriets digitale prøveafviklingssystem ved de centralt stillede, skriftlige prøver. Det vil fra og med sommertermin 2019, med enkelte undtagelser, være en forudsætning for at deltage i de skriftlige prøver i de gymnasiale uddannelser, at eleven installerer og afvikler monitoreringsprogrammet på sin computer under skriftlige prøver.
+
 (Kilde: [Undervisningsministeriets side om prøvevagten][uvm-info])
 
 Som så mange andre gymnasie elever, synes jeg det er en meget forkert tilgang. At vi skal installere et stykke software der i bund og grund er spyware, for at vi kan komme op til en skriftlig eksamen. Ifølge en debat på facebook([link][fb-debat]), er der flere ting som virker skummelt ved programmet. Jeg har derfor, i samarbejde med en af mine venner, forsøgt at komme tilbunds i hvad dette program helt præcist gør.
 
 ## Metode
-Vi debuggede koden ved hjælp af samme metode som [Alexander Norup][alex-norup]. Windows versionen af DDP er programmeret i Windows' .NET framework i sproget C#. For at skaffe kildekoden til programmet, brugte vi en C# decompiler for at nærlæse koden. Det kørte vi på DDPs exe fil, som gav os en læsbar kildekode.
+<u>Vi kiggede kun på Windows versionen af programmet</u>
+
+For at finde ud af hvordan programmet fungerer skal vi først finde ud af hvordan programmet er bygget. Vi kan heldigvis hurtigt finde ud af hvordan programmet er lavet ved at kigge på de filer der ligger i den mappe hvori DDP ligger. Heri kan vi finde filer som tyder på at programmet er skrevet i C# med Microsofts ".NET Framework". Det er perfekt da programmer der er skrevet i C# indeholder meget af den oprindelige kildekode. Det betyder at vi kan anvende et decompilation program som dnSpy til at se programmets kildekode. Det er samme metode som [Alexander Norup][alex-norup] brugte.
 
 ## Fund
 I brugervejledningen til den prøvevagts ansvarlige står der hvilke data som de kan tilgå fra DDP.
@@ -31,7 +36,7 @@ I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i 
 - Netværkskonfiguration
 - Browser type
 - Kørende programmer på maskinen
-- Virtuel maskine checker
+- Virtuel maskine detektion
 - Maskine fingeraftryk
 - Server(Som bliver brugt at Undervisningsministeriet)
 
@@ -139,9 +144,12 @@ public static byte[] ImageToByteArray(Image imageIn, int jpgCompressionLevel = 3
   return memoryStream.ToArray();
 }
 ```
-`ImageToByteArray` tager imod to argumenter, et billede og et kompressionsniveau for jpg billedet. Den vigtigste del af denne funktion er `imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);`. Det er sker her er at det billede som
+`ImageToByteArray` tager imod to argumenter, et billede og et kompressionsniveau for jpg billedet. Den vigtigste del af denne funktion er `imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);`. Det der sker her er at billedet bliver konverteret til jpg format, derefter logget som en masse hexværdier.
 
 # Netværkstrafik
+DDP har også funktionen til at se hvilke sider man tilgår når man søger på nettet. Programmet kan derved advare den eksamens ansvarlige og sige at nu går eleven på facebook, netflix eller andre ikke tilladte sider.
+
+Her til har de skabt en worker, der læser og gemmer den url som der bliver brugt af browseren.
 ```cs
 protected override List<DataPackage> GetDataPackages()
 {
@@ -156,9 +164,32 @@ protected override List<DataPackage> GetDataPackages()
   };
 }
 ```
+### Browser type
+For at de kan læse url'en i en browser skal de først vide hvilken browser der er tale om. Har de skrevet klasse der håndterer alt det der har med browsere at gøre. Den nedenstående funktion bliver brugt til at tjekke om navnene på de processer der kører i baggrunden er en browser. 
+```cs
+private static CurrentBrowserUrlsTool.BrowserType Parse(string processName)
+{
+  processName = processName.ToLower();
+  if (processName.Contains("chrome"))
+    return CurrentBrowserUrlsTool.BrowserType.GOOGLE_CHROME;
+  if (processName.Contains("applicationframehost"))
+    return CurrentBrowserUrlsTool.BrowserType.MICROSOFT_EDGE;
+  if (processName.Contains("iexplore"))
+    return CurrentBrowserUrlsTool.BrowserType.INTERNET_EXPLORER;
+  return processName.Contains("firefox") ? CurrentBrowserUrlsTool.BrowserType.FIREFOX : CurrentBrowserUrlsTool.BrowserType.Empty;
+}
+```
+Dette betyder at for windows versionen af DDP, tjekker de kun efter om det enten er Google Chrome, Firefox, Microsoft Edge eller Internet Explorer. De kan i denne version af DDP ikke gøre noget hvis du bruger Opera som browser.
+
+I denne klasse har de også lavet en funktion der trækker url'en ud af en browser. Dette er en længere funktion ved navnet `GetURLFromProcess`, derfor går jeg hurtigt over den. Men det som den gør som noget af det første er at finde ud af om der overhovedet er en af de kendte browserer åben. Er dette tilfældet bruger den forskellige metoder til at skaffe url'en alt efter browseren.
 
 # Netværkskonfiguration
+Ifølge den førnævnte bruger vejledning så bliver netværkskonfigurationen ikke vist i den nuværende version. Det bliver ikke brugt til at skabe fingeraftrykket af maskinen, men det bliver med højsandsynligt brugt til at tjekke om der er forbindelse til en VPN eller Proxy. En VPN kunne i et eksamens tilfælde bruges til at lave en forbindelse hjem hvor et familie medlem kunne lave opgaven for eleven.
+
 ```cs
+private StringBuilder _builder = new StringBuilder();
+private int _numberOfInterfacesAtLastCount;
+...
 internal string GetNetworkConfigurationData()
 {
   this._builder.Clear();
@@ -173,43 +204,7 @@ internal string GetNetworkConfigurationData()
   return this._builder.ToString();
 }
 ```
-
-# Browser type
-```cs
-private static Dictionary<string, CurrentBrowserUrlsTool.BrowserType> _processSearchStringsForBrowsertypes = new Dictionary<string, CurrentBrowserUrlsTool.BrowserType>()
-{
-  {
-    "chrome",
-    CurrentBrowserUrlsTool.BrowserType.GOOGLE_CHROME
-  },
-  {
-    "iexplore",
-    CurrentBrowserUrlsTool.BrowserType.INTERNET_EXPLORER
-  },
-  {
-    "firefox",
-    CurrentBrowserUrlsTool.BrowserType.FIREFOX
-  },
-  {
-    "applicationframehost",
-    CurrentBrowserUrlsTool.BrowserType.MICROSOFT_EDGE
-  }
-};
-```
-
-```cs
-private static CurrentBrowserUrlsTool.BrowserType Parse(string processName)
-{
-  processName = processName.ToLower();
-  if (processName.Contains("chrome"))
-    return CurrentBrowserUrlsTool.BrowserType.GOOGLE_CHROME;
-  if (processName.Contains("applicationframehost"))
-    return CurrentBrowserUrlsTool.BrowserType.MICROSOFT_EDGE;
-  if (processName.Contains("iexplore"))
-    return CurrentBrowserUrlsTool.BrowserType.INTERNET_EXPLORER;
-  return processName.Contains("firefox") ? CurrentBrowserUrlsTool.BrowserType.FIREFOX : CurrentBrowserUrlsTool.BrowserType.Empty;
-}
-```
+Det ovenstående uddrag af kildekoden sætter alle netværkskonfigurationerne ind i `_builder` på samme måde som keyloggeren indsatte taste tryk i dens `_builder`. Herefter logger den informationerne til logfilen.
 
 # Kørende programmer på maskinen
 ```cs
@@ -240,7 +235,8 @@ protected override List<DataPackage> GetDataPackages()
 }
 ```
 
-# Virtuel maskine checker
+# Virtuel maskine detektion
+Programmet tjekker om det kører i en virtuel maskine. En virtuel maskine er et stykke software der emulere en computer. Det vil sige at du kan f.eks. kan køre Windows 10 inde i Windows 10. Denne beskyttelse er taget i brug fordi at en elev kan snyde hvis at eleven laver opgaven og kører DDP i den virtuelle maskine. Så kan DDP ikke overvåge elevens egentlige system, men kun den virtuelle maskine.
 ```cs
 public bool AmIRunningInsideAVirtualMachine()
 {
@@ -257,9 +253,32 @@ public bool AmIRunningInsideAVirtualMachine()
   }
 }
 ```
+Her tjekker programmet om det kører i en virtuel maskine ved at tjekke bundkortets fabrikant. Hvis det er Microsoft Corporation er der stor chance for at programmet kører i en virtuel maskine.
+
+Programmet tjekker også om at der kører en virtual maskine på computeren. Det gør den ved at den har en liste af processer der er kendte virtuel maskiner og tjekker dem på en liste af nuværende kørende processer.
+```cs
+private static readonly List<string> _vmSubStrings = new List<string>
+  {
+    "vmware",
+    "virtualpc",
+    "virtualbox"
+  };
+```
+Her er listen af kendte virtuel maskine processere.
+
+```cs
+private bool IsVirtualMachineProcessRunning()
+  {
+    Process[] processes = Process.GetProcesses();
+    return processes.Any((Process p) => 
+      p.ProcessName.ContainsOneOrMoreInList(VirtualMachineDetectionWorker._vmSubStrings));
+  }
+```
+Her tjekker den om en virtuel maskine kører ved at se om nogle af de processer der kører på computeren matcher en af de kendte virtuel maskine processer.
+
 
 # Maskine fingeraftryk
-
+DDP laver et fingeraftryk af din maskine, som den kan bruge til at identificere din maskine. Den laver denne identifikation baseret på det hardware der er i din maskine, så den vil også kunne vide at det er dig selvom at du har geninstalleret Windows.
 
 ## DPV.exe.config
 
