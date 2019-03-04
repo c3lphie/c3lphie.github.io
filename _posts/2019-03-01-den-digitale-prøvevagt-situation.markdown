@@ -4,8 +4,9 @@ title:  "Den Digitale Prøvevagt situation"
 date:   2019-03-04 22:44:34 +0100
 categories: Write-ups
 ---
-Skrevet af Mads Beyer Mogensen og Simon Søndergaard Christensen
-Mail: mail@madsmogensen.dk og simon_sc@live.dk
+##### Skrevet af Mads Beyer Mogensen og Simon Søndergaard Christensen
+
+##### Mail: mail@madsmogensen.dk og simon_sc@live.dk
 
 ## Indledning
 Undervisningsministeriet har besluttet, at der skal fokuseres mere på forebyggelse af snyd under eksamen. Derfor har Undervisningsministeriet udviklet et program, der overvåger eksaminandens PC under hele eksamensperioden. Dette program skal hentes, installeres og køres inden eksamensstart. Dette software er givet navnet "Den Digitale Prøvevagt", forkortet til "DDP".
