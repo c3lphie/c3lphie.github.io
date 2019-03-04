@@ -22,7 +22,7 @@ Som så mange andre gymnasie elever, synes vi det er en meget forkert tilgang. A
 ## Metode
 <u>Vi kiggede kun på Windows versionen af programmet, der var tilgængelig d. 28/2-2019</u>
 
-For at finde ud af hvordan programmet fungerer skal vi først finde ud af hvordan programmet er bygget. Vi kan heldigvis hurtigt finde ud af hvordan programmet er lavet ved at kigge på de filer der ligger i den mappe hvori DDP ligger. Heri kan vi finde filer som tyder på at programmet er skrevet i C# med Microsofts ".NET Framework". Det er perfekt da programmer der er skrevet i C# indeholder meget af den oprindelige kildekode. Det betyder at vi kan anvende et decompilation værktøj som dnSpy til at se programmets kildekode. Det er samme metode som [Alexander Norup][alex-norup] brugte.
+For at finde ud af hvordan programmet fungerer skal vi først finde ud af hvordan programmet er bygget. Vi kan heldigvis hurtigt finde ud af hvordan programmet er lavet ved at kigge på de filer der ligger i den mappe hvori DDP ligger. Heri kan vi finde filer som tyder på at programmet er skrevet i C# med Microsofts ".NET Framework". Det er perfekt da programmer der er skrevet i C# indeholder meget af den oprindelige kildekode. Det betyder at vi kan anvende et decompilation værktøj som dnSpy til at se programmets kildekode. Det er samme metode som [Alexander Nørup][alex-norup] brugte.
 
 ## Fund
 I brugervejledningen til den prøvevagts ansvarlige står der hvilke data som de kan tilgå fra DDP.
@@ -49,7 +49,7 @@ I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i 
 DDP fungerer ved af såkaldte "workers", der er en til hver af de indbyggede funktioner programmet har. De sender den data de indsamler til en "CommunicationManager", som sender det videre til en server.
 
 # Keylogger
-I det oplæg omkring DDP vi fik på fik vi ingenting at om der var en keylogger i programmet. Jeg (Simon) havde læst om at der var en på Alexander Norups [blog][alex-norup], var lidt skeptisk hvilket også var en af motivationerne til at tjekke efter selv.
+I det oplæg omkring DDP vi fik på fik vi ingenting at om der var en keylogger i programmet. Jeg (Simon) havde læst om at der var en på Alexander Nørups [blog][alex-norup], var lidt skeptisk hvilket også var en af motivationerne til at tjekke efter selv.
 Keyloggeren består af to klasser, `KeyloggerHelper` og `KeyloggerWorker`. `KeyloggerHelper` indeholder kode, som hjælper med indsamling af tastetryk. `KeyloggerWorker` står for at gemme tastetryk og for at sende tastetryk til "CommunicationManager".
 
 
