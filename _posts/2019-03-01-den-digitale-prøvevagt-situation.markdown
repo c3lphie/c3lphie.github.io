@@ -1,24 +1,24 @@
 ---
 layout: post
 title:  "Den Digitale Prøvevagt situation"
-date:   2019-03-01 11:47:34 +0100
+date:   2019-03-04 22:44:34 +0100
 categories: Write-ups
 ---
 ## Indledning
-Undervisningsministeriet har besluttet, at der skal fokuseres mere på snyd, og forebyggelse af snyd under eksamen. Derfor har Undervisningsministeriet udviklet et program, der overvåger eksaminandens pc under hele eksamensperioden. Dette program hentes, installeres og køres inden eksamensstart. Undervisningsministeriet har gjort det til et krav at bruge dette software ved navnet "Den Digitale Prøvevagt", forkortet til "DDP".
-Programmet virker, i skrivende stund, kun til Windows og MacOS. Har man et andet styresystem en de to f.eks. en Linux distribution får eleven enten en låne bærbar tildelt, eller så tager de prøven med skærpet tilsyn. Når prøven slutter vil programmet stoppe. Herefter kan eleven vælge og afinstallere DDP, eller lade være hvis der er flere skriftlige prøver han/hun skal til.
-Nægter man at hente, installere og køre DDP under eksamenstiden så kan man ikke gå op til eksamen og derved dumper man.
+Undervisningsministeriet har besluttet, at der skal fokuseres mere på forebyggelse af snyd under eksamen. Derfor har Undervisningsministeriet udviklet et program, der overvåger eksaminandens PC under hele eksamensperioden. Dette program skal hentes, installeres og køres inden eksamensstart. Dette software er givet navnet "Den Digitale Prøvevagt", forkortet til "DDP".
+Programmet virker, kun til Windows og MacOS. Har man et andet styresystem, skal eksaminanden tage kontakt til den eksamensansvarlige for vejledning. Når eksamen er ovre stopper programmet.
+Nægter man at hente, installere og køre DDP under eksamenstiden, kan man ikke gå op til eksamen og derved dumper man.
 
 > Det er et krav, at alle gymnasiale institutioner benytter ministeriets digitale prøveafviklingssystem ved de centralt stillede, skriftlige prøver. Det vil fra og med sommertermin 2019, med enkelte undtagelser, være en forudsætning for at deltage i de skriftlige prøver i de gymnasiale uddannelser, at eleven installerer og afvikler monitoreringsprogrammet på sin computer under skriftlige prøver.
 
 (Kilde: [Undervisningsministeriets side om prøvevagten][uvm-info])
 
-Som så mange andre gymnasie elever, synes jeg det er en meget forkert tilgang. At vi skal installere et stykke software der i bund og grund er spyware, for at vi kan komme op til en skriftlig eksamen. Ifølge en debat på facebook([link][fb-debat]), er der flere ting som virker skummelt ved programmet. Jeg har derfor, i samarbejde med en af mine venner, forsøgt at komme tilbunds i hvad dette program helt præcist gør.
+Som så mange andre gymnasie elever, synes vi det er en meget forkert tilgang. At vi skal installere et stykke software der i bund og grund er spyware, for at vi kan komme op til en skriftlig eksamen. Ifølge en debat på Facebook([link][fb-debat]), er der flere ting som virker skummelt ved programmet. Vi har der forsøgt at komme til bunds i hvad dette program helt præcist gør.
 
 ## Metode
-<u>Vi kiggede kun på Windows versionen af programmet</u>
+<u>Vi kiggede kun på Windows versionen af programmet, der var tilgængelig d. 28/2-2019</u>
 
-For at finde ud af hvordan programmet fungerer skal vi først finde ud af hvordan programmet er bygget. Vi kan heldigvis hurtigt finde ud af hvordan programmet er lavet ved at kigge på de filer der ligger i den mappe hvori DDP ligger. Heri kan vi finde filer som tyder på at programmet er skrevet i C# med Microsofts ".NET Framework". Det er perfekt da programmer der er skrevet i C# indeholder meget af den oprindelige kildekode. Det betyder at vi kan anvende et decompilation program som dnSpy til at se programmets kildekode. Det er samme metode som [Alexander Norup][alex-norup] brugte.
+For at finde ud af hvordan programmet fungerer skal vi først finde ud af hvordan programmet er bygget. Vi kan heldigvis hurtigt finde ud af hvordan programmet er lavet ved at kigge på de filer der ligger i den mappe hvori DDP ligger. Heri kan vi finde filer som tyder på at programmet er skrevet i C# med Microsofts ".NET Framework". Det er perfekt da programmer der er skrevet i C# indeholder meget af den oprindelige kildekode. Det betyder at vi kan anvende et decompilation værktøj som dnSpy til at se programmets kildekode. Det er samme metode som [Alexander Norup][alex-norup] brugte.
 
 ## Fund
 I brugervejledningen til den prøvevagts ansvarlige står der hvilke data som de kan tilgå fra DDP.
@@ -28,7 +28,8 @@ I brugervejledningen til den prøvevagts ansvarlige står der hvilke data som de
 - Netværkskonfiguration
 - Om programmet bliver kørt i en virtuel maskine
 
-I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i brugervejledningen, men også nogle lidt mere skumle ting. Som kan ses nedenfor:
+
+I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i brugervejledningen, men også nogle lidt mere skumle ting, som kan ses nedenfor:
 - Keylogger
 - Udklipslogger
 - Skærmbillede
@@ -41,13 +42,12 @@ I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i 
 - Server(Som bliver brugt at Undervisningsministeriet)
 - Fremtidige funktioner
 
-DDP fungere ved af såkaldte "workers", der er en til hver af de indbyggede funktioner programmet har. De sender den data de indsamler til en "CommunicationManager", som sender det videre til en server.
+DDP fungerer ved af såkaldte "workers", der er en til hver af de indbyggede funktioner programmet har. De sender den data de indsamler til en "CommunicationManager", som sender det videre til en server.
 
 # Keylogger
-I det oplæg omkring DDP vi fik på fik vi ingenting at om der var en keylogger i programmet. Havde læst om at der var en på Alexander Norups [blog][alex-norup], var lidt skeptisk hvilket også var en af motivationerne til at tjekke efter selv.
-Keyloggeren består af to klasser, `KeyloggerHelper.cs` og `KeyloggerWorker.cs`. `KeyloggerHelper.cs` er det bibliotek som de har skrevet for at kunne indsamle tastetryk.`KeyloggerWorker.cs`står for at udføre selve indsamlingen og sende det til "CommunicationManager".
+I det oplæg omkring DDP vi fik på fik vi ingenting at om der var en keylogger i programmet. Jeg (Simon) havde læst om at der var en på Alexander Norups [blog][alex-norup], var lidt skeptisk hvilket også var en af motivationerne til at tjekke efter selv.
+Keyloggeren består af to klasser, `KeyloggerHelper` og `KeyloggerWorker`. `KeyloggerHelper` indeholder kode, som hjælper med indsamling af tastetryk. `KeyloggerWorker` står for at gemme tastetryk og for at sende tastetryk til "CommunicationManager".
 
-Den mest interessante af de to klasser er `KeyloggerWorker.cs`, fordi det er den der gør det meste af arbejdet hvor `KeyloggerHelper.cs` bare er et bibliotek for at gøre tingene nemmere.
 
 ```cs
 private StringBuilder _builder = new StringBuilder();
@@ -60,10 +60,10 @@ private void KeyloggerHelper_KeyPressed(object sender, KeyEventArgs e)
     this._builder.Append((object) e.KeyCode);
 }
 ```
-Den ovenstående kode sætter elevens tastetryk ind i `_builder`, som er et `StringBuilder` objekt. Hvilket vil sige at den bygger en streng af tekst, som det lyder af navnet. Og det er ALLE tastetryk! Det første den gør det er at tjekke om tasten er et bogstav eller et tal. Er det ikke tilfældet, f.eks. hvis der bliver trykket på mellemrums tasten, så vil den tage tastekoden og formegentlig logge det som `[SPACE]` i logfilen.
+Den ovenstående kode sætter elevens tastetryk ind i `_builder`, som er et `StringBuilder` objekt. Hvilket vil sige at den sammensætter tastetryk til tekst. ALLE tastetryk bliver logget! Det første den gør det er at tjekke om tasten er et bogstav eller et tal. Er det ikke tilfældet, f.eks. hvis der bliver trykket på mellemrums tasten, så vil den tage tastekoden og logge det som tastens talværdi omgivet af `[]` i logfilen. I dette tilfælde vil det producere `[32]`.
 
 # Udklipslogger
-At den kunne se hvad der ligger i udklipholderen var ikke overraskelse da det var en af de ting vi blev informeret om under oplægget.
+At DDP havde muligheden for at kunne se hvad der ligger i udklipholderen var ikke overraskelse, da det var en af de ting vi blev informeret om under oplægget. Dog står dette ikke i den eksamensansvareliges brugervejledning.
 ```cs
 protected override List<DataPackage> GetDataPackages()
 {
@@ -73,10 +73,10 @@ protected override List<DataPackage> GetDataPackages()
   };
 }
 ```
-Det som den gør er simplere en det umiddelbart ser ud. Den tjekker om der er noget i udklipsholderen, er der ikke det logger den "no text". Hvis der er noget i udklipsholderen, gemmer den det i logfilen.
+Dette tjekker om der er noget i udklipsholderen, er der ikke det logger den "no text". Hvis der er noget i udklipsholderen, gemmer den det i logfilen.
 
 # Skærmbillede
-På samme måde som der var to klasser ved keyloggeren er der også to klasser i spil ved skærmbillede funktionen. `ScreenCaptureTool.cs` og `ScreenshotWorker.cs` hvor workeren var den mest interessante ved keyloggeren, så er det her `ScreenCaptureTool.cs` der er mest interessant.
+På samme måde som der var to klasser ved keyloggeren er der også to klasser i spil ved skærmbillede funktionen. `ScreenCaptureTool` og `ScreenshotWorker` hvor workeren var den mest interessante ved keyloggeren, så er det her `ScreenCaptureTool` der er mest interessant.
 
 ```cs
 public static Image CaptureScreenNew()
@@ -101,7 +101,7 @@ public static Image CaptureScreenNew()
   return result;
 }
 ```
-Funktionen `CaptureScreenNew` forsøger først at lave et bitmap billede af hele skærmen. Hvis dette ikke lykkes har de skrevet funktionen `WriteExceptionToImage`, der vises her:
+Funktionen `CaptureScreenNew` forsøger først at tage et skærmbillede af hele skærmen. Hvis dette ikke lykkes har de skrevet funktionen `WriteExceptionToImage`, der vises her:
 ```cs
 private static Image WriteExceptionToImage(Exception ex)
 {
@@ -122,9 +122,9 @@ private static Image WriteExceptionToImage(Exception ex)
   return bitmap;
 }
 ```
-`WriteExceptionToImage` Skaber et billede der viser fejl-beskeden som et billede, dette er bare fejlsikring. Grunden til at de har valgt at gøre det sådan er i tilfældet af bugs. Dette gør at teknikere har informationer de kan arbejde ud fra, uden at skulle tænke på evt. data der kunne være på screenshots.
+`WriteExceptionToImage` Skaber et billede der viser fejl-beskeden som et billede, dette er bare fejlsikring. Grunden til at de har valgt at gøre det sådan er i tilfældet af fejl.
 
-Nedenfor ses et eksempel på hvordan en fejlbesked vil se ud.
+Nedenfor ses et eksempel på hvordan en fejlbesked ville se ud.
 ![Eksempel på fejlbesked](/images/ss-ex.jpg)
 
 ```cs
@@ -141,7 +141,7 @@ private static ImageCodecInfo GetEncoder(ImageFormat format)
   return null;
 }
 ```
-`GetEncoder` laver bitmap værdierne om til et hvilket som helst billedtype. TODO nej det gør den ikke. Den for fat i en encoder der kan encode bitmappet til et andet billedformat.
+`GetEncoder` får fat i encoder, der laver skærmbilledet om til et andet billedformat.
 
 ```cs
 public static byte[] ImageToByteArray(Image imageIn, int jpgCompressionLevel = 30)
@@ -153,10 +153,10 @@ public static byte[] ImageToByteArray(Image imageIn, int jpgCompressionLevel = 3
   return memoryStream.ToArray();
 }
 ```
-`ImageToByteArray` tager imod to argumenter, et billede og et kompressionsniveau for jpg billedet. Den vigtigste del af denne funktion er `imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);`. Det der sker her er at billedet bliver konverteret til jpg format, derefter logget som en masse hexværdier. TODO hvor bliver det logget henne? Er det i log filen eller bliver det sendt afsted til serveren?
+`ImageToByteArray` tager imod to argumenter, et billede og et kompressionsniveau for jpg billedet. Den vigtigste del af denne funktion er `imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);`. Det der sker her er at billedet bliver konverteret til jpg format, derefter logget som en streng i logfilen eller sendt afsted til serveren.
 
 # Netværkstrafik
-DDP har også funktionen til at se hvilke sider man tilgår når man søger på nettet. Programmet kan derved advare den eksamens ansvarlige og sige at nu går eleven på facebook, netflix eller andre ikke tilladte sider.
+DDP har også funktionen til at logge de hjemmesider eleven besøger under eksamensperioden. Programmet kan derved advare den eksamensansvarlige og advare om at eleven har besøgt forbudte sider.
 
 Her til har de skabt en worker, der læser og gemmer den url som der bliver brugt af browseren.
 ```cs
@@ -188,12 +188,12 @@ private static CurrentBrowserUrlsTool.BrowserType Parse(string processName)
   return processName.Contains("firefox") ? CurrentBrowserUrlsTool.BrowserType.FIREFOX : CurrentBrowserUrlsTool.BrowserType.Empty;
 }
 ```
-Dette betyder at for windows versionen af DDP, tjekker de kun efter om det enten er Google Chrome, Firefox, Microsoft Edge eller Internet Explorer. De kan i denne version af DDP ikke gøre noget hvis du bruger Opera som browser.
+Dette betyder at for windows versionen af DDP, tjekker de kun efter om browseren enten er Google Chrome, Firefox, Microsoft Edge eller Internet Explorer. De kan i denne version af DDP kan den ikke logge besøgte hjemmeside, hvis du bruger en anden browser.
 
 I denne klasse har de også lavet en funktion der trækker url'en ud af en browser. Dette er en længere funktion ved navnet `GetURLFromProcess`, derfor går jeg hurtigt over den. Men det som den gør som noget af det første er at finde ud af om der overhovedet er en af de kendte browsere åben. Er dette tilfældet bruger den forskellige metoder til at skaffe url'en alt efter browseren.
 
 # Netværkskonfiguration
-Ifølge den førnævnte bruger vejledning så bliver netværkskonfigurationen ikke vist i den nuværende version. Det bliver ikke brugt til at skabe fingeraftrykket af maskinen, men det bliver med højsandsynligt brugt til at tjekke om der er forbindelse til en VPN eller Proxy. En VPN kunne i et eksamens tilfælde bruges til at lave en forbindelse hjem hvor et familie medlem kunne lave opgaven for eleven.
+DDP logger maskinens netværkskonfiguration. Den bruger dette information for at se om eleven er på skolens netværk og advare den eksamensansvarlige hvis eksaminanten ikke er på skolenetværket.
 
 ```cs
 private StringBuilder _builder = new StringBuilder();
@@ -216,7 +216,7 @@ internal string GetNetworkConfigurationData()
 Det ovenstående uddrag af kildekoden sætter alle netværkskonfigurationerne ind i `_builder` på samme måde som keyloggeren indsatte taste tryk i dens `_builder`. Herefter logger den informationerne til logfilen.
 
 # Kørende programmer på maskinen
-Programmet kan også se hvilke programmer eller processer der køre på computeren. Dette bruger den blandt andet til at se hvilken browser du bruger til at surfe rundt på nettet.
+Programmet kan også se hvilke programmer eller processer der kører på computeren. Dette bruger den blandt andet til at se hvilken browser eksamenanden anvender. Den eksamensansvarlige kan sortliste processer der ikke må køres på eksamenandens maskine. Hvis et sortlistet program kører på maskinen, bliver den eksamensansvarlige advaret.
 
 ```cs
 private int _lastNumberOfRunningProcesses = 0;
@@ -245,23 +245,23 @@ protected override List<DataPackage> GetDataPackages()
   };
 }
 ```
-Den sætter alle processerne ind i et array, et en form for liste i programmering. Den får dem ved hjælp af et bibliotek der følger med i .NET frameworken. Den tæller også antallet af processer og sæter dem ind i variablen `_lastNumberOfRunningProcesses`. Herefter kører den igennem alle processerne og skriver al informationen ind i variablen `s`. Når den gemmer variablen i logfilen konverterer den det først til bytes. Dette gør den for at få det til at fylde mindre.
+Den sætter alle processerne ind i en liste. Den tæller også antallet af processer og sætter dem ind i variablen `_lastNumberOfRunningProcesses`. Herefter kører den igennem alle processerne og skriver al informationen ind i variablen `s`.
 
 # Virtuel maskine detektion
-Programmet tjekker om det kører i en virtuel maskine. En virtuel maskine er et stykke software der emulere en computer. Det vil sige at du kan f.eks. kan køre Windows 10 inde i Windows 10. Denne beskyttelse er taget i brug fordi at en elev kan snyde hvis at eleven laver opgaven og kører DDP i den virtuelle maskine. Så kan DDP ikke overvåge elevens egentlige system, men kun den virtuelle maskine.
+Programmet tjekker om det kører i en virtuel maskine. En virtuel maskine er et stykke software der emulerer en computer. Det vil sige at du kan have et separat styresystem kørende ved siden af et andet et. Denne beskyttelse er taget i brug fordi at en eksamenanden kan snyde hvis at eleven laver opgaven og kører DDP i den virtuelle maskine. Så kan DDP ikke overvåge elevens egentlige system, men kun den virtuelle maskine.
 ```cs
 public bool AmIRunningInsideAVirtualMachine()
 {
-  bool flag = false;
+  bool isVm = false;
   try
   {
     foreach (ManagementBaseObject managementBaseObject in new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_BaseBoard").Get())
       flag = managementBaseObject["Manufacturer"].ToString().ToLower() == "microsoft corporation".ToLower();
-    return flag;
+    return isVm;
   }
   catch
   {
-    return flag;
+    return isVm;
   }
 }
 ```
@@ -293,7 +293,7 @@ Her tjekker den om en virtuel maskine kører ved at se om nogle af de processer 
 DDP laver et fingeraftryk af din maskine, som den kan bruge til at identificere din maskine. Den laver denne identifikation baseret på det hardware der er i din maskine, så den vil også kunne vide at det er dig selvom at du har geninstalleret Windows.
 
 ## DPV.exe.config
-Inde i DDP's konfigurationsfil finder man serverens url, deres api-kode, de workere der er aktiveret og deres tidsinterval.
+Inde i DDP's konfigurationsfil finder man serverens url, deres api-kode og de workere der er aktiveret, samt workernes tidsinterval.
 
 ```xml
 <dpvSettings>
@@ -343,7 +343,7 @@ Her kan vi se nogle ting som der allerede er implementeret i programmet:
 - `Clipb`: Udklipsholder
 - `Sites`: Sider besøgt
 
-Men her ser vi også flere uimplementerede funktioner, disse funktionnavne er tvetydelige, så deres funktion er ren spekulation
+Men her ser vi også flere uimplementerede funktioner, disse funktionnavne er tvetydelige, så deres funktion er ren spekulation:
 - `Actapp`: Aktiv windue
 - `Usb`: Isat usb enheder
 
@@ -382,7 +382,7 @@ At mulighederne for at snyde bliver større og større i takt med at vi bliver m
 Problemet ligger i at for at softwaren ikke bliver blokeret af anti-virus software så bliver dette bibliotek de har skrevet, pludseligt det bedste spyware/virus bibliotek af bruge. Et andet problem ligger i at de har valgt at inkludere en keylogger i programmet. Deres metode gør at i det tilfælde at du logger ind på en side, så har undervisningsministeriet adgang til den konto. Hvis en hacker fandt vej ind til deres servere ville de pludselig have dit bruger-id og kode til nem-id f.eks.
 
 Undervisningsministeriet har lavet en FAQ med Danske Gymnasieelevers Sammenslutning, hvor de besvarer flere bekymringer. Her indrømmer de også at der er en keylogger i DDP, men at den ikke er aktiveret endnu. Deres plan med den er at den skal bruge til at tjekke op på det antal anslag der er skrevet i opgaven. De fortæller også at dataen der bliver gemt er krypteret på serveren, hvilket lyder til at være sandfærdigt eftersom at det bliver sendt afsted krypteret. De fortæller også at den ikke henter filer der ligger på din pc, hvilket passer med det vi har fundet i kildekoden.
-Efter FAQ'en opdaterede de også programmet til ikke at tage screeenshots før eksamenen begyndte.
+Efter FAQ'en opdaterede de også programmet til ikke at tage screenshots før eksamenen begyndte.
 ([Link til FAQ][uvm-faq])
 
 Sådan som keyloggeren er implementeret lige nu, så indsamler den alle tastetryk også dem der ikke vedrører opgaven. Hvis keyloggeren kun loggede tastestryk der blev brugt i Word eller Open-office, så ville denne sikkerheds risiko ikke længere være relevant. De har allerede implementeret kode der kan se processerne der køre, samt se hvilket vinduet der er aktivt. Så ville de også kunne bruge det data til at sammenligne antallet af anslag.
