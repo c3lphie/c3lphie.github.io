@@ -5,7 +5,7 @@ date:   2019-03-01 11:47:34 +0100
 categories: Write-ups
 ---
 ## Indledning
-Som mange nok ved, har Undervisningsministeriet besluttet, at der skal fokuseres mere på snyd, og forebyggelse af dette. Derfor har Undervisningsministeriet udviklet et program der overvåger eksaminandens pc under hele eksamensperioden. Dette program hentes, installeres og køres inden eksamensstart. Undervisningsministeriet har gjort det til et krav at bruge dette software ved navnet "Den Digitale Prøvevagt", forkortet til "DDP".
+Undervisningsministeriet har besluttet, at der skal fokuseres mere på snyd, og forebyggelse af snyd under eksamen. Derfor har Undervisningsministeriet udviklet et program, der overvåger eksaminandens pc under hele eksamensperioden. Dette program hentes, installeres og køres inden eksamensstart. Undervisningsministeriet har gjort det til et krav at bruge dette software ved navnet "Den Digitale Prøvevagt", forkortet til "DDP".
 Programmet virker, i skrivende stund, kun til Windows og MacOS. Har man et andet styresystem en de to f.eks. en Linux distribution får eleven enten en låne bærbar tildelt, eller så tager de prøven med skærpet tilsyn. Når prøven slutter vil programmet stoppe. Herefter kan eleven vælge og afinstallere DDP, eller lade være hvis der er flere skriftlige prøver han/hun skal til.
 Nægter man at hente, installere og køre DDP under eksamenstiden så kan man ikke gå op til eksamen og derved dumper man.
 
@@ -39,6 +39,7 @@ I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i 
 - Virtuel maskine detektion
 - Maskine fingeraftryk
 - Server(Som bliver brugt at Undervisningsministeriet)
+- Fremtidige funktioner
 
 DDP fungere ved af såkaldte "workers", der er en til hver af de indbyggede funktioner programmet har. De sender den data de indsamler til en "CommunicationManager", som sender det videre til en server.
 
@@ -80,22 +81,24 @@ På samme måde som der var to klasser ved keyloggeren er der også to klasser i
 ```cs
 public static Image CaptureScreenNew()
 {
+  Image result;
   try
   {
     Rectangle bounds = Screen.PrimaryScreen.Bounds;
     Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height);
     Size blockRegionSize = new Size(bitmap.Width, bitmap.Height);
-    using (Graphics graphics = Graphics.FromImage((Image) bitmap))
+    using (Graphics graphics = Graphics.FromImage(bitmap))
     {
       graphics.CopyFromScreen(0, 0, 0, 0, blockRegionSize);
-      return (Image) bitmap;
+      result = bitmap;
     }
   }
   catch (Exception ex)
   {
-    StaticFileLogger.Current.LogEvent("ScreenCaptureTool.CaptureScreenNew()", "Exception taking screenshot", string.Format("Error is: '{0}'", (object) ex.ToString()), EventLogEntryType.Information);
-    return ScreenCaptureTool.WriteExceptionToImage(ex);
+    StaticFileLogger.Current.LogEvent("ScreenCaptureTool.CaptureScreenNew()", "Exception taking screenshot", string.Format("Error is: '{0}'", ex.ToString()), EventLogEntryType.Information);
+    result = ScreenCaptureTool.WriteExceptionToImage(ex);
   }
+  return result;
 }
 ```
 Funktionen `CaptureScreenNew` forsøger først at lave et bitmap billede af hele skærmen. Hvis dette ikke lykkes har de skrevet funktionen `WriteExceptionToImage`, der vises her:
@@ -106,45 +109,51 @@ private static Image WriteExceptionToImage(Exception ex)
   Size size = bitmap.Size;
   size.Height -= 20;
   size.Width -= 20;
-  RectangleF layoutRectangle = new RectangleF(new PointF(10f, 10f), (SizeF) size);
-  using (Graphics graphics = Graphics.FromImage((Image) bitmap))
+  RectangleF layoutRectangle = new RectangleF(new PointF(10f, 10f), size);
+  using (Graphics graphics = Graphics.FromImage(bitmap))
   {
-    GraphicsUnit pageUnit = GraphicsUnit.Pixel;
-    graphics.FillRectangle(Brushes.Wheat, bitmap.GetBounds(ref pageUnit));
+    GraphicsUnit graphicsUnit = GraphicsUnit.Pixel;
+    graphics.FillRectangle(Brushes.Wheat, bitmap.GetBounds(ref graphicsUnit));
     graphics.SmoothingMode = SmoothingMode.AntiAlias;
     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
     graphics.DrawString(ex.ToString(), new Font("Tahoma", 10f), Brushes.Black, layoutRectangle);
   }
-  return (Image) bitmap;
+  return bitmap;
 }
 ```
 `WriteExceptionToImage` Skaber et billede der viser fejl-beskeden som et billede, dette er bare fejlsikring. Grunden til at de har valgt at gøre det sådan er i tilfældet af bugs. Dette gør at teknikere har informationer de kan arbejde ud fra, uden at skulle tænke på evt. data der kunne være på screenshots.
 
+Nedenfor ses et eksempel på hvordan en fejlbesked vil se ud.
+![Eksempel på fejlbesked](/images/ss-ex.jpg)
+
 ```cs
 private static ImageCodecInfo GetEncoder(ImageFormat format)
 {
-  foreach (ImageCodecInfo imageDecoder in ImageCodecInfo.GetImageDecoders())
+  ImageCodecInfo[] imageDecoders = ImageCodecInfo.GetImageDecoders();
+  foreach (ImageCodecInfo imageCodecInfo in imageDecoders)
   {
-    if (imageDecoder.FormatID == format.Guid)
-      return imageDecoder;
+    if (imageCodecInfo.FormatID == format.Guid)
+    {
+      return imageCodecInfo;
+    }
   }
-  return (ImageCodecInfo) null;
+  return null;
 }
 ```
-`GetEncoder` laver bitmap værdierne om til et hvilket som helst billedtype.
+`GetEncoder` laver bitmap værdierne om til et hvilket som helst billedtype. TODO nej det gør den ikke. Den for fat i en encoder der kan encode bitmappet til et andet billedformat.
 
 ```cs
 public static byte[] ImageToByteArray(Image imageIn, int jpgCompressionLevel = 30)
 {
   MemoryStream memoryStream = new MemoryStream();
-  EncoderParameters encoderParams = new EncoderParameters(1);
-  encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, (long) jpgCompressionLevel);
-  imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);
+  EncoderParameters encoderParameters = new EncoderParameters(1);
+  encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, jpgCompressionLevel);
+  imageIn.Save(memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParameters);
   return memoryStream.ToArray();
 }
 ```
-`ImageToByteArray` tager imod to argumenter, et billede og et kompressionsniveau for jpg billedet. Den vigtigste del af denne funktion er `imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);`. Det der sker her er at billedet bliver konverteret til jpg format, derefter logget som en masse hexværdier.
+`ImageToByteArray` tager imod to argumenter, et billede og et kompressionsniveau for jpg billedet. Den vigtigste del af denne funktion er `imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);`. Det der sker her er at billedet bliver konverteret til jpg format, derefter logget som en masse hexværdier. TODO hvor bliver det logget henne? Er det i log filen eller bliver det sendt afsted til serveren?
 
 # Netværkstrafik
 DDP har også funktionen til at se hvilke sider man tilgår når man søger på nettet. Programmet kan derved advare den eksamens ansvarlige og sige at nu går eleven på facebook, netflix eller andre ikke tilladte sider.
@@ -156,7 +165,7 @@ protected override List<DataPackage> GetDataPackages()
   CurrentBrowserUrlsTool.GetHarvestedUrlsFromRunningProcessesAndEmptyTheList().ToList<string>().ForEach((Action<string>) (url => this._urls.Add(url)));
   List<string> list = this._urls.ToList<string>();
   list.Sort();
-  byte[] bytes = Encoding.UTF8.GetBytes(string.Join(";", (IEnumerable<string>) list));
+  byte[] bytes = Encoding.UTF8.GetBytes(string.Join(";", list));
   this._urls.Clear();
   return new List<DataPackage>()
   {
@@ -165,7 +174,7 @@ protected override List<DataPackage> GetDataPackages()
 }
 ```
 ### Browser type
-For at de kan læse url'en i en browser skal de først vide hvilken browser der er tale om. Har de skrevet klasse der håndterer alt det der har med browsere at gøre. Den nedenstående funktion bliver brugt til at tjekke om navnene på de processer der kører i baggrunden er en browser. 
+For at de kan læse url'en i en browser skal de først vide hvilken browser der er tale om. Har de skrevet klasse der håndterer alt det der har med browsere at gøre. Den nedenstående funktion bliver brugt til at tjekke om navnene på de processer der kører i baggrunden er en browser.
 ```cs
 private static CurrentBrowserUrlsTool.BrowserType Parse(string processName)
 {
@@ -181,7 +190,7 @@ private static CurrentBrowserUrlsTool.BrowserType Parse(string processName)
 ```
 Dette betyder at for windows versionen af DDP, tjekker de kun efter om det enten er Google Chrome, Firefox, Microsoft Edge eller Internet Explorer. De kan i denne version af DDP ikke gøre noget hvis du bruger Opera som browser.
 
-I denne klasse har de også lavet en funktion der trækker url'en ud af en browser. Dette er en længere funktion ved navnet `GetURLFromProcess`, derfor går jeg hurtigt over den. Men det som den gør som noget af det første er at finde ud af om der overhovedet er en af de kendte browserer åben. Er dette tilfældet bruger den forskellige metoder til at skaffe url'en alt efter browseren.
+I denne klasse har de også lavet en funktion der trækker url'en ud af en browser. Dette er en længere funktion ved navnet `GetURLFromProcess`, derfor går jeg hurtigt over den. Men det som den gør som noget af det første er at finde ud af om der overhovedet er en af de kendte browsere åben. Er dette tilfældet bruger den forskellige metoder til at skaffe url'en alt efter browseren.
 
 # Netværkskonfiguration
 Ifølge den førnævnte bruger vejledning så bliver netværkskonfigurationen ikke vist i den nuværende version. Det bliver ikke brugt til at skabe fingeraftrykket af maskinen, men det bliver med højsandsynligt brugt til at tjekke om der er forbindelse til en VPN eller Proxy. En VPN kunne i et eksamens tilfælde bruges til at lave en forbindelse hjem hvor et familie medlem kunne lave opgaven for eleven.
@@ -207,6 +216,8 @@ internal string GetNetworkConfigurationData()
 Det ovenstående uddrag af kildekoden sætter alle netværkskonfigurationerne ind i `_builder` på samme måde som keyloggeren indsatte taste tryk i dens `_builder`. Herefter logger den informationerne til logfilen.
 
 # Kørende programmer på maskinen
+Programmet kan også se hvilke programmer eller processer der køre på computeren. Dette bruger den blandt andet til at se hvilken browser du bruger til at surfe rundt på nettet.
+
 ```cs
 private int _lastNumberOfRunningProcesses = 0;
 ...
@@ -234,6 +245,7 @@ protected override List<DataPackage> GetDataPackages()
   };
 }
 ```
+Den sætter alle processerne ind i et array, et en form for liste i programmering. Den får dem ved hjælp af et bibliotek der følger med i .NET frameworken. Den tæller også antallet af processer og sæter dem ind i variablen `_lastNumberOfRunningProcesses`. Herefter kører den igennem alle processerne og skriver al informationen ind i variablen `s`. Når den gemmer variablen i logfilen konverterer den det først til bytes. Dette gør den for at få det til at fylde mindre.
 
 # Virtuel maskine detektion
 Programmet tjekker om det kører i en virtuel maskine. En virtuel maskine er et stykke software der emulere en computer. Det vil sige at du kan f.eks. kan køre Windows 10 inde i Windows 10. Denne beskyttelse er taget i brug fordi at en elev kan snyde hvis at eleven laver opgaven og kører DDP i den virtuelle maskine. Så kan DDP ikke overvåge elevens egentlige system, men kun den virtuelle maskine.
@@ -264,13 +276,13 @@ private static readonly List<string> _vmSubStrings = new List<string>
     "virtualbox"
   };
 ```
-Her er listen af kendte virtuel maskine processere.
+Her er listen af kendte virtuel maskine processer.
 
 ```cs
 private bool IsVirtualMachineProcessRunning()
   {
     Process[] processes = Process.GetProcesses();
-    return processes.Any((Process p) => 
+    return processes.Any((Process p) =>
       p.ProcessName.ContainsOneOrMoreInList(VirtualMachineDetectionWorker._vmSubStrings));
   }
 ```
@@ -281,16 +293,102 @@ Her tjekker den om en virtuel maskine kører ved at se om nogle af de processer 
 DDP laver et fingeraftryk af din maskine, som den kan bruge til at identificere din maskine. Den laver denne identifikation baseret på det hardware der er i din maskine, så den vil også kunne vide at det er dig selvom at du har geninstalleret Windows.
 
 ## DPV.exe.config
+Inde i DDP's konfigurationsfil finder man serverens url, deres api-kode, de workere der er aktiveret og deres tidsinterval.
+
+```xml
+<dpvSettings>
+  <timersConfig>
+    <timers>
+      <!--<timer secondsBetweenWork="123" workerToInstantiate="DpvClassLibrary.Workers.ClipboardTextWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>-->
+      <!--<timer secondsBetweenWork="51" workerToInstantiate="DpvClassLibrary.Workers.KeyloggerWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>-->
+      <timer secondsBetweenWork="61" workerToInstantiate="DpvClassLibrary.Workers.NetworkTrafficWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+      <timer secondsBetweenWork="63" workerToInstantiate="DpvClassLibrary.Workers.NetworkConfigRetrieverWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+      <timer secondsBetweenWork="61" workerToInstantiate="DpvClassLibrary.Workers.RunningProcessesWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+      <timer secondsBetweenWork="30" workerToInstantiate="DpvClassLibrary.Workers.ScreenshotWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    </timers>
+  </timersConfig>
+</dpvSettings>
+```
+De to timere sat op til udklipsloggeren og keyloggeren er begge udkommenteret, dette betyder at de ikke er taget i brug den version vi har fat i. `secondsBetweenWork` bestemmer hvor ofte den skal aktivere workeren.
 
 # Server
+Serveren er en del af Amazon AWS hvilket er en cloud løsning Amazon stiller til rådighed. Dataen bliver sendt over "https" hvilket vil sige at dataen er krypteret, og vil derfor ikke kunne opsamles gennem et man-in-the-middle angreb fra hackere.
+
+# Fremtidige funktioner
+Vi fandt mere kode der tydede på at der i en fremtidig version ville blive logget endnu mere data. Det vi fandt var nogle værdier, som sendes sammen med dataen, sådan at serveren ved hvad der blev sendt.
+
+```cs
+public enum ColTypeEnum
+{
+  Hbeat = 1,
+  Netcf,
+  Sshot,
+  Vmdet,
+  Plist,
+  Clipb,
+  Klog,
+  Sites,
+  Actapp,
+  Usb,
+  Bttrf
+}
+```
+
+Her kan vi se nogle ting som der allerede er implementeret i programmet:
+- `Hbeat`: Heartbeat
+- `Netfc`: Netværkskonfiguration
+- `Sshot`: Skærmbillede
+- `Vmdet`: Virtuel maskine detektion
+- `Plist`: Processer kørende
+- `Clipb`: Udklipsholder
+- `Sites`: Sider besøgt
+
+Men her ser vi også flere uimplementerede funktioner, disse funktionnavne er tvetydelige, så deres funktion er ren spekulation
+- `Actapp`: Aktiv windue
+- `Usb`: Isat usb enheder
+
+Den sidste (`Bttrf`) kan vi ikke tyde. Det bedste bud vi har er tilkoblede bluetooth enheder.
 
 ## Regler og love
+Fordi der er tale om sensitiv data, så er der selvfølgelig en lovgivning der skal følges. GDPR er den lovgivning der gælder når vi snakker om databehandling. Og det er artikel 6 stk. 1 der handler hvornår det er lovligt at behandle data.
+
+1. Behandling er kun lovlig, hvis og i det omfang mindst ét af følgende forhold gør sig gældende:
+
+    a) Den registrerede har givet samtykke til behandling af sine personoplysninger til et eller flere specifikke formål.
+
+    b) Behandling er nødvendig af hensyn til opfyldelse af en kontrakt, som den registrerede er part i, eller af hensyn til gennemførelse af foranstaltninger, der træffes på den registreredes anmodning forud for indgåelse af en kontrakt.
+
+    c) Behandling er nødvendig for at overholde en retlig forpligtelse, som påhviler den dataansvarlige.
+
+    d) Behandling er nødvendig for at beskytte den registreredes eller en anden fysisk persons vitale interesser.
+
+    e) Behandling er nødvendig af hensyn til udførelse af en opgave i samfundets interesse eller som henhører under offentlig myndighedsudøvelse, som den dataansvarlige har fået pålagt.
+
+    f) Behandling er nødvendig for, at den dataansvarlige eller en tredjemand kan forfølge en legitim interesse, medmindre den registreredes interesser eller grundlæggende rettigheder og frihedsrettigheder, der kræver beskyttelse af personoplysninger, går forud herfor, navnlig hvis den registrerede er et barn.
+
+    Første afsnit, litra f), gælder ikke for behandling, som offentlige myndigheder foretager som led i udførelsen af deres opgaver.
+
+(Kilde: [gdpr.dk](https://gdpr.dk/databeskyttelsesforordningen/kapitel-2-principper/artikel-6-lovlig-behandling/))
+
+Det første man læser når ser artikel 6 stk. 1(a), hvor der står at det er okay hvis der er givet samtykke. Har man ikke givet samtykke så er det ulovligt, og det er nok dette de fleste folk tænker på når de siger at der er ulovligt. Men Undervisningsministeriet har hjemmel i forhold til stk. 1 (e) da man vil kunne argumentere for at det er i samfundets bedste interresse at mindske mængden af snyd.
+
+> Ja, behandlingen har hjemmel i den myndighedsopgave, som er pålagt Styrelsen for Undervisning og Kvalitet såvel som uddannelsesinstitutionerne (jf. Databeskyttelsesforordningen (GDPR) artikel 6 stk. 1 (e)) i forhold til at håndhæve § 20 i ” Bekendtgørelse om prøver og eksamen i de almene og studieforberedende ungdoms- og voksenuddannelser” og i §§ 5-7 i ”Bekendtgørelse om visse regler om prøver og eksamen i de gymnasiale uddannelser”.
+
+(Kilde: [Undervisningsministeriets spørgsmål og svar om prøvevagten](https://uvm.dk/gymnasiale-uddannelser/proever-og-eksamen/netproever/den-digitale-proevevagt/spoergsmaal-og-svar?fbclid=IwAR3YNOq9UrCXZM24xDnRydV8RTYzfqoXFcJrLBUnyIMNNJOLJN1HZpbXr_I))
+
 
 ## Diskussion
+At mulighederne for at snyde bliver større og større i takt med at vi bliver mere og mere forbundet gennem internettet skal ikke glemmes. Og grundlaget for sådan et program er som sådan gode nok, men problemet ligger i udførslen. Vi som elever, og ikke mindst borgerer, burde ikke skulle installere et stykke spyware på vores private enhed. Dette er der mange der mener er en krænkelse af privatlivet.
+Problemet ligger i at for at softwaren ikke bliver blokeret af anti-virus software så bliver dette bibliotek de har skrevet, pludseligt det bedste spyware/virus bibliotek af bruge. Et andet problem ligger i at de har valgt at inkludere en keylogger i programmet. Deres metode gør at i det tilfælde at du logger ind på en side, så har undervisningsministeriet adgang til den konto. Hvis en hacker fandt vej ind til deres servere ville de pludselig have dit bruger-id og kode til nem-id f.eks.
 
-## Konklusion
+Undervisningsministeriet har lavet en FAQ med Danske Gymnasieelevers Sammenslutning, hvor de besvarer flere bekymringer. Her indrømmer de også at der er en keylogger i DDP, men at den ikke er aktiveret endnu. Deres plan med den er at den skal bruge til at tjekke op på det antal anslag der er skrevet i opgaven. De fortæller også at dataen der bliver gemt er krypteret på serveren, hvilket lyder til at være sandfærdigt eftersom at det bliver sendt afsted krypteret. De fortæller også at den ikke henter filer der ligger på din pc, hvilket passer med det vi har fundet i kildekoden.
+Efter FAQ'en opdaterede de også programmet til ikke at tage screeenshots før eksamenen begyndte.
+([Link til FAQ][uvm-faq])
+
+Sådan som keyloggeren er implementeret lige nu, så indsamler den alle tastetryk også dem der ikke vedrører opgaven. Hvis keyloggeren kun loggede tastestryk der blev brugt i Word eller Open-office, så ville denne sikkerheds risiko ikke længere være relevant. De har allerede implementeret kode der kan se processerne der køre, samt se hvilket vinduet der er aktivt. Så ville de også kunne bruge det data til at sammenligne antallet af anslag.
 
 
+[uvm-faq]: https://www.facebook.com/notes/danske-gymnasieelevers-sammenslutning/hvad-er-den-digitale-pr%C3%B8vevagt-faq/10156886822478956/
 [uvm-info]: https://uvm.dk/gymnasiale-uddannelser/proever-og-eksamen/netproever/den-digitale-proevevagt/om-den-digitale-proevevagt
 [fb-debat]: https://www.facebook.com/jeanette.feldballe/posts/10214797289978061
 [alex-norup]: https://www.alexandernorup.com/DigitalProvevagt?fbclid=IwAR2Hp_fDZHZh4FALcVJCnciM-w3z1kMafh_bilPboIlLpeylNJhdKIvYCYY
