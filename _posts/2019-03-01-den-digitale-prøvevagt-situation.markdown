@@ -6,8 +6,9 @@ categories: Write-ups
 ---
 ##### Skrevet af Mads Beyer Mogensen og Simon Søndergaard Christensen
 
-##### Mail: mail@madsmogensen.dk og simon_sc@live.dk
+##### Mail: mail@madsmogensen(dot)dk og simon_sc@live(dot)dk
 
+[Thumbnail](/images/thumbnail.jpg)
 ## Indledning
 Undervisningsministeriet har besluttet, at der skal fokuseres mere på forebyggelse af snyd under eksamen. Derfor har Undervisningsministeriet udviklet et program, der overvåger eksaminandens PC under hele eksamensperioden. Dette program skal hentes, installeres og køres inden eksamensstart. Dette software er givet navnet "Den Digitale Prøvevagt", forkortet til "DDP".
 Programmet virker, kun til Windows og MacOS. Har man et andet styresystem, skal eksaminanden tage kontakt til den eksamensansvarlige for vejledning. Når eksamen er ovre stopper programmet.
