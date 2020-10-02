@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Articles on C3lphie</title>
+    <link>https://c3lphie.com/articles/</link>
+    <description>Recent content in Articles on C3lphie</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© {year}</copyright>
+    <lastBuildDate>Fri, 02 Oct 2020 13:43:00 +0200</lastBuildDate><atom:link href="https://c3lphie.com/articles/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>test</title>
+      <link>https://c3lphie.com/articles/test/</link>
+      <pubDate>Fri, 02 Oct 2020 13:43:00 +0200</pubDate>
+      
+      <guid>https://c3lphie.com/articles/test/</guid>
+      <description>This is just a simple test</description>
+    </item>
+    
+  </channel>
+</rss>
