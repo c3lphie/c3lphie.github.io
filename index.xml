@@ -6,16 +6,6 @@
     <description>Recent content on C3lphie</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>© {year}</copyright>
-    <lastBuildDate>Fri, 02 Oct 2020 13:43:00 +0200</lastBuildDate><atom:link href="https://c3lphie.com/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>test</title>
-      <link>https://c3lphie.com/articles/test/</link>
-      <pubDate>Fri, 02 Oct 2020 13:43:00 +0200</pubDate>
-      
-      <guid>https://c3lphie.com/articles/test/</guid>
-      <description>This is just a simple test</description>
-    </item>
-    
+    <copyright>© {year}</copyright><atom:link href="https://c3lphie.com/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>
