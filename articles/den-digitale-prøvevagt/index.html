@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <title>Den Digitale Prøvevagt situation | C3lphie</title>
+
+  <meta charset="UTF-8">
+  <meta name="language" content="en">
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  
+  
+
+  <link rel="shortcut icon" type="image/png" href="/favicon.ico" />
+
+  
+  
+    
+ 
+  
+  
+  
+  
+  
+  
+    
+    <link type="text/css" rel="stylesheet" href="/css/post.min.2cb93c91050d1853bf971cc31e00122edd6e0f405aa1de3b7f8ef67ea3b5a79a.css" integrity="sha256-LLk8kQUNGFO/lxzDHgASLt1uD0Baod47f472fqO1p5o="/>
+  
+    
+    <link type="text/css" rel="stylesheet" href="/css/custom.min.1c911f3baaca8fdf9f0158c3050e8b9dbbdb8f1580f101c62f2b7ed7fa29c779.css" integrity="sha256-HJEfO6rKj9&#43;fAVjDBQ6LnbvbjxWA8QHGLyt&#43;1/opx3k="/>
+  
+  
+   
+   
+    
+
+<script type="application/ld+json">
+  
+    { 
+      "@context": "http://schema.org", 
+      "@type": "WebSite", 
+      "url": "https:\/\/c3lphie.com\/articles\/den-digitale-pr%C3%B8vevagt\/",
+      "name": "Den Digitale Prøvevagt situation",
+      "author": {
+        "@type": "Person",
+        "name": ""
+      },
+      "description": ""
+    }
+  
+  </script>
+</head>
+
+<body>
+  <div class="burger__container">
+  <div class="burger" aria-controls="navigation" aria-label="Menu">
+    <div class="burger__meat burger__meat--1"></div>
+    <div class="burger__meat burger__meat--2"></div>
+    <div class="burger__meat burger__meat--3"></div>
+  </div>
+</div>
+ 
+
+  <nav class="nav" id="navigation">
+  <ul class="nav__list">
+    
+    
+      <li>
+        <a  href="/">about</a>
+      </li>
+    
+      <li>
+        <a  class="active"
+         href="/articles">articles</a>
+      </li>
+    
+  </ul>
+</nav>
+
+
+  <main>
+    
+    
+
+    <div class="flex-wrapper">
+      <div class="post__container">
+        <div class="post">
+          <header class="post__header">
+            <h1 id="post__title">Den Digitale Prøvevagt situation</h1>
+            <time datetime="2019-03-04 22:44:34 &#43;0100 CET" class="post__date">Mar 4 2019</time> 
+          </header>
+          <article class="post__content">
+              
+<p><em>Skrevet af Mads Beyer Mogensen og Simon Søndergaard Christensen</em></p>
+<p><em>Mail: mail@madsmogensen(dot)dk og simon_sc@live(dot)dk</em></p>
+<img src="/images/dpv/thumbnail.jpg"/>
+<h2 id="indledning">Indledning<a class="anchor" href="#indledning">#</a></h2>
+<p>Undervisningsministeriet har besluttet, at der skal fokuseres mere på forebyggelse af snyd under eksamen. Derfor har Undervisningsministeriet udviklet et program, der overvåger eksaminandens PC under hele eksamensperioden. Dette program skal hentes, installeres og køres inden eksamensstart. Dette software er givet navnet &ldquo;Den Digitale Prøvevagt&rdquo;, forkortet til &ldquo;DDP&rdquo;.
+Programmet virker, kun til Windows og MacOS. Har man et andet styresystem, skal eksaminanden tage kontakt til den eksamensansvarlige for vejledning. Når eksamen er ovre stopper programmet.
+Nægter man at hente, installere og køre DDP under eksamenstiden, kan man ikke gå op til eksamen og derved dumper man.</p>
+<blockquote>
+<p>Det er et krav, at alle gymnasiale institutioner benytter ministeriets digitale prøveafviklingssystem ved de centralt stillede, skriftlige prøver. Det vil fra og med sommertermin 2019, med enkelte undtagelser, være en forudsætning for at deltage i de skriftlige prøver i de gymnasiale uddannelser, at eleven installerer og afvikler monitoreringsprogrammet på sin computer under skriftlige prøver.</p>
+</blockquote>
+<p>(Kilde: <a href="https://uvm.dk/gymnasiale-uddannelser/proever-og-eksamen/netproever/den-digitale-proevevagt/om-den-digitale-proevevagt">Undervisningsministeriets side om prøvevagten</a>)</p>
+<p>Som så mange andre gymnasie elever, synes vi det er en meget forkert tilgang. At vi skal installere et stykke software der i bund og grund er spyware, for at vi kan komme op til en skriftlig eksamen. Ifølge en debat på Facebook(<a href="https://www.facebook.com/jeanette.feldballe/posts/10214797289978061">link</a>), er der flere ting som virker skummelt ved programmet. Vi har der forsøgt at komme til bunds i hvad dette program helt præcist gør.</p>
+<h2 id="metode">Metode<a class="anchor" href="#metode">#</a></h2>
+<p><u>Vi kiggede kun på Windows versionen af programmet, der var tilgængelig d. 28/2-2019</u></p>
+<p>For at finde ud af hvordan programmet fungerer skal vi først finde ud af hvordan programmet er bygget. Vi kan heldigvis hurtigt finde ud af hvordan programmet er lavet ved at kigge på de filer der ligger i den mappe hvori DDP ligger. Heri kan vi finde filer som tyder på at programmet er skrevet i C# med Microsofts &ldquo;.NET Framework&rdquo;. Det er perfekt da programmer der er skrevet i C# indeholder meget af den oprindelige kildekode. Det betyder at vi kan anvende et decompilation værktøj som dnSpy til at se programmets kildekode. Det er samme metode som <a href="https://www.alexandernorup.com/DigitalProvevagt?fbclid=IwAR2Hp_fDZHZh4FALcVJCnciM-w3z1kMafh_bilPboIlLpeylNJhdKIvYCYY">Alexander Nørup</a> brugte.</p>
+<h2 id="fund">Fund<a class="anchor" href="#fund">#</a></h2>
+<p>I brugervejledningen til den prøvevagts ansvarlige står der hvilke data som de kan tilgå fra DDP.</p>
+<ul>
+<li>Skærmbilleder</li>
+<li>Processer der køre på computeren</li>
+<li>Besøgte hjemmesider</li>
+<li>Netværkskonfiguration</li>
+<li>Om programmet bliver kørt i en virtuel maskine</li>
+</ul>
+<p>I kildekoden gjorde vi flere interessante fund, der iblandt det som der står i brugervejledningen, men også nogle lidt mere skumle ting, som kan ses nedenfor:</p>
+<ul>
+<li>Keylogger</li>
+<li>Udklipslogger</li>
+<li>Skærmbillede</li>
+<li>Netværkstrafik</li>
+<li>Netværkskonfiguration</li>
+<li>Browser type</li>
+<li>Kørende programmer på maskinen</li>
+<li>Virtuel maskine detektion</li>
+<li>Maskine fingeraftryk</li>
+<li>Server(Som bliver brugt at Undervisningsministeriet)</li>
+<li>Fremtidige funktioner</li>
+</ul>
+<p>DDP fungerer ved af såkaldte &ldquo;workers&rdquo;, der er en til hver af de indbyggede funktioner programmet har. De sender den data de indsamler til en &ldquo;CommunicationManager&rdquo;, som sender det videre til en server.</p>
+<h1 id="keylogger">Keylogger</h1>
+<p>I det oplæg omkring DDP vi fik på fik vi ingenting at om der var en keylogger i programmet. Jeg (Simon) havde læst om at der var en på Alexander Nørups <a href="https://www.alexandernorup.com/DigitalProvevagt?fbclid=IwAR2Hp_fDZHZh4FALcVJCnciM-w3z1kMafh_bilPboIlLpeylNJhdKIvYCYY">blog</a>, var lidt skeptisk hvilket også var en af motivationerne til at tjekke efter selv.
+Keyloggeren består af to klasser, <code>KeyloggerHelper</code> og <code>KeyloggerWorker</code>. <code>KeyloggerHelper</code> indeholder kode, som hjælper med indsamling af tastetryk. <code>KeyloggerWorker</code> står for at gemme tastetryk og for at sende tastetryk til &ldquo;CommunicationManager&rdquo;.</p>
+<pre><code class="language-cs">private StringBuilder _builder = new StringBuilder();
+...
+private void KeyloggerHelper_KeyPressed(object sender, KeyEventArgs e)
+{
+  if (!char.IsLetterOrDigit((char) e.KeyCode))
+    this._builder.Append(&quot;[&quot; + (object) e.KeyCode + &quot;]&quot;);
+  else
+    this._builder.Append((object) e.KeyCode);
+}
+</code></pre>
+<p>Den ovenstående kode sætter elevens tastetryk ind i <code>_builder</code>, som er et <code>StringBuilder</code> objekt. Hvilket vil sige at den sammensætter tastetryk til tekst. ALLE tastetryk bliver logget! Det første den gør det er at tjekke om tasten er et bogstav eller et tal. Er det ikke tilfældet, f.eks. hvis der bliver trykket på mellemrums tasten, så vil den tage tastekoden og logge det som tastens talværdi omgivet af <code>[]</code> i logfilen. I dette tilfælde vil det producere <code>[32]</code>.</p>
+<h1 id="udklipslogger">Udklipslogger</h1>
+<p>At DDP havde muligheden for at kunne se hvad der ligger i udklipholderen var ikke overraskelse, da det var en af de ting vi blev informeret om under oplægget. Dog står dette ikke i den eksamensansvareliges brugervejledning.</p>
+<pre><code class="language-cs">protected override List&lt;DataPackage&gt; GetDataPackages()
+{
+  return new List&lt;DataPackage&gt;()
+  {
+    new DataPackage(DataPackage.ColTypeEnum.Clipb, new bool?(false), !Clipboard.ContainsText() ? Encoding.UTF8.GetBytes(&quot;no text&quot;) : Encoding.UTF8.GetBytes(Clipboard.GetText()), new DateTime?(DataPackageEnvelopeAwsReceiver.ServerTime), new long?((long) this.GetAndIncrementWorkSequence()))
+  };
+}
+</code></pre>
+<p>Dette tjekker om der er noget i udklipsholderen, er der ikke det logger den &ldquo;no text&rdquo;. Hvis der er noget i udklipsholderen, gemmer den det i logfilen.</p>
+<h1 id="skærmbillede">Skærmbillede</h1>
+<p>På samme måde som der var to klasser ved keyloggeren er der også to klasser i spil ved skærmbillede funktionen. <code>ScreenCaptureTool</code> og <code>ScreenshotWorker</code> hvor workeren var den mest interessante ved keyloggeren, så er det her <code>ScreenCaptureTool</code> der er mest interessant.</p>
+<pre><code class="language-cs">public static Image CaptureScreenNew()
+{
+  Image result;
+  try
+  {
+    Rectangle bounds = Screen.PrimaryScreen.Bounds;
+    Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height);
+    Size blockRegionSize = new Size(bitmap.Width, bitmap.Height);
+    using (Graphics graphics = Graphics.FromImage(bitmap))
+    {
+      graphics.CopyFromScreen(0, 0, 0, 0, blockRegionSize);
+      result = bitmap;
+    }
+  }
+  catch (Exception ex)
+  {
+    StaticFileLogger.Current.LogEvent(&quot;ScreenCaptureTool.CaptureScreenNew()&quot;, &quot;Exception taking screenshot&quot;, string.Format(&quot;Error is: '{0}'&quot;, ex.ToString()), EventLogEntryType.Information);
+    result = ScreenCaptureTool.WriteExceptionToImage(ex);
+  }
+  return result;
+}
+</code></pre>
+<p>Funktionen <code>CaptureScreenNew</code> forsøger først at tage et skærmbillede af hele skærmen. Hvis dette ikke lykkes har de skrevet funktionen <code>WriteExceptionToImage</code>, der vises her:</p>
+<pre><code class="language-cs">private static Image WriteExceptionToImage(Exception ex)
+{
+  Bitmap bitmap = new Bitmap(800, 600);
+  Size size = bitmap.Size;
+  size.Height -= 20;
+  size.Width -= 20;
+  RectangleF layoutRectangle = new RectangleF(new PointF(10f, 10f), size);
+  using (Graphics graphics = Graphics.FromImage(bitmap))
+  {
+    GraphicsUnit graphicsUnit = GraphicsUnit.Pixel;
+    graphics.FillRectangle(Brushes.Wheat, bitmap.GetBounds(ref graphicsUnit));
+    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+    graphics.DrawString(ex.ToString(), new Font(&quot;Tahoma&quot;, 10f), Brushes.Black, layoutRectangle);
+  }
+  return bitmap;
+}
+</code></pre>
+<p><code>WriteExceptionToImage</code> Skaber et billede der viser fejl-beskeden som et billede, dette er bare fejlsikring. Grunden til at de har valgt at gøre det sådan er i tilfældet af fejl.</p>
+<p>Nedenfor ses et eksempel på hvordan en fejlbesked ville se ud.
+<img src="/images/dpv/ss-ex.jpg" alt="Eksempel på fejlbesked"></p>
+<pre><code class="language-cs">private static ImageCodecInfo GetEncoder(ImageFormat format)
+{
+  ImageCodecInfo[] imageDecoders = ImageCodecInfo.GetImageDecoders();
+  foreach (ImageCodecInfo imageCodecInfo in imageDecoders)
+  {
+    if (imageCodecInfo.FormatID == format.Guid)
+    {
+      return imageCodecInfo;
+    }
+  }
+  return null;
+}
+</code></pre>
+<p><code>GetEncoder</code> får fat i encoder, der laver skærmbilledet om til et andet billedformat.</p>
+<pre><code class="language-cs">public static byte[] ImageToByteArray(Image imageIn, int jpgCompressionLevel = 30)
+{
+  MemoryStream memoryStream = new MemoryStream();
+  EncoderParameters encoderParameters = new EncoderParameters(1);
+  encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, jpgCompressionLevel);
+  imageIn.Save(memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParameters);
+  return memoryStream.ToArray();
+}
+</code></pre>
+<p><code>ImageToByteArray</code> tager imod to argumenter, et billede og et kompressionsniveau for jpg billedet. Den vigtigste del af denne funktion er <code>imageIn.Save((Stream) memoryStream, ScreenCaptureTool.GetEncoder(ImageFormat.Jpeg), encoderParams);</code>. Det der sker her er at billedet bliver konverteret til jpg format, derefter logget som en streng i logfilen eller sendt afsted til serveren.</p>
+<h1 id="netværkstrafik">Netværkstrafik</h1>
+<p>DDP har også funktionen til at logge de hjemmesider eleven besøger under eksamensperioden. Programmet kan derved advare den eksamensansvarlige og advare om at eleven har besøgt forbudte sider.</p>
+<p>Her til har de skabt en worker, der læser og gemmer den url som der bliver brugt af browseren.</p>
+<pre><code class="language-cs">protected override List&lt;DataPackage&gt; GetDataPackages()
+{
+  CurrentBrowserUrlsTool.GetHarvestedUrlsFromRunningProcessesAndEmptyTheList().ToList&lt;string&gt;().ForEach((Action&lt;string&gt;) (url =&gt; this._urls.Add(url)));
+  List&lt;string&gt; list = this._urls.ToList&lt;string&gt;();
+  list.Sort();
+  byte[] bytes = Encoding.UTF8.GetBytes(string.Join(&quot;;&quot;, list));
+  this._urls.Clear();
+  return new List&lt;DataPackage&gt;()
+  {
+    new DataPackage(DataPackage.ColTypeEnum.Sites, new bool?(false), bytes, new DateTime?(DataPackageEnvelopeAwsReceiver.ServerTime), new long?((long) this.GetAndIncrementWorkSequence()))
+  };
+}
+</code></pre>
+<h3 id="browser-type">Browser type<a class="anchor" href="#browser-type">#</a></h3>
+<p>For at de kan læse url&rsquo;en i en browser skal de først vide hvilken browser der er tale om. Har de skrevet klasse der håndterer alt det der har med browsere at gøre. Den nedenstående funktion bliver brugt til at tjekke om navnene på de processer der kører i baggrunden er en browser.</p>
+<pre><code class="language-cs">private static CurrentBrowserUrlsTool.BrowserType Parse(string processName)
+{
+  processName = processName.ToLower();
+  if (processName.Contains(&quot;chrome&quot;))
+    return CurrentBrowserUrlsTool.BrowserType.GOOGLE_CHROME;
+  if (processName.Contains(&quot;applicationframehost&quot;))
+    return CurrentBrowserUrlsTool.BrowserType.MICROSOFT_EDGE;
+  if (processName.Contains(&quot;iexplore&quot;))
+    return CurrentBrowserUrlsTool.BrowserType.INTERNET_EXPLORER;
+  return processName.Contains(&quot;firefox&quot;) ? CurrentBrowserUrlsTool.BrowserType.FIREFOX : CurrentBrowserUrlsTool.BrowserType.Empty;
+}
+</code></pre>
+<p>Dette betyder at for windows versionen af DDP, tjekker de kun efter om browseren enten er Google Chrome, Firefox, Microsoft Edge eller Internet Explorer. De kan i denne version af DDP kan den ikke logge besøgte hjemmeside, hvis du bruger en anden browser.</p>
+<p>I denne klasse har de også lavet en funktion der trækker url&rsquo;en ud af en browser. Dette er en længere funktion ved navnet <code>GetURLFromProcess</code>, derfor går jeg hurtigt over den. Men det som den gør som noget af det første er at finde ud af om der overhovedet er en af de kendte browsere åben. Er dette tilfældet bruger den forskellige metoder til at skaffe url&rsquo;en alt efter browseren.</p>
+<h1 id="netværkskonfiguration">Netværkskonfiguration</h1>
+<p>DDP logger maskinens netværkskonfiguration. Den bruger dette information for at se om eleven er på skolens netværk og advare den eksamensansvarlige hvis eksaminanten ikke er på skolenetværket.</p>
+<pre><code class="language-cs">private StringBuilder _builder = new StringBuilder();
+private int _numberOfInterfacesAtLastCount;
+...
+internal string GetNetworkConfigurationData()
+{
+  this._builder.Clear();
+  NetworkInterface[] allNetworkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+  this._numberOfInterfacesAtLastCount = allNetworkInterfaces.Count&lt;NetworkInterface&gt;();
+  (from nwi in allNetworkInterfaces.ToList&lt;NetworkInterface&gt;()
+  orderby nwi.OperationalStatus
+  select nwi).ToList&lt;NetworkInterface&gt;().ForEach(delegate(NetworkInterface nwi)
+  {
+    this._builder.Append(nwi.GetStateAsString());
+  });
+  return this._builder.ToString();
+}
+</code></pre>
+<p>Det ovenstående uddrag af kildekoden sætter alle netværkskonfigurationerne ind i <code>_builder</code> på samme måde som keyloggeren indsatte taste tryk i dens <code>_builder</code>. Herefter logger den informationerne til logfilen.</p>
+<h1 id="kørende-programmer-på-maskinen">Kørende programmer på maskinen</h1>
+<p>Programmet kan også se hvilke programmer eller processer der kører på computeren. Dette bruger den blandt andet til at se hvilken browser eksamenanden anvender. Den eksamensansvarlige kan sortliste processer der ikke må køres på eksamenandens maskine. Hvis et sortlistet program kører på maskinen, bliver den eksamensansvarlige advaret.</p>
+<pre><code class="language-cs">private int _lastNumberOfRunningProcesses = 0;
+...
+protected override List&lt;DataPackage&gt; GetDataPackages()
+{
+  Process[] processes = Process.GetProcesses();
+  this._lastNumberOfRunningProcesses = ((IEnumerable&lt;Process&gt;) processes).Count&lt;Process&gt;();
+  string s = &quot;&quot;;
+  foreach (Process process in processes)
+  {
+    s = s + &quot;Id=&quot; + (object) process.Id + &quot;,Name =&quot; + process.ProcessName + &quot;,&quot;;
+    try
+    {
+      s = s + &quot;Description=&quot; + process.MainModule.FileVersionInfo.FileDescription + &quot;;&quot;;
+    }
+    catch (Exception ex)
+    {
+      if (ex.ToString() != &quot;&quot;)
+        s += &quot;Description=;&quot;;
+    }
+  }
+  return new List&lt;DataPackage&gt;()
+  {
+    new DataPackage(DataPackage.ColTypeEnum.Plist, new bool?(false), Encoding.UTF8.GetBytes(s), new DateTime?(DataPackageEnvelopeAwsReceiver.ServerTime), new long?((long) this.GetAndIncrementWorkSequence()))
+  };
+}
+</code></pre>
+<p>Den sætter alle processerne ind i en liste. Den tæller også antallet af processer og sætter dem ind i variablen <code>_lastNumberOfRunningProcesses</code>. Herefter kører den igennem alle processerne og skriver al informationen ind i variablen <code>s</code>.</p>
+<h1 id="virtuel-maskine-detektion">Virtuel maskine detektion</h1>
+<p>Programmet tjekker om det kører i en virtuel maskine. En virtuel maskine er et stykke software der emulerer en computer. Det vil sige at du kan have et separat styresystem kørende ved siden af et andet et. Denne beskyttelse er taget i brug fordi at en eksamenanden kan snyde hvis at eleven laver opgaven og kører DDP i den virtuelle maskine. Så kan DDP ikke overvåge elevens egentlige system, men kun den virtuelle maskine.</p>
+<pre><code class="language-cs">public bool AmIRunningInsideAVirtualMachine()
+{
+  bool isVm = false;
+  try
+  {
+    foreach (ManagementBaseObject managementBaseObject in new ManagementObjectSearcher(&quot;root\\CIMV2&quot;, &quot;SELECT * FROM Win32_BaseBoard&quot;).Get())
+      flag = managementBaseObject[&quot;Manufacturer&quot;].ToString().ToLower() == &quot;microsoft corporation&quot;.ToLower();
+    return isVm;
+  }
+  catch
+  {
+    return isVm;
+  }
+}
+</code></pre>
+<p>Her tjekker programmet om det kører i en virtuel maskine ved at tjekke bundkortets fabrikant. Hvis det er Microsoft Corporation er der stor chance for at programmet kører i en virtuel maskine.</p>
+<p>Programmet tjekker også om at der kører en virtual maskine på computeren. Det gør den ved at den har en liste af processer der er kendte virtuel maskiner og tjekker dem på en liste af nuværende kørende processer.</p>
+<pre><code class="language-cs">private static readonly List&lt;string&gt; _vmSubStrings = new List&lt;string&gt;
+  {
+    &quot;vmware&quot;,
+    &quot;virtualpc&quot;,
+    &quot;virtualbox&quot;
+  };
+</code></pre>
+<p>Her er listen af kendte virtuel maskine processer.</p>
+<pre><code class="language-cs">private bool IsVirtualMachineProcessRunning()
+  {
+    Process[] processes = Process.GetProcesses();
+    return processes.Any((Process p) =&gt;
+      p.ProcessName.ContainsOneOrMoreInList(VirtualMachineDetectionWorker._vmSubStrings));
+  }
+</code></pre>
+<p>Her tjekker den om en virtuel maskine kører ved at se om nogle af de processer der kører på computeren matcher en af de kendte virtuel maskine processer.</p>
+<h1 id="maskine-fingeraftryk">Maskine fingeraftryk</h1>
+<p>DDP laver et fingeraftryk af din maskine, som den kan bruge til at identificere din maskine. Den laver denne identifikation baseret på det hardware der er i din maskine, så den vil også kunne vide at det er dig selvom at du har geninstalleret Windows.</p>
+<h2 id="dpvexeconfig">DPV.exe.config<a class="anchor" href="#dpvexeconfig">#</a></h2>
+<p>Inde i DDP&rsquo;s konfigurationsfil finder man serverens url, deres api-kode og de workere der er aktiveret, samt workernes tidsinterval.</p>
+<pre><code class="language-xml">&lt;dpvSettings&gt;
+  &lt;timersConfig&gt;
+    &lt;timers&gt;
+      &lt;!--&lt;timer secondsBetweenWork=&quot;123&quot; workerToInstantiate=&quot;DpvClassLibrary.Workers.ClipboardTextWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null&quot;/&gt;--&gt;
+      &lt;!--&lt;timer secondsBetweenWork=&quot;51&quot; workerToInstantiate=&quot;DpvClassLibrary.Workers.KeyloggerWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null&quot;/&gt;--&gt;
+      &lt;timer secondsBetweenWork=&quot;61&quot; workerToInstantiate=&quot;DpvClassLibrary.Workers.NetworkTrafficWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null&quot; /&gt;
+      &lt;timer secondsBetweenWork=&quot;63&quot; workerToInstantiate=&quot;DpvClassLibrary.Workers.NetworkConfigRetrieverWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null&quot; /&gt;
+      &lt;timer secondsBetweenWork=&quot;61&quot; workerToInstantiate=&quot;DpvClassLibrary.Workers.RunningProcessesWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null&quot; /&gt;
+      &lt;timer secondsBetweenWork=&quot;30&quot; workerToInstantiate=&quot;DpvClassLibrary.Workers.ScreenshotWorker, DpvClassLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null&quot; /&gt;
+    &lt;/timers&gt;
+  &lt;/timersConfig&gt;
+&lt;/dpvSettings&gt;
+</code></pre>
+<p>De to timere sat op til udklipsloggeren og keyloggeren er begge udkommenteret, dette betyder at de ikke er taget i brug den version vi har fat i. <code>secondsBetweenWork</code> bestemmer hvor ofte den skal aktivere workeren.</p>
+<h1 id="server">Server</h1>
+<p>Serveren er en del af Amazon AWS hvilket er en cloud løsning Amazon stiller til rådighed. Dataen bliver sendt over &ldquo;https&rdquo; hvilket vil sige at dataen er krypteret, og vil derfor ikke kunne opsamles gennem et man-in-the-middle angreb fra hackere.</p>
+<h1 id="fremtidige-funktioner">Fremtidige funktioner</h1>
+<p>Vi fandt mere kode der tydede på at der i en fremtidig version ville blive logget endnu mere data. Det vi fandt var nogle værdier, som sendes sammen med dataen, sådan at serveren ved hvad der blev sendt.</p>
+<pre><code class="language-cs">public enum ColTypeEnum
+{
+  Hbeat = 1,
+  Netcf,
+  Sshot,
+  Vmdet,
+  Plist,
+  Clipb,
+  Klog,
+  Sites,
+  Actapp,
+  Usb,
+  Bttrf
+}
+</code></pre>
+<p>Her kan vi se nogle ting som der allerede er implementeret i programmet:</p>
+<ul>
+<li><code>Hbeat</code>: Heartbeat</li>
+<li><code>Netfc</code>: Netværkskonfiguration</li>
+<li><code>Sshot</code>: Skærmbillede</li>
+<li><code>Vmdet</code>: Virtuel maskine detektion</li>
+<li><code>Plist</code>: Processer kørende</li>
+<li><code>Clipb</code>: Udklipsholder</li>
+<li><code>Sites</code>: Sider besøgt</li>
+</ul>
+<p>Men her ser vi også flere uimplementerede funktioner, disse funktionnavne er tvetydelige, så deres funktion er ren spekulation:</p>
+<ul>
+<li><code>Actapp</code>: Aktiv windue</li>
+<li><code>Usb</code>: Isat usb enheder</li>
+</ul>
+<p>Den sidste (<code>Bttrf</code>) kan vi ikke tyde. Det bedste bud vi har er tilkoblede bluetooth enheder.</p>
+<h2 id="regler-og-love">Regler og love<a class="anchor" href="#regler-og-love">#</a></h2>
+<p>Fordi der er tale om sensitiv data, så er der selvfølgelig en lovgivning der skal følges. GDPR er den lovgivning der gælder når vi snakker om databehandling. Og det er artikel 6 stk. 1 der handler hvornår det er lovligt at behandle data.</p>
+<ol>
+<li>
+<p>Behandling er kun lovlig, hvis og i det omfang mindst ét af følgende forhold gør sig gældende:</p>
+<p>a) Den registrerede har givet samtykke til behandling af sine personoplysninger til et eller flere specifikke formål.</p>
+<p>b) Behandling er nødvendig af hensyn til opfyldelse af en kontrakt, som den registrerede er part i, eller af hensyn til gennemførelse af foranstaltninger, der træffes på den registreredes anmodning forud for indgåelse af en kontrakt.</p>
+<p>c) Behandling er nødvendig for at overholde en retlig forpligtelse, som påhviler den dataansvarlige.</p>
+<p>d) Behandling er nødvendig for at beskytte den registreredes eller en anden fysisk persons vitale interesser.</p>
+<p>e) Behandling er nødvendig af hensyn til udførelse af en opgave i samfundets interesse eller som henhører under offentlig myndighedsudøvelse, som den dataansvarlige har fået pålagt.</p>
+<p>f) Behandling er nødvendig for, at den dataansvarlige eller en tredjemand kan forfølge en legitim interesse, medmindre den registreredes interesser eller grundlæggende rettigheder og frihedsrettigheder, der kræver beskyttelse af personoplysninger, går forud herfor, navnlig hvis den registrerede er et barn.</p>
+<p>Første afsnit, litra f), gælder ikke for behandling, som offentlige myndigheder foretager som led i udførelsen af deres opgaver.</p>
+</li>
+</ol>
+<p>(Kilde: <a href="https://gdpr.dk/databeskyttelsesforordningen/kapitel-2-principper/artikel-6-lovlig-behandling/">gdpr.dk</a>)</p>
+<p>Det første man læser når ser artikel 6 stk. 1(a), hvor der står at det er okay hvis der er givet samtykke. Har man ikke givet samtykke så er det ulovligt, og det er nok dette de fleste folk tænker på når de siger at der er ulovligt. Men Undervisningsministeriet har hjemmel i forhold til stk. 1 (e) da man vil kunne argumentere for at det er i samfundets bedste interresse at mindske mængden af snyd.</p>
+<blockquote>
+<p>Ja, behandlingen har hjemmel i den myndighedsopgave, som er pålagt Styrelsen for Undervisning og Kvalitet såvel som uddannelsesinstitutionerne (jf. Databeskyttelsesforordningen (GDPR) artikel 6 stk. 1 (e)) i forhold til at håndhæve § 20 i ” Bekendtgørelse om prøver og eksamen i de almene og studieforberedende ungdoms- og voksenuddannelser” og i §§ 5-7 i ”Bekendtgørelse om visse regler om prøver og eksamen i de gymnasiale uddannelser”.</p>
+</blockquote>
+<p>(Kilde: <a href="https://uvm.dk/gymnasiale-uddannelser/proever-og-eksamen/netproever/den-digitale-proevevagt/spoergsmaal-og-svar?fbclid=IwAR3YNOq9UrCXZM24xDnRydV8RTYzfqoXFcJrLBUnyIMNNJOLJN1HZpbXr_I">Undervisningsministeriets spørgsmål og svar om prøvevagten</a>)</p>
+<h2 id="diskussion">Diskussion<a class="anchor" href="#diskussion">#</a></h2>
+<p>At mulighederne for at snyde bliver større og større i takt med at vi bliver mere og mere forbundet gennem internettet skal ikke glemmes. Og grundlaget for sådan et program er som sådan gode nok, men problemet ligger i udførslen. Vi som elever, og ikke mindst borgerer, burde ikke skulle installere et stykke spyware på vores private enhed. Dette er der mange der mener er en krænkelse af privatlivet.
+Problemet ligger i at for at softwaren ikke bliver blokeret af anti-virus software så bliver dette bibliotek de har skrevet, pludseligt det bedste spyware/virus bibliotek af bruge. Et andet problem ligger i at de har valgt at inkludere en keylogger i programmet. Deres metode gør at i det tilfælde at du logger ind på en side, så har undervisningsministeriet adgang til den konto. Hvis en hacker fandt vej ind til deres servere ville de pludselig have dit bruger-id og kode til nem-id f.eks.</p>
+<p>Undervisningsministeriet har lavet en FAQ med Danske Gymnasieelevers Sammenslutning, hvor de besvarer flere bekymringer. Her indrømmer de også at der er en keylogger i DDP, men at den ikke er aktiveret endnu. Deres plan med den er at den skal bruge til at tjekke op på det antal anslag der er skrevet i opgaven. De fortæller også at dataen der bliver gemt er krypteret på serveren, hvilket lyder til at være sandfærdigt eftersom at det bliver sendt afsted krypteret. De fortæller også at den ikke henter filer der ligger på din pc, hvilket passer med det vi har fundet i kildekoden.
+Efter FAQ&rsquo;en opdaterede de også programmet til ikke at tage screenshots før eksamenen begyndte.
+(<a href="https://www.facebook.com/notes/danske-gymnasieelevers-sammenslutning/hvad-er-den-digitale-pr%C3%B8vevagt-faq/10156886822478956/">Link til FAQ</a>)</p>
+<p>Sådan som keyloggeren er implementeret lige nu, så indsamler den alle tastetryk også dem der ikke vedrører opgaven. Hvis keyloggeren kun loggede tastestryk der blev brugt i Word eller Open-office, så ville denne sikkerheds risiko ikke længere være relevant. De har allerede implementeret kode der kan se processerne der køre, samt se hvilket vinduet der er aktivt. Så ville de også kunne bruge det data til at sammenligne antallet af anslag.</p>
+
+
+              
+          </article>
+          
+
+ <div class="pagination">
+  
+
+  
+</div>
+
+          
+          <footer class="post__footer">
+            
+
+
+<div class="social-icons">
+  
+     
+    
+      <a class="social-icons__link" title="Email"
+         href="mailto:c3lphie@protonmail.com"
+         target="_blank" rel="noopener">
+        <div class="social-icons__icon" style="background-image: url('https://c3lphie.com/svg/email.svg')"></div>
+      </a>
+    
+  
+     
+    
+      <a class="social-icons__link" title="GitHub"
+         href="https://github.com/c3lphie"
+         target="_blank" rel="noopener">
+        <div class="social-icons__icon" style="background-image: url('https://c3lphie.com/svg/github.svg')"></div>
+      </a>
+    
+  
+     
+    
+      <a class="social-icons__link" title="LinkedIn"
+         href="https://www.linkedin.com/in/simon-christensen-633057188/"
+         target="_blank" rel="noopener">
+        <div class="social-icons__icon" style="background-image: url('https://c3lphie.com/svg/linkedin.svg')"></div>
+      </a>
+    
+     
+</div>
+
+            <p>© 2020</p>
+          </footer>
+          </div>
+      </div>
+      
+    </div>
+    
+
+  </main>
+
+   
+
+  
+  <script src="/js/index.min.49e4d8a384357d9b445b87371863419937ede9fa77737522ffb633073aebfa44.js" integrity="sha256-SeTYo4Q1fZtEW4c3GGNBmTft6fp3c3Ui/7YzBzrr&#43;kQ=" crossorigin="anonymous"></script>
+  
+  
+  <script src="https://unpkg.com/prismjs@1.20.0/components/prism-core.min.js"></script>
+
+  
+  <script src="https://unpkg.com/prismjs@1.20.0/plugins/autoloader/prism-autoloader.min.js"
+    data-autoloader-path="https://unpkg.com/prismjs@1.20.0/components/"></script>
+
+  
+
+
+</body>
+
+</html>
