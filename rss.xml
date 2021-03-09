@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+<channel>
+<title><![CDATA[C3lphie blogs]]></title>
+<description><![CDATA[C3lphie blogs]]></description>
+<link>https://c3lphie.com</link>
+<lastBuildDate>Tue, 09 Mar 2021 17:50:40 +0100</lastBuildDate>
+<item>
+  <title><![CDATA[Welcome Stranger]]></title>
+  <description><![CDATA[
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org9411016">1. A short introduction</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org9411016" class="outline-2">
+<h2 id="org9411016"><span class="section-number-2">1</span> A short introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+First of all welcome.
+You're probably stumbling upon my humble little island, as one might call it, in the vast ocean called the internet!
+Now before you go all grammar nazi on my english punctuation, let it be known that it is my second language.
+And I therefore won't proof read these posts too much, because I don't wanna stress about it even more than I do in the first place.
+(ofc I'll correct the obvious ones of course)
+</p>
+
+<p>
+Enough about that, this is an introduction to my blog, and not my fear of being judged on my writing.
+So what should you expect to see here?
+Well as I'm a huge sucker for cyber security, more specifically hacking into stuff and breaking things (with permission ofc!).
+Most of my content will probably be write-ups from <a href="https://www.hackthebox.eu">HackTheBox</a>, <a href="https://www.tryhackme.com">TryHackMe</a> or ctf-competitions that I play in.
+(For those who don't know what a ctf is <a href="https://ctftime.org/ctf-wtf/">Click Here</a>)
+</p>
+
+<p>
+Other things you might encounter here would be small neat tricks or things to do with the terminal, or just generally on linux.
+Maybe if I feel like it I might post about cooking.
+I don't want to feel like I can't post certain things just because I decided this was security only.
+This I my blog, where I post about what I want, when I want.
+</p>
+
+<p>
+So sit back, relax, grab a hot cup of coffee and join me on this weird adventure I have started.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://c3lphie.com/tags.html">Tags</a>: <a href="https://c3lphie.com/tag-blog.html">blog</a> </div>]]></description>
+  <category><![CDATA[blog]]></category>
+  <link>https://c3lphie.com/2021-03-09-welcome-stranger.html</link>
+  <pubDate>Tue, 09 Mar 2021 17:18:00 +0100</pubDate>
+</item>
+</channel>
+</rss>

@@ -1,0 +1,23 @@
+#+title: Welcome Stranger
+#+date: <2021-03-09 17:18>
+#+filetags: blog
+
+* A short introduction
+First of all welcome.
+You're probably stumbling upon my humble little island, as one might call it, in the vast ocean called the internet!
+Now before you go all grammar nazi on my english punctuation, let it be known that it is my second language.
+And I therefore won't proof read these posts too much, because I don't wanna stress about it even more than I do in the first place.
+(ofc I'll correct the obvious ones of course)
+
+Enough about that, this is an introduction to my blog, and not my fear of being judged on my writing.
+So what should you expect to see here?
+Well as I'm a huge sucker for cyber security, more specifically hacking into stuff and breaking things (with permission ofc!).
+Most of my content will probably be write-ups from [[https://www.hackthebox.eu][HackTheBox]], [[https://www.tryhackme.com][TryHackMe]] or ctf-competitions that I play in.
+(For those who don't know what a ctf is [[https://ctftime.org/ctf-wtf/][Click Here]])
+
+Other things you might encounter here would be small neat tricks or things to do with the terminal, or just generally on linux.
+Maybe if I feel like it I might post about cooking.
+I don't want to feel like I can't post certain things just because I decided this was security only.
+This I my blog, where I post about what I want, when I want.
+
+So sit back, relax, grab a hot cup of coffee and join me on this weird adventure I have started.
