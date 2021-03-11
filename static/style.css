@@ -1,0 +1,99 @@
+:root {
+    --bg-color: #1d1f21;
+    --bg-alt-color: #282a2e;
+    --fg-color: #c5c8c6;
+    --fg-alt-color: #969896;
+    --red-color: #cc6666;
+    --orange-color: #de935f;
+    --yellow-color: #f0c674;
+    --green-color: #b5bd68;
+    --aqua-color: #8abeb7;
+    --blue-color: #81a2be;
+    --purple-color: #b294bb;
+}
+
+body{
+    background: var(--bg-color);
+    font-family: "Lucida Console", "Courier New", monospace;
+}
+p{
+    color: var(--fg-color);
+    text-align: justify
+}
+
+#copyright{
+    text-align: center;
+    color: var(--fg-color)
+}
+.header{
+    background-color: var(--bg-alt-color);
+    padding: 8px;
+}
+
+.header a, #archive a{
+    display: inline;
+    padding: 10px;
+    text-align: center;
+}
+#archive{
+    background-color: var(--bg-alt-color);
+    padding-bottom: 8px;
+}
+.taglist{
+    background-color: var(--bg-alt-color);
+    color: var(--fg-color);
+    padding: 8px;
+    margin: auto;
+}
+    
+.taglist a{
+    display: inline;
+    overflow: auto;
+}
+
+.header a:link, .header a:visited,.taglist a:link, .taglist a:visited, #archive a:link, #archive a:visited{
+    color: var(--blue-color);
+    text-decoration: none;
+}
+.header a:hover,.header a:focus, .header a:active{
+    color: var(--aqua-color);
+    text-decoration: none;
+}
+
+h1, h2{
+    color: var(--blue-color);
+}
+
+.post-date{
+    color: var(--green-color);
+}
+
+.post-title a:link, .post-title a:visited{
+    color: var(--blue-color);
+    text-decoration: none;
+}
+.post-title a:hover, .post-title a:focus, .post-title a:active{
+    color: var(--aqua-color);
+    text-decoration: none;
+}
+
+#text-table-of-contents a:link, #text-table-of-contents a:visited{
+    color: var(--yellow-color);
+}
+
+#text-table-of-contents a:hover, #text-table-of-contents a:focus, #text-table-of-contents a:active{
+    color: var(--orange-color);
+}
+.outline-2 a:link, .outline-2 a:visited{
+    color: var(--yellow-color);
+}
+
+.outline-2 a:hover, .outline-2 a:focus, .outline-2 a:active{
+    color: var(--orange-color);
+}
+
+ul{
+    list-style-type: none;
+    margin:0;
+    padding:0;
+}
