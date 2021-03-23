@@ -12,13 +12,28 @@
     --purple-color: #b294bb;
 }
 
+
 body{
     background: var(--bg-color);
-    font-family: "Lucida Console", "Courier New", monospace;
+    font-family: Hack, monospace;
+    margin: auto;
+    padding-left: 16.5%;
+    padding-right: 16.5%;
+    width: 66%;
 }
 p{
     color: var(--fg-color);
     text-align: justify
+}
+
+a:link, a:visited{
+    color: var(--blue-color);
+    text-decoration: none;
+}
+
+a:hover, a:active{
+    color: var(--aqua-color);
+    text-decoration: none;
 }
 
 #copyright{
@@ -35,6 +50,7 @@ p{
     padding: 10px;
     text-align: center;
 }
+
 #archive{
     background-color: var(--bg-alt-color);
     padding-bottom: 8px;
@@ -44,6 +60,7 @@ p{
     color: var(--fg-color);
     padding: 8px;
     margin: auto;
+    margin-top: 10px
 }
     
 .taglist a{
@@ -60,7 +77,7 @@ p{
     text-decoration: none;
 }
 
-h1, h2{
+h1, h2, h3, h4, h5, h6{
     color: var(--blue-color);
 }
 
@@ -96,4 +113,52 @@ ul{
     list-style-type: none;
     margin:0;
     padding:0;
+}
+
+.example, .src{
+    color: var(--fg-color);
+    background: var(--bg-alt-color);
+    padding: 10px;
+    max-width: 90%;
+    text-align: left;
+    margin: auto;
+    overflow: auto;
+}
+
+dd{
+    color: var(--fg-alt-color);
+    max-width: 80%;
+    text-align: justify;
+}
+
+dt{
+    color: var(--green-color);
+    font-weight: bold;
+    padding-left: 2%;
+}
+
+blockquote{
+    background: var(--bg-alt-color);
+    max-width: 90%;
+    margin: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-style: oblique;
+}
+
+.org-src-name{
+    color: var(--fg-color);
+    padding-left: 5%;
+    max-width: 90%;
+    margin: auto;
+}
+.org-src-name span{
+    color: var(--fg-alt-color);
+    padding-right: 10px;
+}
+
+code {
+    color: var(--yellow-color);
 }
