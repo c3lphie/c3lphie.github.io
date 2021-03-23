@@ -4,7 +4,7 @@
 <title><![CDATA[C3lphie blogs]]></title>
 <description><![CDATA[C3lphie blogs]]></description>
 <link>https://c3lphie.com</link>
-<lastBuildDate>Tue, 23 Mar 2021 21:01:04 +0100</lastBuildDate>
+<lastBuildDate>Tue, 23 Mar 2021 21:16:29 +0100</lastBuildDate>
 <item>
   <title><![CDATA[ROPemporium | ret2win]]></title>
   <description><![CDATA[
@@ -12,37 +12,37 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org8460fd1">1. Introduction</a>
+<li><a href="#orgf4bba9c">1. Introduction</a>
 <ul>
-<li><a href="#org1c6d171">1.1. Buffer overflows</a></li>
-<li><a href="#org2e5411f">1.2. Return Oriented Programming</a></li>
+<li><a href="#org76c0e46">1.1. Buffer overflows</a></li>
+<li><a href="#orgdb6bc48">1.2. Return Oriented Programming</a></li>
 </ul>
 </li>
-<li><a href="#org4db6836">2. Recon</a>
+<li><a href="#orgb6cdadc">2. Recon</a>
 <ul>
-<li><a href="#orgc85421b">2.1. File</a></li>
-<li><a href="#org57e8390">2.2. Checksec</a></li>
-<li><a href="#orgf9cc45b">2.3. Binary ninja</a>
+<li><a href="#org31ee3b1">2.1. File</a></li>
+<li><a href="#orged9c931">2.2. Checksec</a></li>
+<li><a href="#org53aab3f">2.3. Binary ninja</a>
 <ul>
-<li><a href="#orgd40d656">2.3.1. Main function</a></li>
-<li><a href="#org3da2103">2.3.2. pwnme function</a></li>
-<li><a href="#orgdd84b90">2.3.3. ret2win function</a></li>
+<li><a href="#org897f051">2.3.1. Main function</a></li>
+<li><a href="#orge40aa45">2.3.2. pwnme function</a></li>
+<li><a href="#orge505fd6">2.3.3. ret2win function</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#org5f9bde2">3. Exploit</a>
+<li><a href="#orgcdf84dc">3. Exploit</a>
 <ul>
-<li><a href="#orgf82c157">3.1. Useful addresses</a></li>
-<li><a href="#org3b7cee0">3.2. Code</a></li>
+<li><a href="#org8888b5a">3.1. Useful addresses</a></li>
+<li><a href="#orgacfa27d">3.2. Code</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </nav>
 
-<div id="outline-container-org8460fd1" class="outline-2">
-<h2 id="org8460fd1"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgf4bba9c" class="outline-2">
+<h2 id="orgf4bba9c"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome to this little write-up on the very first challenge from ROPemporium.
@@ -58,8 +58,8 @@ But before we begin this little eight-part adventure, let's take a closer look a
 </p>
 </div>
 
-<div id="outline-container-org1c6d171" class="outline-3">
-<h3 id="org1c6d171"><span class="section-number-3">1.1</span> Buffer overflows</h3>
+<div id="outline-container-org76c0e46" class="outline-3">
+<h3 id="org76c0e46"><span class="section-number-3">1.1</span> Buffer overflows</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 I know that I just said i would explain ROP, but before we get into that.
@@ -103,8 +103,8 @@ Eventually I'll create a series focused just on buffer overflows, but for now yo
 </div>
 </div>
 
-<div id="outline-container-org2e5411f" class="outline-3">
-<h3 id="org2e5411f"><span class="section-number-3">1.2</span> Return Oriented Programming</h3>
+<div id="outline-container-orgdb6bc48" class="outline-3">
+<h3 id="orgdb6bc48"><span class="section-number-3">1.2</span> Return Oriented Programming</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Again we look towards Wikipedia for more knowledge.
@@ -119,21 +119,21 @@ Return-oriented programming (ROP) is a computer security exploit technique that 
 </div>
 </div>
 
-<div id="outline-container-org4db6836" class="outline-2">
-<h2 id="org4db6836"><span class="section-number-2">2</span> Recon</h2>
+<div id="outline-container-orgb6cdadc" class="outline-2">
+<h2 id="orgb6cdadc"><span class="section-number-2">2</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Before anything is done you should always to some reconnaissance on your target.
 The more you know about the target, the easier it will be to model an attack towards it.
 </p>
 </div>
-<div id="outline-container-orgc85421b" class="outline-3">
-<h3 id="orgc85421b"><span class="section-number-3">2.1</span> File</h3>
+<div id="outline-container-org31ee3b1" class="outline-3">
+<h3 id="org31ee3b1"><span class="section-number-3">2.1</span> File</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the <code>file</code> command on the the binary.
 </p>
-<pre class="example" id="org9565950">
+<pre class="example" id="org950bb7e">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;file ret2win
 ret2win: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=19abc0b3bb228157af55b8e16af7316d54ab0597, not stripped
@@ -149,14 +149,14 @@ It also means symbols are left in so we can see function names.
 </div>
 </div>
 
-<div id="outline-container-org57e8390" class="outline-3">
-<h3 id="org57e8390"><span class="section-number-3">2.2</span> Checksec</h3>
+<div id="outline-container-orged9c931" class="outline-3">
+<h3 id="orged9c931"><span class="section-number-3">2.2</span> Checksec</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 After looking at what <code>file</code> gives outputs, the next nifty tool we should use is: <code>checksec</code>.
 It is a part of <code>pwntools</code>, <a href="https://github.com/Gallopsled/pwntools">a CTF framework and exploit development library</a>, and can tell us about what kind of security measures that the binary is compiled with.
 </p>
-<pre class="example" id="org4ab42c7">
+<pre class="example" id="org0637486">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;checksec ret2win
 [*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win'
@@ -188,8 +188,8 @@ Which you can read more about <a href="https://www.section.io/engineering-educat
 </div>
 </div>
 
-<div id="outline-container-orgf9cc45b" class="outline-3">
-<h3 id="orgf9cc45b"><span class="section-number-3">2.3</span> Binary ninja</h3>
+<div id="outline-container-org53aab3f" class="outline-3">
+<h3 id="org53aab3f"><span class="section-number-3">2.3</span> Binary ninja</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 Now there are probably a ton of other tools that you could use to find other things about the binary.
@@ -201,8 +201,8 @@ I have chosen <a href="https://binary.ninja/">Binary ninja</a> for reverse engin
 But use what-ever you're most comfortable in, and if you don't have the economy to buy a piece of software, then there are opensource software available like <a href="https://cutter.re/">cutter</a> or <a href="https://ghidra-sre.org/">ghidra</a>(if you're not afraid of the NSA ;)).
 </p>
 </div>
-<div id="outline-container-orgd40d656" class="outline-4">
-<h4 id="orgd40d656"><span class="section-number-4">2.3.1</span> Main function</h4>
+<div id="outline-container-org897f051" class="outline-4">
+<h4 id="org897f051"><span class="section-number-4">2.3.1</span> Main function</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 1: </span>main function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
@@ -233,8 +233,8 @@ So let's take a look at that instead shall we?
 </p>
 </div>
 </div>
-<div id="outline-container-org3da2103" class="outline-4">
-<h4 id="org3da2103"><span class="section-number-4">2.3.2</span> pwnme function</h4>
+<div id="outline-container-orge40aa45" class="outline-4">
+<h4 id="orge40aa45"><span class="section-number-4">2.3.2</span> pwnme function</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 2: </span>pwnme function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
@@ -303,8 +303,8 @@ This means that we can overflow the buffer and control the stack.
 </div>
 
 
-<div id="outline-container-orgdd84b90" class="outline-4">
-<h4 id="orgdd84b90"><span class="section-number-4">2.3.3</span> ret2win function</h4>
+<div id="outline-container-orge505fd6" class="outline-4">
+<h4 id="orge505fd6"><span class="section-number-4">2.3.3</span> ret2win function</h4>
 <div class="outline-text-4" id="text-2-3-3">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 5: </span>ret2win function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
@@ -330,23 +330,23 @@ And as we can see it just executes <code>/bin/cat flag.txt</code> on the system.
 </div>
 </div>
 
-<div id="outline-container-org5f9bde2" class="outline-2">
-<h2 id="org5f9bde2"><span class="section-number-2">3</span> Exploit</h2>
+<div id="outline-container-orgcdf84dc" class="outline-2">
+<h2 id="orgcdf84dc"><span class="section-number-2">3</span> Exploit</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 No PIE which means we can just grab the addresses from binary ninja
 </p>
 </div>
-<div id="outline-container-orgf82c157" class="outline-3">
-<h3 id="orgf82c157"><span class="section-number-3">3.1</span> Useful addresses</h3>
+<div id="outline-container-org8888b5a" class="outline-3">
+<h3 id="org8888b5a"><span class="section-number-3">3.1</span> Useful addresses</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 ret2win: 0x400756
 </p>
 </div>
 </div>
-<div id="outline-container-org3b7cee0" class="outline-3">
-<h3 id="org3b7cee0"><span class="section-number-3">3.2</span> Code</h3>
+<div id="outline-container-orgacfa27d" class="outline-3">
+<h3 id="orgacfa27d"><span class="section-number-3">3.2</span> Code</h3>
 <div class="outline-text-3" id="text-3-2">
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #b5bd68;">from</span> pwn <span style="color: #b5bd68;">import</span> *
@@ -388,13 +388,13 @@ proc.interactive<span style="color: #c5c8c6;">()</span>
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgf40b4b4">1. Whoami</a></li>
-<li><a href="#org353216b">2. WTF is this</a></li>
+<li><a href="#org2015676">1. Whoami</a></li>
+<li><a href="#org7a1636d">2. WTF is this</a></li>
 </ul>
 </div>
 </nav>
-<div id="outline-container-orgf40b4b4" class="outline-2">
-<h2 id="orgf40b4b4"><span class="section-number-2">1</span> Whoami</h2>
+<div id="outline-container-org2015676" class="outline-2">
+<h2 id="org2015676"><span class="section-number-2">1</span> Whoami</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 I'm a 21, soon to be 22, year old danish tech nerd that loves hacking, programming and all things tech!
@@ -404,8 +404,8 @@ I don't plan being too personal on this blog, so enough about who I am.
 </p>
 </div>
 </div>
-<div id="outline-container-org353216b" class="outline-2">
-<h2 id="org353216b"><span class="section-number-2">2</span> WTF is this</h2>
+<div id="outline-container-org7a1636d" class="outline-2">
+<h2 id="org7a1636d"><span class="section-number-2">2</span> WTF is this</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 That is a great question!
@@ -424,7 +424,7 @@ You can subscribe to the RSS feed here: <a href="https://c3lhie.com/rss.xml">RSS
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://c3lphie.com/tags.html">Tags</a>: <a href="https://c3lphie.com/tag-blog.html">blog</a> </div>]]></description>
+<div class="taglist"><a href="https://c3lphie.com/tags.html">Tags</a>: <a href="https://c3lphie.com/tag-blog.html">blog</a> ]]></description>
   <category><![CDATA[blog]]></category>
   <link>https://c3lphie.com/2021-03-11-hello-world.html</link>
   <pubDate>Thu, 11 Mar 2021 15:37:00 +0100</pubDate>
