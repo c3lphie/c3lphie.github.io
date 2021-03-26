@@ -24,43 +24,43 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgc8a2d96">1. Introduction</a>
+<li><a href="#orga40b13c">1. Introduction</a>
 <ul>
-<li><a href="#org80e069c">1.1. Buffer overflows</a></li>
-<li><a href="#org6046051">1.2. Return Oriented Programming</a></li>
+<li><a href="#org75c57de">1.1. Buffer overflows</a></li>
+<li><a href="#orgd4a91a4">1.2. Return Oriented Programming</a></li>
 </ul>
 </li>
-<li><a href="#orgdc20544">2. Recon</a>
+<li><a href="#org41b39fb">2. Recon</a>
 <ul>
-<li><a href="#org3ed156b">2.1. File</a></li>
-<li><a href="#org243a723">2.2. Checksec</a></li>
-<li><a href="#orgcf8c991">2.3. Binary ninja</a>
+<li><a href="#org28a3d53">2.1. File</a></li>
+<li><a href="#org94297ff">2.2. Checksec</a></li>
+<li><a href="#org37d1ef8">2.3. Reversing the binary</a>
 <ul>
-<li><a href="#org65794d9">2.3.1. Main function</a></li>
-<li><a href="#orge4d8775">2.3.2. pwnme function</a></li>
-<li><a href="#org188f433">2.3.3. ret2win function</a></li>
+<li><a href="#org06bf8eb">2.3.1. Main function</a></li>
+<li><a href="#orgfc7c538">2.3.2. pwnme function</a></li>
+<li><a href="#org9391c56">2.3.3. ret2win function</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#org2a12023">3. Exploit</a>
+<li><a href="#org4ce3e55">3. Exploit</a>
 <ul>
-<li><a href="#org6aa8d33">3.1. Overflowing the buffer</a>
+<li><a href="#org982a5d5">3.1. Overflowing the buffer</a>
 <ul>
-<li><a href="#org569bfe3">3.1.1. Cyclic patterns</a></li>
+<li><a href="#orgab8e577">3.1.1. Cyclic patterns</a></li>
 </ul>
 </li>
-<li><a href="#org1b1cf65">3.2. Useful addresses</a></li>
-<li><a href="#orgce46fcf">3.3. Final exploit</a></li>
+<li><a href="#orge6bda5c">3.2. Useful addresses</a></li>
+<li><a href="#org2cf4568">3.3. Final exploit</a></li>
 </ul>
 </li>
-<li><a href="#org1694f92">4. Conclusion</a></li>
+<li><a href="#orgaea2021">4. Conclusion</a></li>
 </ul>
 </div>
 </nav>
 
-<div id="outline-container-orgc8a2d96" class="outline-2">
-<h2 id="orgc8a2d96"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orga40b13c" class="outline-2">
+<h2 id="orga40b13c"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome to this little write-up on the very first challenge from ROPemporium.
@@ -76,8 +76,8 @@ But before we begin this little eight-part adventure, let's take a closer look a
 </p>
 </div>
 
-<div id="outline-container-org80e069c" class="outline-3">
-<h3 id="org80e069c"><span class="section-number-3">1.1</span> Buffer overflows</h3>
+<div id="outline-container-org75c57de" class="outline-3">
+<h3 id="org75c57de"><span class="section-number-3">1.1</span> Buffer overflows</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 I know that I just said i would explain ROP, but before we get into that.
@@ -122,8 +122,8 @@ Eventually I'll create a series focused just on buffer overflows, but for now yo
 </div>
 </div>
 
-<div id="outline-container-org6046051" class="outline-3">
-<h3 id="org6046051"><span class="section-number-3">1.2</span> Return Oriented Programming</h3>
+<div id="outline-container-orgd4a91a4" class="outline-3">
+<h3 id="orgd4a91a4"><span class="section-number-3">1.2</span> Return Oriented Programming</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Again we look towards Wikipedia for more knowledge.
@@ -151,21 +151,21 @@ That is exactly what this challenge is about.
 </div>
 </div>
 
-<div id="outline-container-orgdc20544" class="outline-2">
-<h2 id="orgdc20544"><span class="section-number-2">2</span> Recon</h2>
+<div id="outline-container-org41b39fb" class="outline-2">
+<h2 id="org41b39fb"><span class="section-number-2">2</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Before anything is done you should always to some reconnaissance on your target.
 The more you know about the target, the easier it will be to model an attack towards it.
 </p>
 </div>
-<div id="outline-container-org3ed156b" class="outline-3">
-<h3 id="org3ed156b"><span class="section-number-3">2.1</span> File</h3>
+<div id="outline-container-org28a3d53" class="outline-3">
+<h3 id="org28a3d53"><span class="section-number-3">2.1</span> File</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the <code>file</code> command on the the binary.
 </p>
-<pre class="example" id="org6d23eb7">
+<pre class="example" id="org017e437">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;file ret2win
 ret2win: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=19abc0b3bb228157af55b8e16af7316d54ab0597, not stripped
@@ -181,14 +181,14 @@ It also means symbols are left in so we can see function names.
 </div>
 </div>
 
-<div id="outline-container-org243a723" class="outline-3">
-<h3 id="org243a723"><span class="section-number-3">2.2</span> Checksec</h3>
+<div id="outline-container-org94297ff" class="outline-3">
+<h3 id="org94297ff"><span class="section-number-3">2.2</span> Checksec</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 After looking at what <code>file</code> gives outputs, the next nifty tool we should use is: <code>checksec</code>.
 It is a part of <code>pwntools</code>, <a href="https://github.com/Gallopsled/pwntools">a CTF framework and exploit development library</a>, and can tell us about what kind of security measures that the binary is compiled with.
 </p>
-<pre class="example" id="orga051aae">
+<pre class="example" id="org5e3340b">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;checksec ret2win
 [*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win'
@@ -220,8 +220,8 @@ Which you can read more about <a href="https://www.section.io/engineering-educat
 </div>
 </div>
 
-<div id="outline-container-orgcf8c991" class="outline-3">
-<h3 id="orgcf8c991"><span class="section-number-3">2.3</span> Binary ninja</h3>
+<div id="outline-container-org37d1ef8" class="outline-3">
+<h3 id="org37d1ef8"><span class="section-number-3">2.3</span> Reversing the binary</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 Now there are probably a ton of other tools that you could use to find other things about the binary.
@@ -233,8 +233,8 @@ I have chosen <a href="https://binary.ninja/">Binary ninja</a> for reverse engin
 But use what-ever you're most comfortable in, and if you don't have the economy to buy a piece of software, then there are opensource software available like <a href="https://cutter.re/">cutter</a> or <a href="https://ghidra-sre.org/">ghidra</a>(if you're not afraid of the NSA ;)).
 </p>
 </div>
-<div id="outline-container-org65794d9" class="outline-4">
-<h4 id="org65794d9"><span class="section-number-4">2.3.1</span> Main function</h4>
+<div id="outline-container-org06bf8eb" class="outline-4">
+<h4 id="org06bf8eb"><span class="section-number-4">2.3.1</span> Main function</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 1: </span>main function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
@@ -265,8 +265,8 @@ So let's take a look at that instead shall we?
 </p>
 </div>
 </div>
-<div id="outline-container-orge4d8775" class="outline-4">
-<h4 id="orge4d8775"><span class="section-number-4">2.3.2</span> pwnme function</h4>
+<div id="outline-container-orgfc7c538" class="outline-4">
+<h4 id="orgfc7c538"><span class="section-number-4">2.3.2</span> pwnme function</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 2: </span>pwnme function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
@@ -350,8 +350,8 @@ If we somehow managed to overwrite <code>__return_addr</code> we potentially hav
 </div>
 </div>
 
-<div id="outline-container-org188f433" class="outline-4">
-<h4 id="org188f433"><span class="section-number-4">2.3.3</span> ret2win function</h4>
+<div id="outline-container-org9391c56" class="outline-4">
+<h4 id="org9391c56"><span class="section-number-4">2.3.3</span> ret2win function</h4>
 <div class="outline-text-4" id="text-2-3-3">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 5: </span>ret2win function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
@@ -377,8 +377,8 @@ And as we can see it just executes <code>/bin/cat flag.txt</code> on the system.
 </div>
 </div>
 
-<div id="outline-container-org2a12023" class="outline-2">
-<h2 id="org2a12023"><span class="section-number-2">3</span> Exploit</h2>
+<div id="outline-container-org4ce3e55" class="outline-2">
+<h2 id="org4ce3e55"><span class="section-number-2">3</span> Exploit</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 When writing the actual exploit I used 3 tools: <code>emacs</code>, a <code>terminal</code> and <code>gdb</code>.
@@ -386,8 +386,8 @@ The first one being my text editor ;), the second is pretty self explanatory and
 </p>
 </div>
 
-<div id="outline-container-org6aa8d33" class="outline-3">
-<h3 id="org6aa8d33"><span class="section-number-3">3.1</span> Overflowing the buffer</h3>
+<div id="outline-container-org982a5d5" class="outline-3">
+<h3 id="org982a5d5"><span class="section-number-3">3.1</span> Overflowing the buffer</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 As I wrote earlier we need to do a bufferoverflow.
@@ -398,7 +398,7 @@ But the <code>read</code> function can read up to 56 bytes into the buffer.
 <p>
 So lets see what happen if we put a bunch of data into the buffer!
 </p>
-<pre class="example" id="orgc9e9494">
+<pre class="example" id="org0c197f0">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;./ret2win
 ret2win by ROP Emporium
@@ -426,7 +426,7 @@ And a couple of instructions before the <code>read</code> call.
 <p>
 If we look at the registers before <code>read</code>.
 </p>
-<pre class="example" id="orgcfada30">
+<pre class="example" id="orga37d155">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0x2
@@ -462,7 +462,7 @@ When returning from a function, we will land where <code>$rbp</code> points to.
 <p>
 So lets crash this program!
 </p>
-<pre class="example" id="org01f8023">
+<pre class="example" id="orgd0d4faa">
 gef➤  run
 Starting program: /home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win
 ret2win by ROP Emporium
@@ -482,7 +482,7 @@ Don't mind the gef➤ prompt, that is just a gdb extension which makes exploit d
 <p>
 Below you can see the content of the registers after the crash.
 </p>
-<pre class="example" id="orgfd34359">
+<pre class="example" id="org0f0bcb4">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -515,8 +515,8 @@ To do this we need to figure out how much data to insert before address.
 </p>
 </div>
 
-<div id="outline-container-org569bfe3" class="outline-4">
-<h4 id="org569bfe3"><span class="section-number-4">3.1.1</span> Cyclic patterns</h4>
+<div id="outline-container-orgab8e577" class="outline-4">
+<h4 id="orgab8e577"><span class="section-number-4">3.1.1</span> Cyclic patterns</h4>
 <div class="outline-text-4" id="text-3-1-1">
 <p>
 Using cyclic patterns, we can relatively easy find the padding length of our payload.
@@ -550,7 +550,7 @@ Which we can use to find our padding length
 <p>
 The above script also attaches gdb, so we can find the pattern in the registers and use that in our exploit.
 </p>
-<pre class="example" id="org018596f">
+<pre class="example" id="org086ebf5">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -604,7 +604,7 @@ If we concentrate on the payload, we see that we first calculate our padding.
 After that we add <code>0xdeadbeecafebabe</code> to ensure that we indeed do have control over <code>$rbp</code>.
 </p>
 
-<pre class="example" id="org0d0ab64">
+<pre class="example" id="org3bcd10a">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -634,8 +634,8 @@ And if I could point your attention to <code>$rbp</code>, you should see that we
 </div>
 </div>
 
-<div id="outline-container-org1b1cf65" class="outline-3">
-<h3 id="org1b1cf65"><span class="section-number-3">3.2</span> Useful addresses</h3>
+<div id="outline-container-orge6bda5c" class="outline-3">
+<h3 id="orge6bda5c"><span class="section-number-3">3.2</span> Useful addresses</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 Since we already know which function we need to execute, and the binary doesn't have PIE enabled, I went ahead and grabbed the address from Binary Ninja.
@@ -664,8 +664,8 @@ Since we already know which function we need to execute, and the binary doesn't 
 </div>
 </div>
 
-<div id="outline-container-orgce46fcf" class="outline-3">
-<h3 id="orgce46fcf"><span class="section-number-3">3.3</span> Final exploit</h3>
+<div id="outline-container-org2cf4568" class="outline-3">
+<h3 id="org2cf4568"><span class="section-number-3">3.3</span> Final exploit</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 So know that we have control over the base pointer let's make it point towards <code>ret2win</code> and finish this challenge.
@@ -696,7 +696,7 @@ proc.interactive<span style="color: #c5c8c6;">()</span>
 As you can see instead of <code>0xdeadbeefcafebabe</code> we just use <code>ret2win_addr</code>.
 And if we run the script:
 </p>
-<pre class="example" id="orgfa6df4a">
+<pre class="example" id="org0c25e81">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './ret2win': pid 170719
@@ -712,8 +712,8 @@ $
 </div>
 </div>
 
-<div id="outline-container-org1694f92" class="outline-2">
-<h2 id="org1694f92"><span class="section-number-2">4</span> Conclusion</h2>
+<div id="outline-container-orgaea2021" class="outline-2">
+<h2 id="orgaea2021"><span class="section-number-2">4</span> Conclusion</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 First of all thank you for reading my first proper write-up.
