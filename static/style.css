@@ -162,3 +162,19 @@ blockquote{
 code {
     color: var(--yellow-color);
 }
+
+th, td {
+    color: var(--purple-color);
+    border-bottom: 1px solid;
+    border-bottom-color: var(--fg-alt-color);
+    padding: 10px;
+}
+
+th {
+    background: var(--bg-alt-color);
+}
+
+table {
+    width: 50%;
+    margin: auto;
+}
