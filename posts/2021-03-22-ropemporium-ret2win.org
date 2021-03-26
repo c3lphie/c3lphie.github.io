@@ -90,7 +90,7 @@ The architecture this binary was compiled for was ~amd64-64-little~, let's split
 ~-little~ tells us that is for a little endian system.
 Which you can read more about [[https://www.section.io/engineering-education/what-is-little-endian-and-big-endian/][here]].
 
-** Binary ninja
+** Reversing the binary
 Now there are probably a ton of other tools that you could use to find other things about the binary.
 But at this point I know enough about the target for now.
 
