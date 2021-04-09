@@ -26,6 +26,13 @@ p{
     text-align: justify
 }
 
+img{
+    display: block;
+    margin-left:  auto;
+    margin-right: auto;
+    width: 90%;
+}
+
 a:link, a:visited{
     color: var(--blue-color);
     text-decoration: none;
@@ -125,17 +132,23 @@ ul{
     overflow: auto;
 }
 
-dd{
+dd, li{
     color: var(--fg-alt-color);
     max-width: 80%;
     text-align: justify;
 }
 
-dt{
+::marker, dt{
     color: var(--green-color);
     font-weight: bold;
     padding-left: 2%;
 }
+
+/* ul li::marker { */
+/*     display:  list-item; */
+/*     content: "-"; */
+/*     list-style-position: inside; */
+/* } */
 
 blockquote{
     background: var(--bg-alt-color);
@@ -148,13 +161,13 @@ blockquote{
     font-style: oblique;
 }
 
-.org-src-name{
+.org-src-name, caption, figcaption{
     color: var(--fg-color);
     padding-left: 5%;
     max-width: 90%;
     margin: auto;
 }
-.org-src-name span{
+.org-src-name span, caption span, figcaption span{
     color: var(--fg-alt-color);
     padding-right: 10px;
 }
@@ -175,6 +188,6 @@ th {
 }
 
 table {
-    width: 50%;
+    width: 90%;
     margin: auto;
 }
