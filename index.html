@@ -1,44 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<link rel="alternate"
-      type="application/rss+xml"
-      href="https://c3lphie.com/rss.xml"
-      title="RSS feed for https://c3lphie.com">
-<title>C3lphie blogs</title>
-<meta name="author" content="c3lphie">
-<meta name="referrer" content="no-referrer">
-<link href="static/style.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css">
-<link rel="icon" href="static/favicon.ico"></head>
+<!-- 2021-08-07 Sat 17:48 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C3lphie's blog</title>
+<meta name="generator" content="Org mode">
+<link rel="stylesheet" type="text/css" href="static/style.css" />
+<script type="text/javascript">
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+<!--/*--><![CDATA[/*><!--*/
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+    /*]]>*///-->
+// @license-end
+</script>
+</head>
 <body>
-<div id="preamble" class="status"><div class="header">
-<a href="https://c3lphie.com">Home</a>
-<a href="https://c3lphie.com/archive.html">Other posts</a>
-<a href="https://github.com/c3lphie">Github</a>
-</div></div>
 <div id="content">
-<h1> Welcome to my humble little place on the internet </h1>
-<h2 class="post-title"><a href="https://c3lphie.com/2021-03-28-ropemporium-split.html">ROPemporium | Split</a></h2><div class="post-date">28 Mar 2021</div><p>
-Welcome to my write-up for the second challenge on <a href="https://ropemporium.com">ROPemporium</a>, called <code>split</code>.
-This challenge is almost the same as the previous challenge, <code>ret2win</code> which I've covered in this post <a href="https://c3lphie.com/2021-03-22-ropemporium-ret2win.html">ROPemporium | ret2win</a>, but adds a little twist to increase the diffyculty.
-</p><a href="https://c3lphie.com/2021-03-28-ropemporium-split.html">(...)</a>
-<div class="taglist"><a href="https://c3lphie.com/tags.html">Tags</a>: <a href="https://c3lphie.com/tag-ropemporium.html">ROPemporium</a> <a href="https://c3lphie.com/tag-overflow.html">overflow</a> <a href="https://c3lphie.com/tag-ropgadget.html">ropgadget</a> <a href="https://c3lphie.com/tag-write-up.html">write-up</a> <a href="https://c3lphie.com/tag-exploitation.html">exploitation</a> </div><h2 class="post-title"><a href="https://c3lphie.com/2021-03-22-ropemporium-ret2win.html">ROPemporium | ret2win</a></h2><div class="post-date">22 Mar 2021</div><p>
-Welcome to this little write-up on the very first challenge from <a href="https://ropemporium.com">ROPemporium</a>.
-</p><a href="https://c3lphie.com/2021-03-22-ropemporium-ret2win.html">(...)</a>
-<div class="taglist"><a href="https://c3lphie.com/tags.html">Tags</a>: <a href="https://c3lphie.com/tag-ropemporium.html">ROPemporium</a> <a href="https://c3lphie.com/tag-overflow.html">overflow</a> <a href="https://c3lphie.com/tag-write-up.html">write-up</a> <a href="https://c3lphie.com/tag-exploitation.html">exploitation</a> </div><h2 class="post-title"><a href="https://c3lphie.com/2021-03-11-hello-world.html">Hello world</a></h2><div class="post-date">11 Mar 2021</div><p>
-I'm a 21, soon to be 22, year old danish tech nerd that loves hacking, programming and all things tech!
-I study computer engineering, and plan on specializing in the security field.
-I don't have any certifications yet, but I do have the PTSv4 course from eLearnsecurity which i just need to finish.
-I don't plan being too personal on this blog, so enough about who I am.
-</p><a href="https://c3lphie.com/2021-03-11-hello-world.html">(...)</a>
-<div class="taglist"><a href="https://c3lphie.com/tags.html">Tags</a>: <a href="https://c3lphie.com/tag-blog.html">blog</a> </div><div id="archive">
-<a href="https://c3lphie.com/archive.html">Other posts</a>
+<header>
+<h1 class="title">C3lphie's blog</h1>
+</header><style>
+  header {
+  text-align: center;
+  positon: fixed;
+  margin-top: 0px;
+  padding: 1px;
+  background-color: var(--bg-alt-color);
+  }
+  li{
+  max-width: 95%;
+  padding-left: 2.5%;
+  }
+  #avatar {
+    position: absolute;
+    width: 72.5px;
+    top: 5px;
+    left: 20%;
+  }
+  @media (pointer:coarse){
+    #avatar {
+    display: none;
+    }
+  }
+</style>
+<img src="static/c3lphie.png" id="avatar"></img>
+
+<div id="outline-container-org4520d59" class="outline-2">
+<h2 id="org4520d59">Blog posts</h2>
+<div class="outline-text-2" id="text-org4520d59">
+<ul class="org-ul">
+<li><span class="timestamp">[27-07-2021]</span> <a href="2021-07-27-htb-love.html">HTB | Love</a><br>
+Write-up for the easy hackthebox machine called love. It's a windows machine, which hosts a voting system that has an authorized insecure file upload vulnerability. There is also an exposed staging area that is vulnerable to ssrf, which leads to gaining the admin credentials for the voting system.<br></li>
+<li><span class="timestamp">[28-03-2021]</span> <a href="2021-03-28-ropemporium-split.html">ROPemporium | Split</a><br>
+The second challenge on ROPemporium where we are introduced to the concept of ROP gadgets.<br></li>
+<li><span class="timestamp">[22-03-2021]</span> <a href="2021-03-22-ropemporium-ret2win.html">ROPemporium | ret2win</a><br>
+The first challenge on ROPemporium, which gives an introduction to the concept of return oriented programming.<br></li>
+<li><span class="timestamp">[11-03-2021]</span> <a href="2021-03-11-hello-world.html">Hello world</a><br>
+Introduction post about me and this blog.<br></li>
+</ul>
 </div>
 </div>
-<div id="postamble" class="status"><div id="copyright">
-<small>&copy; Copyright 2021, C3lphie</small>
-</div></div>
+
+<div id="outline-container-org1f87a3d" class="outline-2">
+<h2 id="org1f87a3d">Other links</h2>
+<div class="outline-text-2" id="text-org1f87a3d">
+<ul class="org-ul">
+<li><a href="https://github.com/c3lphie">Github Account</a><br></li>
+<li><a href="https://app.hackthebox.eu/profile/110432">HackTheBox Account</a><br></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<div class="footer">
+    <div id="copyright">
+        <small>&copy; Copyright 2021, C3lphie</small>
+    </div>
+</div>
+</div>
 </body>
 </html>

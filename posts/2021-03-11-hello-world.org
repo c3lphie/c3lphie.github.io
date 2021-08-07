@@ -1,5 +1,7 @@
+#+setupfile: ../templates/level-0.org
 #+title: Hello world
 #+date: <2021-03-11 15:37>
+#+summary: Introduction post about me and this blog.
 #+filetags: blog
 * Whoami
 I'm a 21, soon to be 22, year old danish tech nerd that loves hacking, programming and all things tech!

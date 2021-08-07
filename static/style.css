@@ -12,6 +12,9 @@
     --purple-color: #b294bb;
 }
 
+.timestamp{
+    color: var(--green-color);
+}
 
 body{
     background: var(--bg-color);
@@ -43,9 +46,15 @@ a:hover, a:active{
     text-decoration: none;
 }
 
-#copyright{
+
+.footer{
     text-align: center;
-    color: var(--fg-color)
+    color: var(--fg-color);
+    position: relative;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: block;
 }
 .header{
     background-color: var(--bg-alt-color);

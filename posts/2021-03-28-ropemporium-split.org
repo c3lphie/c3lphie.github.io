@@ -1,11 +1,12 @@
+#+setupfile: ../templates/level-0.org
 #+title: ROPemporium | Split
 #+date: <2021-03-28 12:56>
-#+description: 
-#+filetags: ROPemporium overflow ropgadget write-up exploitation
+#+summary: The second challenge on ROPemporium where we are introduced to the concept of ROP gadgets.
+#+filetags: :ROPemporium:overflow:ropgadget:write-up:exploitation:
 
 * DONE Introduction
 Welcome to my write-up for the second challenge on [[https://ropemporium.com][ROPemporium]], called ~split~.
-This challenge is almost the same as the previous challenge, ~ret2win~ which I've covered in this post [[https://c3lphie.com/2021-03-22-ropemporium-ret2win.html][ROPemporium | ret2win]], but adds a little twist to increase the diffyculty.
+This challenge is almost the same as the previous challenge, ~ret2win~ which I've covered in this post [[https://c3lphie.com/2021-03-22-ropemporium-ret2win.html][ROPemporium | ret2win]], but adds a little twist to increase the difficulty.
 
 But before I get to that, there is some prerequisite knowledge that is necessary to understand before we can complete this challenge.
 We need to understand what registers are, and how we can use them to our advantage.
