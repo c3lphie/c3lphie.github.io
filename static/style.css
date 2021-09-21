@@ -16,6 +16,14 @@
     color: var(--green-color);
 }
 
+.tag{
+    float: right;
+    color: var(--purple-color);
+}
+.tag:before, .tag:after {
+    content: ":";
+}
+
 body{
     background: var(--bg-color);
     font-family: Hack, monospace;
