@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2021-09-21 Tue 15:41 -->
+<!-- 2021-10-04 Mon 22:02 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROPemporium | ret2win</title>
 <meta name="generator" content="Org mode">
-<meta name="author" content="Simon Søndergaard Christensen">
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script type="text/javascript">
 // @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
@@ -186,7 +185,7 @@ The more you know about the target, the easier it will be to model an attack tow
 <p>
 The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the <code>file</code> command on the the binary.
 </p>
-<pre class="example" id="org18b9ce4">
+<pre class="example" id="orgc09e260">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;file ret2win
 ret2win: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=19abc0b3bb228157af55b8e16af7316d54ab0597, not stripped
@@ -209,7 +208,7 @@ It also means symbols are left in so we can see function names.
 After looking at what <code>file</code> gives outputs, the next nifty tool we should use is: <code>checksec</code>.
 It is a part of <code>pwntools</code>, <a href="https://github.com/Gallopsled/pwntools">a CTF framework and exploit development library</a>, and can tell us about what kind of security measures that the binary is compiled with.
 </p>
-<pre class="example" id="orga708c1c">
+<pre class="example" id="org9a5a38e">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;checksec ret2win
 [*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win'
@@ -419,7 +418,7 @@ But the <code>read</code> function can read up to 56 bytes into the buffer.
 <p>
 So lets see what happen if we put a bunch of data into the buffer!
 </p>
-<pre class="example" id="org42701c7">
+<pre class="example" id="org72d6e39">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;./ret2win
 ret2win by ROP Emporium
@@ -447,7 +446,7 @@ And a couple of instructions before the <code>read</code> call.
 <p>
 If we look at the registers before <code>read</code>.
 </p>
-<pre class="example" id="org14af5d0">
+<pre class="example" id="org024bf4e">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0x2
@@ -483,7 +482,7 @@ When returning from a function, we will land where <code>$rbp</code> points to.
 <p>
 So lets crash this program!
 </p>
-<pre class="example" id="org9ec90f9">
+<pre class="example" id="org9c03b16">
 gef➤  run
 Starting program: /home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win
 ret2win by ROP Emporium
@@ -503,7 +502,7 @@ Don't mind the gef➤ prompt, that is just a gdb extension which makes exploit d
 <p>
 Below you can see the content of the registers after the crash.
 </p>
-<pre class="example" id="orgc5fa584">
+<pre class="example" id="org1c3e054">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -571,7 +570,7 @@ Which we can use to find our padding length
 <p>
 The above script also attaches gdb, so we can find the pattern in the registers and use that in our exploit.
 </p>
-<pre class="example" id="orgea3a117">
+<pre class="example" id="org76c916f">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -625,7 +624,7 @@ If we concentrate on the payload, we see that we first calculate our padding.
 After that we add <code>0xdeadbeecafebabe</code> to ensure that we indeed do have control over <code>$rbp</code>.
 </p>
 
-<pre class="example" id="org047a9fd">
+<pre class="example" id="org838e6e5">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -717,7 +716,7 @@ proc.interactive()
 As you can see instead of <code>0xdeadbeefcafebabe</code> we just use <code>ret2win_addr</code>.
 And if we run the script:
 </p>
-<pre class="example" id="orge308741">
+<pre class="example" id="org90abe95">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './ret2win': pid 170719
