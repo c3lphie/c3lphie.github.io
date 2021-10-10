@@ -128,7 +128,7 @@ Because they might give us some usefull information, or clues as to how this cha
 
 This is also often the case in CTF challenges.
 #+caption: Strings with memory addresses found in Binary Ninja
-[[file:~/repositories/blog/static/pics/split_strings.png]]
+[[file:assets/split_strings.png]]
 
 And if I could point your attention to the last string, you'll see the ~/bin/cat flag.txt~, which we will need for our exploit.
 
@@ -198,7 +198,7 @@ Instead of just focusing on the HLIL version of the function, like last time, th
 And as you can see in both examples I already cleaned them up a bit, just so it's easier to understand.
 
 #+caption: Side-by-side comparison. Left disass, right HLIL
-[[file:~/repositories/blog/static/pics/split_pwn_disass_hlil.png]]
+[[file:assets/split_pwn_disass_hlil.png]]
 Here is a side by side comparison between the to versions.
 First we create the variabel ~buffer~, which is then initialized with ~memset~.
 The three ~mov~ instructions above ~memset~ prepares the arguments by moving the values into the corresponding registers.
