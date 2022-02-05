@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2021-10-11 Mon 13:25 -->
+<!-- 2022-02-05 Sat 19:58 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROPemporium | Split</title>
@@ -347,7 +347,7 @@ The most important thing in this case is that we learn about ROP so recon is min
 The output here is exactly the same as last post, except for the name of the binary.
 But I'll keep it here for good measure.
 </p>
-<pre class="example" id="org1efaecb">
+<pre class="example" id="orgc8ab71d">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;file split
 split: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=98755e64e1d0c1bff48fccae1dca9ee9e3c609e2, not stripped
@@ -360,7 +360,7 @@ split: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, 
 <p>
 Same situation for <code>checksec</code>'s output, if you need a refresher read my <a href="https://c3lphie.com/2021-03-22-ropemporium-ret2win.html">last post</a>.
 </p>
-<pre class="example" id="org7ea401c">
+<pre class="example" id="org838f006">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;checksec split
 [*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/split/split'
@@ -392,7 +392,7 @@ Because they might give us some usefull information, or clues as to how this cha
 This is also often the case in CTF challenges.
 </p>
 
-<figure id="org274b194">
+<figure id="orgda239bf">
 <img src="assets/split_strings.png" alt="split_strings.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Strings with memory addresses found in Binary Ninja</figcaption>
@@ -605,7 +605,7 @@ proc.interactive()
 <p>
 Which calls <code>/bin/ls</code>:
 </p>
-<pre class="example" id="org74ecb1d">
+<pre class="example" id="org1955587">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './split': pid 384887
@@ -632,7 +632,7 @@ As mentioned earlier I'll be using <code>ropper</code> to find the ROP gadgets n
 In fact we only need one gadget for this ROP chain since we already have a <code>system</code> call.
 So what we need to do is find a gadget that can <code>pop</code> an address into a register from the stack.
 </p>
-<pre class="example" id="orgbe4668a">
+<pre class="example" id="org29ed823">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;ropper -f split --console
 [INFO] Load gadgets from cache
@@ -645,7 +645,7 @@ So what we need to do is find a gadget that can <code>pop</code> an address into
 I use the <code>--console</code> flag because it loads the entire binary once, which makes multiple searches faster.
 Now all we gotta do is search for gadgets starting with a <code>pop</code> instruction.
 </p>
-<pre class="example" id="org6fa0c87">
+<pre class="example" id="org83d166a">
 (split/ELF/x86_64)&gt; search pop
 [INFO] Searching for gadgets: pop
 
@@ -813,7 +813,7 @@ proc.interactive()
 <p>
 If we run it in the terminal we get the following flag:
 </p>
-<pre class="example" id="org5b3eb69">
+<pre class="example" id="orgeec88d3">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './split': pid 389100
