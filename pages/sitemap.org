@@ -1,0 +1,48 @@
+#+TITLE: All posts
+#+setupfile: ../templates/level-0.org
+#+begin_export html
+<style>
+  header {
+  text-align: center;
+  positon: fixed;
+  margin-top: 0px;
+  padding: 1px;
+  background-color: var(--bg-alt-color);
+  }
+  li{
+  max-width: 95%;
+  padding-left: 2.5%;
+  }
+  #avatar {
+    position: absolute;
+    width: 72.5px;
+    top: 5px;
+    left: 20%;
+  }
+  @media (pointer:coarse){
+    #avatar {
+    display: none;
+    }
+  }
+</style>
+<a href='/'><img src='static/c3lphie.png' id='avatar'></img></a>
+#+end_export
+
+- {{{timestamp(07-03-2022)}}} [[file:2022-03-07-a-little-transparency.org][A little transparency]]
+  Small update post
+- {{{timestamp(19-01-2022)}}} [[file:2022-01-16-htb-horizontall.org][HTB | Horizontall]]
+  This was an easy linux box, with a website running a vulnerable API framework. After exploiting this and getting a user shell, we can install an ssh backdoor that makes it possible to elevate privileges on a local service by creating a tunnel.
+- {{{timestamp(02-10-2021)}}} [[file:2021-10-02-htb-cap.org][HTB | CAP]]
+  Easy linux box with some pcap analysis, and abuse of python capabilities
+- {{{timestamp(29-08-2021)}}} [[file:2021-09-20-pbjarctf.org][PBjar ctf 2021]]
+  Write-up about the different challenges I completed in the PBjar ctf.
+- {{{timestamp(29-08-2021)}}} [[file:2021-08-29-htb-knife.org][HTB | knife]]
+  Write-up for knife! The easy linux box from Hack the Box. It has a webserver running a php version containing a backdoor.
+- {{{timestamp(27-07-2021)}}} [[file:2021-07-27-htb-love.org][HTB | Love]]
+  Write-up for the easy hackthebox machine called love. It's a windows machine, which hosts a voting system that has an authorized insecure file upload vulnerability. There is also an exposed staging area that is vulnerable to ssrf, which leads to gaining the admin credentials for the voting system.
+- {{{timestamp(28-03-2021)}}} [[file:2021-03-28-ropemporium-split.org][ROPemporium | Split]]
+  The second challenge on ROPemporium where we are introduced to the concept of ROP gadgets.
+- {{{timestamp(22-03-2021)}}} [[file:2021-03-22-ropemporium-ret2win.org][ROPemporium | ret2win]]
+  The first challenge on ROPemporium, which gives an introduction to the concept of return oriented programming.
+- {{{timestamp(11-03-2021)}}} [[file:2021-03-11-hello-world.org][Hello world]]
+  Introduction post about me and this blog.

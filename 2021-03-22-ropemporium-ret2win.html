@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-02-05 Sat 19:58 -->
+<!-- 2022-03-23 Wed 21:01 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROPemporium | ret2win</title>
@@ -83,16 +83,16 @@
 <h2 id="org4264c28"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-Welcome to this little write-up on the very first challenge from <a href="https://ropemporium.com">ROPemporium</a>.
+Welcome to this little write-up on the very first challenge from <a href="https://ropemporium.com">ROPemporium</a>.<br>
 </p>
 
 <p>
-ROPemporium is a platform for learning the mystic art of return-oriented programming(ROP).
-This is accomplished by going through 8 challenges in total, with increasing diffyculty.
+ROPemporium is a platform for learning the mystic art of return-oriented programming(ROP).<br>
+This is accomplished by going through 8 challenges in total, with increasing diffyculty.<br>
 </p>
 
 <p>
-But before we begin this little eight-part adventure, let's take a closer look at what ROP is for a thing.
+But before we begin this little eight-part adventure, let's take a closer look at what ROP is for a thing.<br>
 </p>
 </div>
 
@@ -100,44 +100,44 @@ But before we begin this little eight-part adventure, let's take a closer look a
 <h3 id="org377adee"><span class="section-number-3">1.1</span> Buffer overflows</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
-I know that I just said i would explain ROP, but before we get into that.
-Let us quickly brushup on what a buffer overflow is.
+I know that I just said i would explain ROP, but before we get into that.<br>
+Let us quickly brushup on what a buffer overflow is.<br>
 </p>
 
 <p>
-According to the very first paragraph on <a href="https://en.wikipedia.org/wiki/Buffer_overflow">wikipedia</a>:
+According to the very first paragraph on <a href="https://en.wikipedia.org/wiki/Buffer_overflow">wikipedia</a>:<br>
 </p>
 <blockquote>
 <p>
-In information security and programming, a buffer overflow, or buffer overrun, is an anomaly where a program, while writing data to a buffer, overruns the buffer's boundary and overwrites adjacent memory locations.
+In information security and programming, a buffer overflow, or buffer overrun, is an anomaly where a program, while writing data to a buffer, overruns the buffer's boundary and overwrites adjacent memory locations.<br>
 </p>
 </blockquote>
 
 <p>
-So buffer overflows happens when it is possible to put more data into a variable thereby overwriting other memory adresses.
+So buffer overflows happens when it is possible to put more data into a variable thereby overwriting other memory adresses.<br>
 </p>
 
 <p>
-But why is this dangerous??
+But why is this dangerous??<br>
 </p>
 
 <p>
-Because we can manipulate the content in the different registers.
-And through this execute abitriary code.
+Because we can manipulate the content in the different registers.<br>
+And through this execute abitriary code.<br>
 </p>
 
 <p>
-Again this was a veeeery short overview, if you want to read more about buffer overflows, and I recommend that you do, here is a list of resources on the subject:
+Again this was a veeeery short overview, if you want to read more about buffer overflows, and I recommend that you do, here is a list of resources on the subject:<br>
 </p>
 <dl class="org-dl">
-<dt><a href="https://blog.rapid7.com/2019/02/19/stack-based-buffer-overflow-attacks-what-you-need-to-know/">Rapid7 - Stack-Based</a></dt><dd>Explained with Examples</dd>
-<dt><a href="https://0xrick.github.io/">0xrick</a></dt><dd>Look at his basic binary series</dd>
-<dt><a href="https://github.com/Tzaoh/pwning">Tzaoh's pwning list</a></dt><dd>Huge list of resources on all kinds of exploitation</dd>
-<dt><a href="https://pwn.college/">pwn.college</a></dt><dd>A free and opensource exploitation course</dd>
+<dt><a href="https://blog.rapid7.com/2019/02/19/stack-based-buffer-overflow-attacks-what-you-need-to-know/">Rapid7 - Stack-Based</a></dt><dd>Explained with Examples<br></dd>
+<dt><a href="https://0xrick.github.io/">0xrick</a></dt><dd>Look at his basic binary series<br></dd>
+<dt><a href="https://github.com/Tzaoh/pwning">Tzaoh's pwning list</a></dt><dd>Huge list of resources on all kinds of exploitation<br></dd>
+<dt><a href="https://pwn.college/">pwn.college</a></dt><dd>A free and opensource exploitation course<br></dd>
 </dl>
 
 <p>
-Eventually I'll create a series focused just on buffer overflows, but for now you'll have to make do.
+Eventually I'll create a series focused just on buffer overflows, but for now you'll have to make do.<br>
 </p>
 </div>
 </div>
@@ -146,26 +146,26 @@ Eventually I'll create a series focused just on buffer overflows, but for now yo
 <h3 id="org2536e2b"><span class="section-number-3">1.2</span> Return Oriented Programming</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
-Again we look towards Wikipedia for more knowledge.
-The first paragraph on <a href="https://en.wikipedia.org/wiki/Return-oriented_programming">Wikipedia</a>:
+Again we look towards Wikipedia for more knowledge.<br>
+The first paragraph on <a href="https://en.wikipedia.org/wiki/Return-oriented_programming">Wikipedia</a>:<br>
 </p>
 <blockquote>
 <p>
-Return-oriented programming (ROP) is a computer security exploit technique that allows an attacker to execute code in the presence of security defenses such as executable space protection and code signing.
+Return-oriented programming (ROP) is a computer security exploit technique that allows an attacker to execute code in the presence of security defenses such as executable space protection and code signing.<br>
 </p>
 </blockquote>
 
 <p>
-The basic principle for ROP is that we can control which function we return to when we land on a <code>ret</code> instruction.
-There is also the topic of gadgets, but I'll explain that in the <code>split</code> write-up.
+The basic principle for ROP is that we can control which function we return to when we land on a <code>ret</code> instruction.<br>
+There is also the topic of gadgets, but I'll explain that in the <code>split</code> write-up.<br>
 </p>
 
 <p>
-But how does one control which the software will return to?
+But how does one control which the software will return to?<br>
 </p>
 
 <p>
-That is exactly what this challenge is about.
+That is exactly what this challenge is about.<br>
 </p>
 </div>
 </div>
@@ -175,28 +175,28 @@ That is exactly what this challenge is about.
 <h2 id="org54faab2"><span class="section-number-2">2</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
-Before anything is done you should always to some reconnaissance on your target.
-The more you know about the target, the easier it will be to model an attack towards it.
+Before anything is done you should always to some reconnaissance on your target.<br>
+The more you know about the target, the easier it will be to model an attack towards it.<br>
 </p>
 </div>
 <div id="outline-container-orgcd95e17" class="outline-3">
 <h3 id="orgcd95e17"><span class="section-number-3">2.1</span> File</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
-The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the <code>file</code> command on the the binary.
+The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the <code>file</code> command on the the binary.<br>
 </p>
-<pre class="example" id="org124bd5e">
+<pre class="example" id="orgd2dff47">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;file ret2win
 ret2win: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=19abc0b3bb228157af55b8e16af7316d54ab0597, not stripped
 </pre>
 <p>
-What this tells us is that the binary <code>ret2win</code> is a 64-bit ELF file.
+What this tells us is that the binary <code>ret2win</code> is a 64-bit ELF file.<br>
 </p>
 
 <p>
-It is not stripped, which means that if there is any debugging information in the code, we should be able to see it.
-It also means symbols are left in so we can see function names.
+It is not stripped, which means that if there is any debugging information in the code, we should be able to see it.<br>
+It also means symbols are left in so we can see function names.<br>
 </p>
 </div>
 </div>
@@ -205,10 +205,10 @@ It also means symbols are left in so we can see function names.
 <h3 id="org0390491"><span class="section-number-3">2.2</span> Checksec</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
-After looking at what <code>file</code> gives outputs, the next nifty tool we should use is: <code>checksec</code>.
-It is a part of <code>pwntools</code>, <a href="https://github.com/Gallopsled/pwntools">a CTF framework and exploit development library</a>, and can tell us about what kind of security measures that the binary is compiled with.
+After looking at what <code>file</code> gives outputs, the next nifty tool we should use is: <code>checksec</code>.<br>
+It is a part of <code>pwntools</code>, <a href="https://github.com/Gallopsled/pwntools">a CTF framework and exploit development library</a>, and can tell us about what kind of security measures that the binary is compiled with.<br>
 </p>
-<pre class="example" id="orgdfdce68">
+<pre class="example" id="org21517b1">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;checksec ret2win
 [*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win'
@@ -219,23 +219,23 @@ It is a part of <code>pwntools</code>, <a href="https://github.com/Gallopsled/pw
     PIE:      No PIE (0x400000)
 </pre>
 <p>
-Here we see that there is basically no security measures put in place&#x2026; Which one would expect on the very first challenge.
-But what is it that we see here?
+Here we see that there is basically no security measures put in place&#x2026; Which one would expect on the very first challenge.<br>
+But what is it that we see here?<br>
 </p>
 
 <dl class="org-dl">
-<dt>Arch</dt><dd>This is the Architecture for which the binary was compiled for. In this case we see that it is <code>amd64-64-little</code> I'll break this down further in a minute.</dd>
-<dt>RELRO</dt><dd>A security measure which makes some binary sections read-only. Partial RELRO means basically nothing for us. Full RELRO is a lot more secure, but I'll tackle this when I encounter it.</dd>
-<dt>Stack</dt><dd>This tells us if there are any canaries compiled into the binary. Canaries are a security measure that protect from stack smashing attacks&#x2026; Like what we're doing here. Not that they can't be handled</dd>
-<dt>NX</dt><dd>A technology which splits the areas of memory up so that data can't be executed. This is the security measure we bypass using ROP</dd>
-<dt>PIE</dt><dd>If this was enabled, the binary would have been loaded randomly into memory making it harder to exploit. But this is not something we need to worry about.</dd>
+<dt>Arch</dt><dd>This is the Architecture for which the binary was compiled for. In this case we see that it is <code>amd64-64-little</code> I'll break this down further in a minute.<br></dd>
+<dt>RELRO</dt><dd>A security measure which makes some binary sections read-only. Partial RELRO means basically nothing for us. Full RELRO is a lot more secure, but I'll tackle this when I encounter it.<br></dd>
+<dt>Stack</dt><dd>This tells us if there are any canaries compiled into the binary. Canaries are a security measure that protect from stack smashing attacks&#x2026; Like what we're doing here. Not that they can't be handled<br></dd>
+<dt>NX</dt><dd>A technology which splits the areas of memory up so that data can't be executed. This is the security measure we bypass using ROP<br></dd>
+<dt>PIE</dt><dd>If this was enabled, the binary would have been loaded randomly into memory making it harder to exploit. But this is not something we need to worry about.<br></dd>
 </dl>
 
 <p>
-The architecture this binary was compiled for was <code>amd64-64-little</code>, let's split this up into two.
-<code>amd64-64</code> means that it's for a 64 bit system.
-<code>-little</code> tells us that is for a little endian system.
-Which you can read more about <a href="https://www.section.io/engineering-education/what-is-little-endian-and-big-endian/">here</a>.
+The architecture this binary was compiled for was <code>amd64-64-little</code>, let's split this up into two.<br>
+<code>amd64-64</code> means that it's for a 64 bit system.<br>
+<code>-little</code> tells us that is for a little endian system.<br>
+Which you can read more about <a href="https://www.section.io/engineering-education/what-is-little-endian-and-big-endian/">here</a>.<br>
 </p>
 </div>
 </div>
@@ -244,13 +244,13 @@ Which you can read more about <a href="https://www.section.io/engineering-educat
 <h3 id="org92e710a"><span class="section-number-3">2.3</span> Reversing the binary</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
-Now there are probably a ton of other tools that you could use to find other things about the binary.
-But at this point I know enough about the target for now.
+Now there are probably a ton of other tools that you could use to find other things about the binary.<br>
+But at this point I know enough about the target for now.<br>
 </p>
 
 <p>
-I have chosen <a href="https://binary.ninja/">Binary ninja</a> for reverse engineering software.
-But use what-ever you're most comfortable in, and if you don't have the economy to buy a piece of software, then there are opensource software available like <a href="https://cutter.re/">cutter</a> or <a href="https://ghidra-sre.org/">ghidra</a>(if you're not afraid of the NSA ;)).
+I have chosen <a href="https://binary.ninja/">Binary ninja</a> for reverse engineering software.<br>
+But use what-ever you're most comfortable in, and if you don't have the economy to buy a piece of software, then there are opensource software available like <a href="https://cutter.re/">cutter</a> or <a href="https://ghidra-sre.org/">ghidra</a>(if you're not afraid of the NSA ;)).<br>
 </p>
 </div>
 <div id="outline-container-org0a16da9" class="outline-4">
@@ -279,9 +279,9 @@ retn     {__return_addr}
 </pre>
 </div>
 <p>
-Here we see the main function disassembled, there isn't anything interesting to see.
-What we want is the function pwnme, which is called on line 14.
-So let's take a look at that instead shall we?
+Here we see the main function disassembled, there isn't anything interesting to see.<br>
+What we want is the function pwnme, which is called on line 14.<br>
+So let's take a look at that instead shall we?<br>
 </p>
 </div>
 </div>
@@ -320,8 +320,8 @@ retn     {__return_addr}
 </div>
 
 <p>
-Since this is the function, which should be pwned, lets take a closer look using binary ninjas HLIL.
-I know I shouldn't rely on it, but I'm still learning so yeah.
+Since this is the function, which should be pwned, lets take a closer look using binary ninjas HLIL.<br>
+I know I shouldn't rely on it, but I'm still learning so yeah.<br>
 </p>
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 3: </span>pwnme function HLIL</label><pre class="src src-c">void var_28
@@ -336,7 +336,7 @@ return puts(str: "Thank you!")
 </div>
 
 <p>
-Let's clean it up a bit for easier understanding:
+Let's clean it up a bit for easier understanding:<br>
 </p>
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 4: </span>pwnme function HLIL with var names</label><pre class="src src-c">void buffer
@@ -351,13 +351,13 @@ return puts(str: "Thank you!")
 </div>
 
 <p>
-As we can see we have a buffer with the size 32 bytes, but the read call accepts up to 56 bytes.
-This means that we can overflow the buffer and control the stack.
-But how should we control the stack?
+As we can see we have a buffer with the size 32 bytes, but the read call accepts up to 56 bytes.<br>
+This means that we can overflow the buffer and control the stack.<br>
+But how should we control the stack?<br>
 </p>
 
 <p>
-Well if you look at the last two lines of the disassembly version of <code>pwnme</code>
+Well if you look at the last two lines of the disassembly version of <code>pwnme</code><br>
 </p>
 <div class="org-src-container">
 <pre class="src src-asm">leave    {__saved_rbp}
@@ -365,7 +365,7 @@ retn     {__return_addr}
 </pre>
 </div>
 <p>
-If we somehow managed to overwrite <code>__return_addr</code> we potentially have the ability to make arbitrary code calls.
+If we somehow managed to overwrite <code>__return_addr</code> we potentially have the ability to make arbitrary code calls.<br>
 </p>
 </div>
 </div>
@@ -386,11 +386,11 @@ retn     {__return_addr}
 </pre>
 </div>
 <p>
-This is the function we must aim the <code>ret</code> instruction towards in the <code>pwnme</code> function
+This is the function we must aim the <code>ret</code> instruction towards in the <code>pwnme</code> function<br>
 </p>
 
 <p>
-And as we can see it just executes <code>/bin/cat flag.txt</code> on the system.
+And as we can see it just executes <code>/bin/cat flag.txt</code> on the system.<br>
 </p>
 </div>
 </div>
@@ -401,8 +401,8 @@ And as we can see it just executes <code>/bin/cat flag.txt</code> on the system.
 <h2 id="org0a675f9"><span class="section-number-2">3</span> Exploit</h2>
 <div class="outline-text-2" id="text-3">
 <p>
-When writing the actual exploit I used 3 tools: <code>emacs</code>, a <code>terminal</code> and <code>gdb</code>.
-The first one being my text editor ;), the second is pretty self explanatory and the last is Gnu Debugger.
+When writing the actual exploit I used 3 tools: <code>emacs</code>, a <code>terminal</code> and <code>gdb</code>.<br>
+The first one being my text editor ;), the second is pretty self explanatory and the last is Gnu Debugger.<br>
 </p>
 </div>
 
@@ -410,15 +410,15 @@ The first one being my text editor ;), the second is pretty self explanatory and
 <h3 id="org6da0245"><span class="section-number-3">3.1</span> Overflowing the buffer</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
-As I wrote earlier we need to do a bufferoverflow.
-We know that from Binary Ninja that we have an input buffer that is 32 bytes long.
-But the <code>read</code> function can read up to 56 bytes into the buffer.
+As I wrote earlier we need to do a bufferoverflow.<br>
+We know that from Binary Ninja that we have an input buffer that is 32 bytes long.<br>
+But the <code>read</code> function can read up to 56 bytes into the buffer.<br>
 </p>
 
 <p>
-So lets see what happen if we put a bunch of data into the buffer!
+So lets see what happen if we put a bunch of data into the buffer!<br>
 </p>
-<pre class="example" id="orgca1a029">
+<pre class="example" id="org43aa0b9">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;./ret2win
 ret2win by ROP Emporium
@@ -433,20 +433,20 @@ Thank you!
 zsh: segmentation fault (core dumped)  ./ret2win
 </pre>
 <p>
-And we crashed!
-But why?
+And we crashed!<br>
+But why?<br>
 </p>
 
 <p>
-If we try again, but run <code>ret2win</code> with <code>gdb</code> attached we can see what happens to the registers.
-I have set a break point on the <code>leave</code> instruction just before the <code>ret</code> instruction.
-And a couple of instructions before the <code>read</code> call.
+If we try again, but run <code>ret2win</code> with <code>gdb</code> attached we can see what happens to the registers.<br>
+I have set a break point on the <code>leave</code> instruction just before the <code>ret</code> instruction.<br>
+And a couple of instructions before the <code>read</code> call.<br>
 </p>
 
 <p>
-If we look at the registers before <code>read</code>.
+If we look at the registers before <code>read</code>.<br>
 </p>
-<pre class="example" id="org8fd6a03">
+<pre class="example" id="org03b667a">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0x2
@@ -470,19 +470,19 @@ $eflags: [zero carry parity adjust sign trap INTERRUPT direction overflow resume
 $cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
 </pre>
 <p>
-The two registers we are interested in are <code>$rsp</code> and <code>$rbp</code>.
+The two registers we are interested in are <code>$rsp</code> and <code>$rbp</code>.<br>
 </p>
 
 <p>
-<code>$rsp</code> is the stack pointer, it points to addresses in the stack where the buffer is stored.
-<code>$rbp</code> is the base pointer, it points to the memory address which is the "base" for the function.
-When returning from a function, we will land where <code>$rbp</code> points to.
+<code>$rsp</code> is the stack pointer, it points to addresses in the stack where the buffer is stored.<br>
+<code>$rbp</code> is the base pointer, it points to the memory address which is the "base" for the function.<br>
+When returning from a function, we will land where <code>$rbp</code> points to.<br>
 </p>
 
 <p>
-So lets crash this program!
+So lets crash this program!<br>
 </p>
-<pre class="example" id="org80874b3">
+<pre class="example" id="org25940ce">
 gef➤  run
 Starting program: /home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win
 ret2win by ROP Emporium
@@ -495,14 +495,14 @@ You there, may I have your input please? And don't worry about null bytes, we're
 &gt; AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 </pre>
 <p>
-Here I just run it in GDB, and wrote a bunch of A's before hitting enter.
-Don't mind the gef➤ prompt, that is just a gdb extension which makes exploit development easier.
+Here I just run it in GDB, and wrote a bunch of A's before hitting enter.<br>
+Don't mind the gef➤ prompt, that is just a gdb extension which makes exploit development easier.<br>
 </p>
 
 <p>
-Below you can see the content of the registers after the crash.
+Below you can see the content of the registers after the crash.<br>
 </p>
-<pre class="example" id="orgd795d2b">
+<pre class="example" id="orgb571114">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -526,12 +526,12 @@ $eflags: [ZERO carry PARITY adjust sign trap INTERRUPT direction overflow resume
 $cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
 </pre>
 <p>
-The hexadecimal value for A is 0x41 when ascii encoded.
-And as you can see we managed to overwrite <code>$rbp</code>, so now we just need to control <code>$rbp</code> to point to the <code>ret2win</code> function.
+The hexadecimal value for A is 0x41 when ascii encoded.<br>
+And as you can see we managed to overwrite <code>$rbp</code>, so now we just need to control <code>$rbp</code> to point to the <code>ret2win</code> function.<br>
 </p>
 
 <p>
-To do this we need to figure out how much data to insert before address.
+To do this we need to figure out how much data to insert before address.<br>
 </p>
 </div>
 
@@ -539,7 +539,7 @@ To do this we need to figure out how much data to insert before address.
 <h4 id="org5017396"><span class="section-number-4">3.1.1</span> Cyclic patterns</h4>
 <div class="outline-text-4" id="text-3-1-1">
 <p>
-Using cyclic patterns, we can relatively easy find the padding length of our payload.
+Using cyclic patterns, we can relatively easy find the padding length of our payload.<br>
 </p>
 
 <div class="org-src-container">
@@ -563,14 +563,14 @@ proc.interactive()
 </div>
 
 <p>
-Here I used the <code>cyclic</code> function, from pwntools, to generate a 56 character long <a href="https://en.wikipedia.org/wiki/De_Bruijn_sequence">de Bruijn sequence</a>.
-Which we can use to find our padding length
+Here I used the <code>cyclic</code> function, from pwntools, to generate a 56 character long <a href="https://en.wikipedia.org/wiki/De_Bruijn_sequence">de Bruijn sequence</a>.<br>
+Which we can use to find our padding length<br>
 </p>
 
 <p>
-The above script also attaches gdb, so we can find the pattern in the registers and use that in our exploit.
+The above script also attaches gdb, so we can find the pattern in the registers and use that in our exploit.<br>
 </p>
-<pre class="example" id="orgcdcd7c2">
+<pre class="example" id="org5022640">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -595,8 +595,8 @@ $cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
 </pre>
 
 <p>
-And as you can see <code>$rbp</code> has some sort of weird string.
-If we use the function <code>cyclic_find</code> in conjunction with <code>cyclic</code> we can find the padding for the exploit.
+And as you can see <code>$rbp</code> has some sort of weird string.<br>
+If we use the function <code>cyclic_find</code> in conjunction with <code>cyclic</code> we can find the padding for the exploit.<br>
 </p>
 
 <div class="org-src-container">
@@ -620,11 +620,11 @@ proc.interactive()
 </pre>
 </div>
 <p>
-If we concentrate on the payload, we see that we first calculate our padding.
-After that we add <code>0xdeadbeecafebabe</code> to ensure that we indeed do have control over <code>$rbp</code>.
+If we concentrate on the payload, we see that we first calculate our padding.<br>
+After that we add <code>0xdeadbeecafebabe</code> to ensure that we indeed do have control over <code>$rbp</code>.<br>
 </p>
 
-<pre class="example" id="org929cc27">
+<pre class="example" id="org76a7e33">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -648,7 +648,7 @@ $eflags: [ZERO carry PARITY adjust sign trap INTERRUPT direction overflow resume
 $cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
 </pre>
 <p>
-And if I could point your attention to <code>$rbp</code>, you should see that we have indeed control over the base pointer.
+And if I could point your attention to <code>$rbp</code>, you should see that we have indeed control over the base pointer.<br>
 </p>
 </div>
 </div>
@@ -658,7 +658,7 @@ And if I could point your attention to <code>$rbp</code>, you should see that we
 <h3 id="org27a1a57"><span class="section-number-3">3.2</span> Useful addresses</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
-Since we already know which function we need to execute, and the binary doesn't have PIE enabled, I went ahead and grabbed the address from Binary Ninja.
+Since we already know which function we need to execute, and the binary doesn't have PIE enabled, I went ahead and grabbed the address from Binary Ninja.<br>
 </p>
 <table>
 
@@ -688,7 +688,7 @@ Since we already know which function we need to execute, and the binary doesn't 
 <h3 id="org9f7b6dd"><span class="section-number-3">3.3</span> Final exploit</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
-So know that we have control over the base pointer let's make it point towards <code>ret2win</code> and finish this challenge.
+So know that we have control over the base pointer let's make it point towards <code>ret2win</code> and finish this challenge.<br>
 </p>
 <div class="org-src-container">
 <pre class="src src-python">from pwn import *
@@ -713,10 +713,10 @@ proc.interactive()
 </pre>
 </div>
 <p>
-As you can see instead of <code>0xdeadbeefcafebabe</code> we just use <code>ret2win_addr</code>.
-And if we run the script:
+As you can see instead of <code>0xdeadbeefcafebabe</code> we just use <code>ret2win_addr</code>.<br>
+And if we run the script:<br>
 </p>
-<pre class="example" id="orgb46abb1">
+<pre class="example" id="org8ea5775">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './ret2win': pid 170719
@@ -736,18 +736,18 @@ $
 <h2 id="org96231b8"><span class="section-number-2">4</span> Conclusion</h2>
 <div class="outline-text-2" id="text-4">
 <p>
-First of all thank you for reading my first proper write-up.
-I hope it won't be the last, as I want to publish a new post/write-up/whatever-you-call-it every other week.
+First of all thank you for reading my first proper write-up.<br>
+I hope it won't be the last, as I want to publish a new post/write-up/whatever-you-call-it every other week.<br>
 </p>
 
 <p>
-So what did we do here?
-We got a <i>very</i> basic introduction to buffer overflows and ROP, but hopefully enough to you hooked ;).
-We successfully overflowed a buffer which let us control the return address of the function.
+So what did we do here?<br>
+We got a <i>very</i> basic introduction to buffer overflows and ROP, but hopefully enough to you hooked ;).<br>
+We successfully overflowed a buffer which let us control the return address of the function.<br>
 </p>
 
 <p>
-My next post will be about ROPemporium split, where we need to make use of so called ROPgadgets.
+My next post will be about ROPemporium split, where we need to make use of so called ROPgadgets.<br>
 </p>
 </div>
 </div>

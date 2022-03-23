@@ -1,0 +1,42 @@
+#+setupfile: ../templates/level-0.org
+#+begin_export html
+<style>
+  header {
+  text-align: center;
+  positon: fixed;
+  margin-top: 0px;
+  padding: 1px;
+  background-color: var(--bg-alt-color);
+  }
+  li{
+  max-width: 95%;
+  padding-left: 2.5%;
+  }
+  #avatar {
+    position: absolute;
+    width: 72.5px;
+    top: 5px;
+    left: 20%;
+  }
+  @media (pointer:coarse){
+    #avatar {
+    display: none;
+    }
+  }
+</style>
+<a href="/"><img src="static/c3lphie.png" id="avatar"></img></a>
+#+end_export
+#+title: C3lphie's blog
+#+options: toc:nil num:0 
+
+* Blog posts
+#+include: sitemap.org :lines "30-41" :only-contents t
+
+\\
+- [[file:sitemap.org][All posts]]
+* Other links
+- [[file:donate.org][Donate]]
+- [[https://github.com/c3lphie][Github Account]]
+- [[https://app.hackthebox.eu/profile/110432][HackTheBox Account]]
+
+

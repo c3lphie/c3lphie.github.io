@@ -1,0 +1,59 @@
+#+setupfile: ../templates/level-0.org
+#+title: A little transparency
+#+date: <2022-03-07 Mon> 
+#+summary: Small update post
+#+filetags: blog
+* TL;DR
+ I've realised that doing this just for me, isn't enough motivation to keep doing it.
+ Been busy with offline stuff.
+ Added a donation page (only taking crypto).
+
+* Motivation
+When I first started this blog, it was with the purpose having a place to share write-ups from CTF's HackTheBox or other things I find interesting.
+Just a place where I could store information, which others might stumble upon and like.
+
+Wanting to do something just for me, as a learning resource for myself.
+Means that all the responsibility for making the posts, write-ups or what-ever is on me and with a targeted audience that is... you guessed it: ME.
+
+Idk about you(whoever reads this), but I'm not the best at sticking to working on projects that is only for me.
+I need some kind of external pressure/motivation to keep doing it.
+Which kinda goes against the reason I created this blog in the first place, but I really do enjoy writing posts and write-ups.
+I just lack motivation, and I wanted to change this.
+
+* Being Offline
+Other than not having motivation to just write posts and whatever, I have been busy with my offline life.
+
+Exams are over(thank god), and after having a small vacation where I could forget about everything that wasn't important was nice.
+In the beginning of the year I set myself a challenge of completing 1 HackTheBox machine each week of 2022, but life happened and never managed to find time each week to dedicate to doing that.
+
+So that have been a bit of a bummer, but not something worth losing sleep over.
+
+* Give me all your money!!!!! (jk)
+I order to address my lack of motivation, I figured why not accept money!
+The best motivation for anything in our capitalistic world.
+
+As i currently see it there are 2 options:
+ 1. Serve ads and basically sell YOUR data to google or whatever other ad agency that I would end up using
+ 2. Take donations
+
+As you might be able to read between the lines in the above list, I'm not a fan of ads.[fn:1]
+In fact I promise to never serve ads, or track what you're doing using some proprietary solution that might sell your data unbeknownst to both me and you.
+
+I run no tracking on this site.
+
+That is a good thing regarding privacy, but that also means I have no idea if people visit my site or anything like that.
+Which kinda sucks to be honest, as we all like to numbers increase like some cookie clicker game.
+
+I have thought about implementing some type of tracking just to get basic statistics like how many visitors I have, and maybe geographic information(IP based), but I want it to be done properly and with respect for you (will also make a post like this to inform you).
+
+So I have decided to take donations, and again with respect to privacy, I only take crypto.
+
+Only donate if it is within your budget!
+There is no reason to go broke for some random dude on the internet.
+Wallet addresses can be found [[https://c3lphie.com/donate.html][HERE]], or on the link on my homepage.
+
+If you happen to use the brave browser I have added myself as a creator, so you can support me through that aswell. (THIS IS NOT AN AD FOR BRAVE, use whatever browser you feel comfortable in)
+
+* Footnotes
+
+[fn:1] *Note:* I get the function of ads, and see their meaning and use on the online world, I just don't agree with the way it is done 99% of the time.

