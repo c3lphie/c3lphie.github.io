@@ -31,5 +31,5 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v2
-      - run: sh ./announcement.sh
+      - run: sh ./announcement.sh ${WEBHOOK} ${LINK} ${TITLE}
         
