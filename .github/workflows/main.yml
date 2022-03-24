@@ -29,4 +29,4 @@ jobs:
     steps:
     # Runs a single command using the runners shell
     - name: Send greeting
-      run:  curl -X POST "${{DISCORD_ANNOUNCEMENT_WEBHOOK}}" -d "content=:pepefrog: @everyone :pepefrog:\nNew post! Check it out here: [${{github.events.input.postLink}}](${{postTitle}})"
+      run:  curl -X POST "${{DISCORD_ANNOUNCEMENT_WEBHOOK}}" -d "content=:pepefrog: @everyone :pepefrog:\nNew post! Check it out here: [${{github.events.input.postLink}}](${{github.events.input.postTitle}})"
