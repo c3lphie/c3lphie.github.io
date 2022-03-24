@@ -29,4 +29,5 @@ jobs:
     steps:
     # Runs a single command using the runners shell
     - name: Send greeting
-      run: echo "Hello ${{ github.event.inputs.name }}"
+      run:  curl -X POST "${{DISCORD_ANNOUNCEMENT_WEBHOOK}}" -d 'content=:pepefrog: @everyone :pepefrog:
+      New post! Check it out here: [${{github.events.input.postLink}}](${{postTitle}})'
