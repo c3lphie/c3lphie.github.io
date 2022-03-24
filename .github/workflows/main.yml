@@ -10,10 +10,12 @@ on:
       postTitle:
         description: 'Title of the Post'
         default: 'Fancy title'
+        type: string
         required: true
       postLink:
         description: 'Link to the Post'
         default: 'Insert link here'
+        type: string
         required: true
         
   
