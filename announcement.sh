@@ -6,4 +6,5 @@ echo "================================="
 
 
 curl -X POST $1 -d "content=:smile: @everyone :smile:
-New post! Check it out here: [$2]($3)"
+New post about: $3! 
+Check it out here: $2"
