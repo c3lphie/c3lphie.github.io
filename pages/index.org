@@ -36,6 +36,7 @@
 - [[file:sitemap.org][All posts]]
 * Other links
 - [[file:donate.org][Donate]]
+- [[https://discord.gg/t8tKrgdGWu][Discord newsletter]]
 - [[https://github.com/c3lphie][Github Account]]
 - [[https://app.hackthebox.eu/profile/110432][HackTheBox Account]]
 
