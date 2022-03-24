@@ -17,7 +17,10 @@ on:
         required: true
         
   
-
+env:
+  WEBHOOK: "${{secrets.DISCORD_ANNOUNCEMENT_WEBHOOK}}"
+  LINK: "${{github.events.input.postLink}}"
+  TITLE: "${{github.events.input.postTitle}}"
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "greet"
@@ -27,6 +30,5 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run:  curl -X POST "${{DISCORD_ANNOUNCEMENT_WEBHOOK}}" -d "content=:pepefrog: @everyone :pepefrog:\nNew post! Check it out here: [${{github.events.input.postLink}}](${{github.events.input.postTitle}})"
+      run: ./announcement.sh
+        
