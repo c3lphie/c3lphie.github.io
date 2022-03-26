@@ -28,6 +28,8 @@
 <a href='/'><img src='static/c3lphie.png' id='avatar'></img></a>
 #+end_export
 
+- {{{timestamp(26-03-2022)}}} [[file:2022-03-26-htb-secret.org][HTB | Secret]]
+  An easy HTB machine, with some exposed secrets in old git commits. And a nice showcase of the power of core dumps.
 - {{{timestamp(07-03-2022)}}} [[file:2022-03-07-a-little-transparency.org][A little transparency]]
   Small update post
 - {{{timestamp(19-01-2022)}}} [[file:2022-01-16-htb-horizontall.org][HTB | Horizontall]]
