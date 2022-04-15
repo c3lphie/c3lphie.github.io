@@ -28,6 +28,8 @@
 <a href='/'><img src='static/c3lphie.png' id='avatar'></img></a>
 #+end_export
 
+- {{{timestamp(14-04-2022)}}} [[file:2022-04-13-ddc-reg-write-up.org][DDC22 Regionals | Write-up collection (Danish)]]
+  A collection of write-up for the danish cyber championships 2022 regional ctf.
 - {{{timestamp(28-03-2022)}}} [[file:2022-03-28-htb-explore.org][HTB | Explore]]
   Easy box where we exploit a file explore app, and utilize adb to gain root access.
 - {{{timestamp(26-03-2022)}}} [[file:2022-03-26-htb-secret.org][HTB | Secret]]
