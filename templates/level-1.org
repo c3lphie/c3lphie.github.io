@@ -1,0 +1,7 @@
+#+options: html-link-use-abs-url:nil 
+#+options: html-scripts:t html-style:nil html5-fancy:t tex:t
+#+options: tags:t title:nil toc:nil num:0 date:t
+#+html_doctype: html5
+#+html_container: div
+#+html_head: <link rel="stylesheet" type="text/css" href="../static/style.css" />
+#+creator: c3lphie
