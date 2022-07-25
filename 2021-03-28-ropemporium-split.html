@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-04-15 Fri 15:51 -->
+<!-- 2022-07-25 Mon 19:29 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ROPemporium | Split</title>
+<meta name="author" content="Main user for my machines" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -42,41 +43,41 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orged47b43">1. Introduction</a>
+<li><a href="#orgf38a383">1. Introduction</a>
 <ul>
-<li><a href="#org0da731c">1.1. Wtf is a register?</a></li>
-<li><a href="#org1c75e1a">1.2. ROP gadgets</a></li>
+<li><a href="#org3d27da6">1.1. Wtf is a register?</a></li>
+<li><a href="#orgbec4dad">1.2. ROP gadgets</a></li>
 </ul>
 </li>
-<li><a href="#orgc810bd4">2. Recon</a>
+<li><a href="#orgabf8fed">2. Recon</a>
 <ul>
-<li><a href="#org4ec5d1e">2.1. File</a></li>
-<li><a href="#orgd40e9c5">2.2. Checksec</a></li>
-<li><a href="#org4fb08d3">2.3. Static analysis</a>
+<li><a href="#org144a23f">2.1. File</a></li>
+<li><a href="#org910537b">2.2. Checksec</a></li>
+<li><a href="#org9b0b86d">2.3. Static analysis</a>
 <ul>
-<li><a href="#org1c86ab1">2.3.1. Strings</a></li>
-<li><a href="#org913d9da">2.3.2. Main function</a></li>
-<li><a href="#org4dacba0">2.3.3. pwnme function</a></li>
-<li><a href="#org8ba14c9">2.3.4. usefulFunction</a></li>
+<li><a href="#org841c933">2.3.1. Strings</a></li>
+<li><a href="#orgb06f731">2.3.2. Main function</a></li>
+<li><a href="#org76d81e2">2.3.3. pwnme function</a></li>
+<li><a href="#org3b684ae">2.3.4. usefulFunction</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#orge6ac07c">3. Exploitation</a>
+<li><a href="#org7b526bb">3. Exploitation</a>
 <ul>
-<li><a href="#org776cd60">3.1. Buffer overflow</a></li>
-<li><a href="#orgf6d1aef">3.2. Finding gadgets</a></li>
-<li><a href="#org3a4b1f8">3.3. Creating the chain</a></li>
-<li><a href="#org925bbd6">3.4. Final exploit</a></li>
+<li><a href="#org4588e14">3.1. Buffer overflow</a></li>
+<li><a href="#org2e90857">3.2. Finding gadgets</a></li>
+<li><a href="#org717c9c8">3.3. Creating the chain</a></li>
+<li><a href="#orgbd60577">3.4. Final exploit</a></li>
 </ul>
 </li>
-<li><a href="#org3736ea2">4. Conclusions</a></li>
+<li><a href="#org430d8fa">4. Conclusions</a></li>
 </ul>
 </div>
 </nav>
 
-<div id="outline-container-orged47b43" class="outline-2">
-<h2 id="orged47b43"><span class="section-number-2">1.</span> Introduction</h2>
+<div id="outline-container-orgf38a383" class="outline-2">
+<h2 id="orgf38a383"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome to my write-up for the second challenge on <a href="https://ropemporium.com">ROPemporium</a>, called <code>split</code>.<br>
@@ -89,8 +90,8 @@ We need to understand what registers are, and how we can use them to our advanta
 Then there is also the concept of ROPgadgets, which is the main element of return oriented programming.<br>
 </p>
 </div>
-<div id="outline-container-org0da731c" class="outline-3">
-<h3 id="org0da731c"><span class="section-number-3">1.1.</span> Wtf is a register?</h3>
+<div id="outline-container-org3d27da6" class="outline-3">
+<h3 id="org3d27da6"><span class="section-number-3">1.1.</span> Wtf is a register?</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 In my last post I briefly mentioned that through the manipulation of registers we could execute arbitrary code.<br>
@@ -266,8 +267,8 @@ An amazing tool to see which registers are used for what function parameters for
 </div>
 </div>
 
-<div id="outline-container-org1c75e1a" class="outline-3">
-<h3 id="org1c75e1a"><span class="section-number-3">1.2.</span> ROP gadgets</h3>
+<div id="outline-container-orgbec4dad" class="outline-3">
+<h3 id="orgbec4dad"><span class="section-number-3">1.2.</span> ROP gadgets</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 According to the paper <a href="https://www.exploit-db.com/docs/english/28479-return-oriented-programming-(rop-ftw).pdf">Return-Oriented-Programming (ROP FTW)</a>, ROP gadgets are small instruction sequences that end in a <code>ret</code> instruction or <code>0xc3</code> if looking at a hexdump of a binary.<br>
@@ -324,8 +325,8 @@ These two types of gadgets are the ones you will need to find in order to comple
 </div>
 </div>
 </div>
-<div id="outline-container-orgc810bd4" class="outline-2">
-<h2 id="orgc810bd4"><span class="section-number-2">2.</span> Recon</h2>
+<div id="outline-container-orgabf8fed" class="outline-2">
+<h2 id="orgabf8fed"><span class="section-number-2">2.</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Again before I do any actual exploitation, I'll try to gather as much information as possible about the target.<br>
@@ -338,27 +339,27 @@ At least to some degree, no one is omniscient(as far as i know atleast), and tha
 The most important thing in this case is that we learn about ROP so recon is minimal in this case.<br>
 </p>
 </div>
-<div id="outline-container-org4ec5d1e" class="outline-3">
-<h3 id="org4ec5d1e"><span class="section-number-3">2.1.</span> File</h3>
+<div id="outline-container-org144a23f" class="outline-3">
+<h3 id="org144a23f"><span class="section-number-3">2.1.</span> File</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 The output here is exactly the same as last post, except for the name of the binary.<br>
 But I'll keep it here for good measure.<br>
 </p>
-<pre class="example" id="orgc8fb82f">
+<pre class="example" id="org7cb7452">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;file split
 split: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=98755e64e1d0c1bff48fccae1dca9ee9e3c609e2, not stripped
 </pre>
 </div>
 </div>
-<div id="outline-container-orgd40e9c5" class="outline-3">
-<h3 id="orgd40e9c5"><span class="section-number-3">2.2.</span> Checksec</h3>
+<div id="outline-container-org910537b" class="outline-3">
+<h3 id="org910537b"><span class="section-number-3">2.2.</span> Checksec</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 Same situation for <code>checksec</code>'s output, if you need a refresher read my <a href="https://c3lphie.com/2021-03-22-ropemporium-ret2win.html">last post</a>.<br>
 </p>
-<pre class="example" id="orgd87e7c6">
+<pre class="example" id="org442d401">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;checksec split
 [*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/split/split'
@@ -370,16 +371,16 @@ Same situation for <code>checksec</code>'s output, if you need a refresher read 
 </pre>
 </div>
 </div>
-<div id="outline-container-org4fb08d3" class="outline-3">
-<h3 id="org4fb08d3"><span class="section-number-3">2.3.</span> Static analysis</h3>
+<div id="outline-container-org9b0b86d" class="outline-3">
+<h3 id="org9b0b86d"><span class="section-number-3">2.3.</span> Static analysis</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 Once again we go through static analysis of the binary before we begin our exploit.<br>
 </p>
 </div>
 
-<div id="outline-container-org1c86ab1" class="outline-4">
-<h4 id="org1c86ab1"><span class="section-number-4">2.3.1.</span> Strings</h4>
+<div id="outline-container-org841c933" class="outline-4">
+<h4 id="org841c933"><span class="section-number-4">2.3.1.</span> Strings</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <p>
 First thing we should do, that I didn't last time, is to look at the strings in the binary.<br>
@@ -390,7 +391,7 @@ Because they might give us some usefull information, or clues as to how this cha
 This is also often the case in CTF challenges.<br>
 </p>
 
-<figure id="org4403b02">
+<figure id="org408ec25">
 <img src="assets/split_strings.png" alt="split_strings.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Strings with memory addresses found in Binary Ninja</figcaption>
@@ -405,8 +406,8 @@ So let's note down that adress <code>0x00601060</code> for future use!<br>
 </p>
 </div>
 </div>
-<div id="outline-container-org913d9da" class="outline-4">
-<h4 id="org913d9da"><span class="section-number-4">2.3.2.</span> Main function</h4>
+<div id="outline-container-orgb06f731" class="outline-4">
+<h4 id="orgb06f731"><span class="section-number-4">2.3.2.</span> Main function</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 1: </span>main function dissasembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
@@ -436,8 +437,8 @@ Which again the main focus of for exploitation.<br>
 </p>
 </div>
 </div>
-<div id="outline-container-org4dacba0" class="outline-4">
-<h4 id="org4dacba0"><span class="section-number-4">2.3.3.</span> pwnme function</h4>
+<div id="outline-container-org76d81e2" class="outline-4">
+<h4 id="org76d81e2"><span class="section-number-4">2.3.3.</span> pwnme function</h4>
 <div class="outline-text-4" id="text-2-3-3">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 2: </span>pwnme function disassembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
@@ -505,8 +506,8 @@ The fact that we can write more information into the buffer than was allocated a
 </p>
 </div>
 </div>
-<div id="outline-container-org8ba14c9" class="outline-4">
-<h4 id="org8ba14c9"><span class="section-number-4">2.3.4.</span> usefulFunction</h4>
+<div id="outline-container-org3b684ae" class="outline-4">
+<h4 id="org3b684ae"><span class="section-number-4">2.3.4.</span> usefulFunction</h4>
 <div class="outline-text-4" id="text-2-3-4">
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 4: </span>usefulFunction disassembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
@@ -519,7 +520,7 @@ retn     {__return_addr}
 </pre>
 </div>
 <p>
-So taking what we learned in <a href="#org4dacba0">pwnme function</a> about how arguments are prepared for functions in assembly, we see that the address for the string "/bin/ls" is moved into the <code>edi</code> register before calling <code>system</code>.<br>
+So taking what we learned in <a href="#org76d81e2">pwnme function</a> about how arguments are prepared for functions in assembly, we see that the address for the string "/bin/ls" is moved into the <code>edi</code> register before calling <code>system</code>.<br>
 </p>
 
 <p>
@@ -535,16 +536,16 @@ We'll need it later in our first ROP chain.<br>
 </div>
 </div>
 </div>
-<div id="outline-container-orge6ac07c" class="outline-2">
-<h2 id="orge6ac07c"><span class="section-number-2">3.</span> Exploitation</h2>
+<div id="outline-container-org7b526bb" class="outline-2">
+<h2 id="org7b526bb"><span class="section-number-2">3.</span> Exploitation</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 Now we are ready to begin exploiting the binary!<br>
 I won't go as much into detail about the buffer overflow, it is the exact same procedure as last time.<br>
 </p>
 </div>
-<div id="outline-container-org776cd60" class="outline-3">
-<h3 id="org776cd60"><span class="section-number-3">3.1.</span> Buffer overflow</h3>
+<div id="outline-container-org4588e14" class="outline-3">
+<h3 id="org4588e14"><span class="section-number-3">3.1.</span> Buffer overflow</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 A quick recap of finding a basic buffer overflow.<br>
@@ -603,7 +604,7 @@ proc.interactive()
 <p>
 Which calls <code>/bin/ls</code>:<br>
 </p>
-<pre class="example" id="orgbc4d5bc">
+<pre class="example" id="org9853c7d">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './split': pid 384887
@@ -619,8 +620,8 @@ So let find our first gadget!<br>
 </p>
 </div>
 </div>
-<div id="outline-container-orgf6d1aef" class="outline-3">
-<h3 id="orgf6d1aef"><span class="section-number-3">3.2.</span> Finding gadgets</h3>
+<div id="outline-container-org2e90857" class="outline-3">
+<h3 id="org2e90857"><span class="section-number-3">3.2.</span> Finding gadgets</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 As mentioned earlier I'll be using <code>ropper</code> to find the ROP gadgets needed for this exploit.<br>
@@ -630,7 +631,7 @@ As mentioned earlier I'll be using <code>ropper</code> to find the ROP gadgets n
 In fact we only need one gadget for this ROP chain since we already have a <code>system</code> call.<br>
 So what we need to do is find a gadget that can <code>pop</code> an address into a register from the stack.<br>
 </p>
-<pre class="example" id="orgd383eec">
+<pre class="example" id="org3ea160c">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;ropper -f split --console
 [INFO] Load gadgets from cache
@@ -643,7 +644,7 @@ So what we need to do is find a gadget that can <code>pop</code> an address into
 I use the <code>--console</code> flag because it loads the entire binary once, which makes multiple searches faster.<br>
 Now all we gotta do is search for gadgets starting with a <code>pop</code> instruction.<br>
 </p>
-<pre class="example" id="orgbe761db">
+<pre class="example" id="orgec53b38">
 (split/ELF/x86_64)&gt; search pop
 [INFO] Searching for gadgets: pop
 
@@ -680,8 +681,8 @@ And just take a note of that address.<br>
 </p>
 </div>
 </div>
-<div id="outline-container-org3a4b1f8" class="outline-3">
-<h3 id="org3a4b1f8"><span class="section-number-3">3.3.</span> Creating the chain</h3>
+<div id="outline-container-org717c9c8" class="outline-3">
+<h3 id="org717c9c8"><span class="section-number-3">3.3.</span> Creating the chain</h3>
 <div class="outline-text-3" id="text-3-3">
 <ul class="org-ul">
 <li>State "DONE"       from "NEXT"       <span class="timestamp-wrapper"><span class="timestamp">[2021-04-09 Fri 17:21]</span></span><br></li>
@@ -740,7 +741,7 @@ proc.interactive()
 </pre>
 </div>
 <p>
-In the same python file from the <a href="#org776cd60">Buffer overflow</a> section, I assigned the adresses as variables.<br>
+In the same python file from the <a href="#org4588e14">Buffer overflow</a> section, I assigned the adresses as variables.<br>
 Then I simply add them in an order which chains them together (see were the name came from ;)).<br>
 </p>
 
@@ -773,8 +774,8 @@ First we <code>pop</code> the <code>usefulData</code> address into the <code>rdi
 </div>
 </div>
 
-<div id="outline-container-org925bbd6" class="outline-3">
-<h3 id="org925bbd6"><span class="section-number-3">3.4.</span> Final exploit</h3>
+<div id="outline-container-orgbd60577" class="outline-3">
+<h3 id="orgbd60577"><span class="section-number-3">3.4.</span> Final exploit</h3>
 <div class="outline-text-3" id="text-3-4">
 <p>
 Here is the final exploit, which will show us the flag.<br>
@@ -811,7 +812,7 @@ proc.interactive()
 <p>
 If we run it in the terminal we get the following flag:<br>
 </p>
-<pre class="example" id="org1f3c463">
+<pre class="example" id="orgbe5fe4f">
 ┌────[~/ha/bi/ropemporium/split on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './split': pid 389100
@@ -829,8 +830,8 @@ An there you go ladies and gentlemen, we got the flag!<br>
 </div>
 </div>
 
-<div id="outline-container-org3736ea2" class="outline-2">
-<h2 id="org3736ea2"><span class="section-number-2">4.</span> Conclusions</h2>
+<div id="outline-container-org430d8fa" class="outline-2">
+<h2 id="org430d8fa"><span class="section-number-2">4.</span> Conclusions</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 In this post we dove into what registers are and how they are used as parameters for functions in the 64-bit architecture.<br>

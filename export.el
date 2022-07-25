@@ -1,7 +1,22 @@
 #!/usr/bin/env emacs --script
 
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(package-initialize)
+
+;; Install and load different language modes
+(setq package-selected-packages
+      '(rust-mode
+        python-mode))
+(package-install-selected-packages t)
+
+(require 'rust-mode)
+
 (require 'ox-publish)
-(load "~/repositories/blog/ox-rss.el")
+;;(load "~/repositories/blog/ox-rss.el")
 
 (defun get-content (filePath)
   "Returns the content of the file pointed to by filePath"
@@ -30,15 +45,15 @@
 
 (defun c3lphie/html-header (arg)
   "Returns the content of the static html header"
-  (get-content "~/repositories/blog/static_html/html_head.html"))
+  (get-content "~/blog/static_html/html_head.html"))
 
 (defun c3lphie/html-preamble (arg)
   "Returns the content of the static html preamble"
-  (get-content "~/repositories/blog/static_html/html_preamble.html"))
+  (get-content "~/blog/static_html/html_preamble.html"))
 
 (defun c3lphie/html-postamble (arg)
   "Returns the content of the static html postamble"
-  (get-content "~/repositories/blog/static_html/html_postamble.html"))
+  (get-content "~/blog/static_html/html_postamble.html"))
 
 (defun c3lphie/org-rss-publish-to-rss (plist filename pub-dir)
   (if (equal "rss.org" (file-name-nondirectory filename))
@@ -117,12 +132,12 @@
 ;; Project alist
 (setq org-publish-project-alist
       '(("blog-posts"
-         :base-directory "~/repositories/blog/posts/"
+         :base-directory "~/blog/posts/"
          :base-extension "org"
-         :publishing-directory "~/repositories/blog"
+         :publishing-directory "~/blog"
          :exclude "*.org~\\|*.draft.org\\|rss.org"
          :auto-sitemap t
-         :sitemap-filename "~/repositories/blog/pages/sitemap.org"
+         :sitemap-filename "~/blog/pages/sitemap.org"
          :sitemap-sort-files anti-chronologically
          :sitemap-date-format "Published: %d-%m-%Y"
          :sitemap-format-entry c3lphie/org-sitemap-entry-format
@@ -137,10 +152,10 @@
          :html-preamble c3lphie/html-preamble
          :html-postamble c3lphie/html-postamble)
         ("blog-rss"
-         :base-directory "~/repositories/blog/posts/"
+         :base-directory "~/blog/posts/"
          :base-extension "org"
          :recursive nil
-         :publishing-directory "~/repositories/blog/"
+         :publishing-directory "~/blog/"
          :publishing-function c3lphie/org-rss-publish-to-rss
          :rss-extension "xml"
          :auto-sitemap t
@@ -149,18 +164,18 @@
          :sitemap-format-entry c3lphie/format-rss-feed-entry
          :sitemap-function c3lphie/format-rss-feed)
         ("blog-pages"
-         :base-directory "~/repositories/blog/pages/"
+         :base-directory "~/blog/pages/"
          :base-extension "org"
-         :publishing-directory "~/repositories/blog"
+         :publishing-directory "~/blog"
          :recursive t
          :preserve-breaks t
          :publishing-function c3lphie/org-pages-publish
          :org-html-preamble nil
          :html-postamble c3lphie/html-postamble)
         ("blog-assets"
-         :base-directory "~/repositories/blog/posts/assets/"
+         :base-directory "~/blog/posts/assets/"
          :base-extension "jpg\\|png\\|gif"
-         :publishing-directory "~/repositories/blog/assets/"
+         :publishing-directory "~/blog/assets/"
          :recursive t
          :publishing-function org-publish-attachment)
         ("blog"

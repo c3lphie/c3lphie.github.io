@@ -28,6 +28,8 @@
 <a href='/'><img src='static/c3lphie.png' id='avatar'></img></a>
 #+end_export
 
+- {{{timestamp(25-07-2022)}}} [[file:2022-06-24-c2-your-own-adventure.org][C2 your own adventure part 1]]
+  Part 1 of a series of posts revolving around designin and creating a C2 framework.
 - {{{timestamp(14-04-2022)}}} [[file:2022-04-13-ddc-reg-write-up.org][DDC22 Regionals | Write-up collection (Danish)]]
   A collection of write-up for the danish cyber championships 2022 regional ctf.
 - {{{timestamp(28-03-2022)}}} [[file:2022-03-28-htb-explore.org][HTB | Explore]]
@@ -36,7 +38,7 @@
   An easy HTB machine, with some exposed secrets in old git commits. And a nice showcase of the power of core dumps.
 - {{{timestamp(07-03-2022)}}} [[file:2022-03-07-a-little-transparency.org][A little transparency]]
   Small update post
-- {{{timestamp(19-01-2022)}}} [[file:2022-01-16-htb-horizontall.org][HTB | Horizontall]]
+- {{{timestamp(05-02-2022)}}} [[file:2022-01-16-htb-horizontall.org][HTB | Horizontall]]
   This was an easy linux box, with a website running a vulnerable API framework. After exploiting this and getting a user shell, we can install an ssh backdoor that makes it possible to elevate privileges on a local service by creating a tunnel.
 - {{{timestamp(02-10-2021)}}} [[file:2021-10-02-htb-cap.org][HTB | CAP]]
   Easy linux box with some pcap analysis, and abuse of python capabilities
