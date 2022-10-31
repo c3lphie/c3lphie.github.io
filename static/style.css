@@ -12,6 +12,11 @@
     --purple-color: #b294bb;
 }
 
+.MathJax_Display {
+	  color: var(--fg-color) !important;
+}
+
+
 .timestamp{
     color: var(--green-color);
 }

