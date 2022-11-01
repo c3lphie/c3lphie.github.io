@@ -272,3 +272,4 @@ backup        lost+found    ota_package system_de
 :/data # cat root.txt
 f04fc82b6d49b41c9b08982be59338c5
 #+end_example
+#+include: ../templates/end_block.org :minlevel 1

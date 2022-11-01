@@ -386,3 +386,4 @@ svc_acc@late:~$
 #+end_example
 
 And there it is!
+#+include: ../templates/end_block.org :minlevel 1

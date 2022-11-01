@@ -474,3 +474,4 @@ We successfully overflowed a buffer which let us control the return address of t
 My next post will be about ROPemporium split, where we need to make use of so called ROPgadgets.
 
 
+#+include: ../templates/end_block.org :minlevel 1

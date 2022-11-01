@@ -272,3 +272,4 @@ Next post will focus on the server that the agent will make callbacks to.
 [fn:2] https://www.offensive-security.com/metasploit-unleashed/about-meterpreter/ 
 
 [fn:1] https://en.wikipedia.org/wiki/Command_and_control 
+#+include: ../templates/end_block.org :minlevel 1

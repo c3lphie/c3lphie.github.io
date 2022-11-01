@@ -221,3 +221,4 @@ Only one author: Admin
 
 xmlrpc is available
 
+#+include: ../templates/end_block.org :minlevel 1

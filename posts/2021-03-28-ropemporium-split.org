@@ -435,3 +435,4 @@ In this post we dove into what registers are and how they are used as parameters
 We also looked closer at what ROP gadgets are, and how we can use chains of these gadgets to basically reprogram software to do our bidding,
 
 Next one in line for this series is ROPemporiums callme challenge, where we'll learn to craft bigger chains without crashing the software afterwards.
+#+include: ../templates/end_block.org :minlevel 1

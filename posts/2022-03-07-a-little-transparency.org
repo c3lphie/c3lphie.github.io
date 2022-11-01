@@ -57,3 +57,4 @@ If you happen to use the brave browser I have added myself as a creator, so you 
 * Footnotes
 
 [fn:1] *Note:* I get the function of ads, and see their meaning and use on the online world, I just don't agree with the way it is done 99% of the time.
+#+include: ../templates/end_block.org :minlevel 1

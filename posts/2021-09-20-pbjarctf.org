@@ -598,3 +598,4 @@ nd@netcenter.dll,-1pad.exe
 
 On line 6 we can see the name of the attacker, which coincidentally also is the flag(with space replace by "_"):
 : flag{The_Whit3R0s3}
+#+include: ../templates/end_block.org :minlevel 1

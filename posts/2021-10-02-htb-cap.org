@@ -491,3 +491,4 @@ root.txt  snap
 root@cap:/root# cat root.txt 
 6931████████████████████████████
 #+end_example 
+#+include: ../templates/end_block.org :minlevel 1

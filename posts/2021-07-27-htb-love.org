@@ -432,3 +432,4 @@ Mode              Size  Type  Last modified              Name
 meterpreter > cat root.txt
 567d████████████████████████████
 #+end_example
+#+include: ../templates/end_block.org :minlevel 1

@@ -18,3 +18,4 @@ Who knows what the future brings ;)
 
 So yeah hope that you will stick around, even though the place is kinda empty at the moment.
 You can subscribe to the RSS feed here: [[https://c3lhie.com/rss.xml][RSS Feed]]
+#+include: ../templates/end_block.org :minlevel 1

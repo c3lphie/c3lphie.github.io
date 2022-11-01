@@ -397,3 +397,4 @@ root.txt
 #
 #+end_example
 
+#+include: ../templates/end_block.org :minlevel 1
