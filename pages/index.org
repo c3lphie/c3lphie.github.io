@@ -42,7 +42,7 @@
 #+begin_export html
 <ul class="org-ul">
   <li>
-    <a rel="me" href="https://norrebro.space/@c3lphie">Mastodon</a><br>
+    <a rel="mig" href="https://norrebro.space/@c3lphie">Mastodon</a><br>
   </li>
 </ul>
 #+end_export
