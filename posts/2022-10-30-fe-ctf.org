@@ -245,52 +245,52 @@ top.png
 
 The file ~runme.py~ has the following content:
 #+begin_src python
-#!/usr/bin/env python3
-import os
-import sys
-import subprocess
-from offsets import offsets
+  #!/usr/bin/env python3
+  import os
+  import sys
+  import subprocess
+  from offsets import offsets
 
-if len(sys.argv) != 2:
-    print(f'Usage: {sys.argv[0]} <outfile>', file=sys.stderr)
-    exit(-1)
+  if len(sys.argv) != 2:
+      print(f'Usage: {sys.argv[0]} <outfile>', file=sys.stderr)
+      exit(-1)
 
-INIT = 'tar-and-feathers.tgz'
+  INIT = 'tar-and-feathers.tgz'
 
-def run(cmd):
-    return subprocess.check_output(cmd, shell=True)
+  def run(cmd):
+      return subprocess.check_output(cmd, shell=True)
 
-def unpack1(name):
-    filemagic = run(f'file {name}')
-    if b'bzip2' in filemagic:
-        run(f'mv {name} {name}.bz2')
-        run(f'bunzip2 {name}.bz2')
-        return unpack1(name)
-    return run(f'tar xfv {name}').strip().decode()
+  def unpack1(name):
+      filemagic = run(f'file {name}')
+      if b'bzip2' in filemagic:
+          run(f'mv {name} {name}.bz2')
+          run(f'bunzip2 {name}.bz2')
+          return unpack1(name)
+      return run(f'tar xfv {name}').strip().decode()
 
-def getbyte(n):
-    print(f'getbyte({n}) = ', end='', file=sys.stderr, flush=True)
-    prev = None
-    for _ in range(n + 1):
-        next = unpack1(prev or INIT)
-        if prev and prev != next:
-            os.unlink(prev)
-        try:
-            byte = int(next, 16)
-        except:
-            os.unlink(next)
-            raise
-        prev = next
-    os.unlink(next)
-    print(f'0x{byte:02x}', file=sys.stderr)
-    return byte
+  def getbyte(n):
+      print(f'getbyte({n}) = ', end='', file=sys.stderr, flush=True)
+      prev = None
+      for _ in range(n + 1):
+          next = unpack1(prev or INIT)
+          if prev and prev != next:
+              os.unlink(prev)
+          try:
+              byte = int(next, 16)
+          except:
+              os.unlink(next)
+              raise
+          prev = next
+      os.unlink(next)
+      print(f'0x{byte:02x}', file=sys.stderr)
+      return byte
 
-def unpack(path):
-    data = bytes(getbyte(offset) for offset in offsets)
-    with file(path, 'wb') as fd:
-        fd.write(data)
+  def unpack(path):
+      data = bytes(getbyte(offset) for offset in offsets)
+      with file(path, 'wb') as fd:
+          fd.write(data)
 
-unpack(sys.argv[1])
+  unpack(sys.argv[1])
 #+end_src
 
 It extracts certain bytes from the first tar file by unpacking it the nested tars until it reaches an offset from the ~offsets.py~ file.
@@ -477,95 +477,95 @@ And after many failed attempts we finally got the flag:
 
 Final solve script:
 #+begin_src python
-from pwn import *
-import math
+  from pwn import *
+  import math
 
-from multiprocessing import Pool
+  from multiprocessing import Pool
 
-def guess(guess: int):
-    try:
-        res = io.readuntil("Your guess:")
-        io.sendline(str(guess).encode())
-        res = io.readuntil("\n")
-        return res.decode()
-    except:
-        res = io.readline()
-        return res.decode()
+  def guess(guess: int):
+      try:
+          res = io.readuntil("Your guess:")
+          io.sendline(str(guess).encode())
+          res = io.readuntil("\n")
+          return res.decode()
+      except:
+          res = io.readline()
+          return res.decode()
 
-def calc_perc(guess_left, guess_high_left):
-    return (guess_high_left + 1) / guess_left
+  def calc_perc(guess_left, guess_high_left):
+      return (guess_high_left + 1) / guess_left
 
 
-def strategy(_round):
-    min_max = [0, 4000000]
-    guess_left = total_guesses
-    guess_low_left = total_guesses - too_high
-    guess_high_left = too_high
+  def strategy(_round):
+      min_max = [0, 4000000]
+      guess_left = total_guesses
+      guess_low_left = total_guesses - too_high
+      guess_high_left = too_high
 
-    while True:
-        log.info(f"============{_round}=============")
-        _range = min_max[1] - min_max[0]
+      while True:
+          log.info(f"============{_round}=============")
+          _range = min_max[1] - min_max[0]
 
-        try:
-            perc = calc_perc(guess_low_left, guess_high_left)
-            if perc != 0:
-                _guess = math.floor(_range * perc) + min_max[0]
-            elif perc == 1:
-                _guess = min_max[0]
-            else:
-                _guess = min_max[0] +1
+          try:
+              perc = calc_perc(guess_low_left, guess_high_left)
+              if perc != 0:
+                  _guess = math.floor(_range * perc) + min_max[0]
+              elif perc == 1:
+                  _guess = min_max[0]
+              else:
+                  _guess = min_max[0] +1
             
-            log.info(f"MIN MAX: {min_max}")
-            log.info(f"RANGE: {_range}")
+              log.info(f"MIN MAX: {min_max}")
+              log.info(f"RANGE: {_range}")
 
-            if _range +1 <= guess_left:
-                _guess = min_max[0]
-            if guess_left <= 1 and _range > guess_left:
-                _guess = min_max[0]
-        except ZeroDivisionError as e:
-            _guess = min_max[0]
+              if _range +1 <= guess_left:
+                  _guess = min_max[0]
+              if guess_left <= 1 and _range > guess_left:
+                  _guess = min_max[0]
+          except ZeroDivisionError as e:
+              _guess = min_max[0]
 
-        log.info(f"guesses left: {guess_left}, high left: {guess_high_left}, low left: {guess_low_left}")
-        log.info(f"calculated percentage: {perc * 100}%")
+          log.info(f"guesses left: {guess_left}, high left: {guess_high_left}, low left: {guess_low_left}")
+          log.info(f"calculated percentage: {perc * 100}%")
 
-        log.info(f"guess: {_guess}")
-        answer = guess(_guess)
-        log.info(f"answer: {answer}")
-        if "larger" in answer:
-            min_max[0] = _guess
-            guess_left -= 1
-            guess_low_left -= 1
-        elif "Round" in answer:
-            return answer
-        elif "flag" in answer:
-            return answer
-        elif "loose" in answer:
-            return answer
-        else:
-            min_max[1] = _guess
-            guess_left -= 1
-            guess_high_left -= 1
+          log.info(f"guess: {_guess}")
+          answer = guess(_guess)
+          log.info(f"answer: {answer}")
+          if "larger" in answer:
+              min_max[0] = _guess
+              guess_left -= 1
+              guess_low_left -= 1
+          elif "Round" in answer:
+              return answer
+          elif "flag" in answer:
+              return answer
+          elif "loose" in answer:
+              return answer
+          else:
+              min_max[1] = _guess
+              guess_left -= 1
+              guess_high_left -= 1
             
-        guess_low_left = guess_left - guess_high_left
-    return
+          guess_low_left = guess_left - guess_high_left
+      return
 
-if __name__ == '__main__':
-    io = remote("guess.hack.fe-ctf.dk", 1337)
-    total_guesses = 99
-    too_high = 3
+  if __name__ == '__main__':
+      io = remote("guess.hack.fe-ctf.dk", 1337)
+      total_guesses = 99
+      too_high = 3
     
-    res = strategy("round 0")
-    while True:
-        res = strategy(res)
-        try:
-            if "flag" in res or "loose" in res:
-                log.info(res)
-                break
-        except:
-            pass
-        log.info("======================NEW ROUND=========================")
+      res = strategy("round 0")
+      while True:
+          res = strategy(res)
+          try:
+              if "flag" in res or "loose" in res:
+                  log.info(res)
+                  break
+          except:
+              pass
+          log.info("======================NEW ROUND=========================")
 
-    io.close()
+      io.close()
 #+end_src
 
 #+include: ../templates/end_block.org :minlevel 1

