@@ -7,13 +7,26 @@
 ;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (package-initialize)
 
+;;(package-refresh-contents)
 ;; Install and load different language modes
 (setq package-selected-packages
       '(rust-mode
-        python-mode))
+        php-mode
+        python-mode
+
+        htmlize
+        color-theme-sanityinc-tomorrow
+        ))
 (package-install-selected-packages t)
 
 (require 'rust-mode)
+(require 'python-mode)
+(require 'php-mode)
+
+
+(require 'htmlize)
+(require 'color-theme-sanityinc-tomorrow)
+(load-theme 'sanityinc-tomorrow-night t)
 
 (require 'ox-publish)
 ;;(load "~/repositories/blog/ox-rss.el")
@@ -128,7 +141,10 @@
 (setq org-export-global-macros
       '(("timestamp" . "@@html:<span class=\"timestamp\">[$1]</span>@@")))
 
-(setq org-export-with-todo-keywords nil)
+(setq org-export-with-todo-keywords nil
+      org-html-htmlize-output-type 'css)
+
+(setq htmlize-untabify nil)
 ;; Project alist
 (setq org-publish-project-alist
       '(("blog-posts"

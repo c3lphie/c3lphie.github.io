@@ -12,6 +12,34 @@
     --purple-color: #b294bb;
 }
 
+.org-comment, .org-comment-delimiter {
+    color: var(--fg-alt-color);
+}
+
+.org-py-def {
+    color: var(--orange-color);
+}
+
+.org-preprocessor, .org-php-php-tag, .org-py-builtins{
+    color: var(--purple-color);
+}
+
+.org-variable-name, .org-php-variable-name, .org-py-variable-name {
+    color: var(--yellow-color);
+}
+
+.org-string, .org-php-string{
+    color: var(--aqua-color);
+}
+
+.org-type, .org-py-pseudo-keyword {
+    color: var(--blue-color);
+}
+
+.org-keyword, .org-php-keyword, .org-py-def-class, .org-py-try-if, .org-py-import-from{
+    color: var(--green-color);
+}
+
 .MathJax_Display {
 	  color: var(--fg-color) !important;
 }
