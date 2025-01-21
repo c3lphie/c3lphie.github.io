@@ -3,12 +3,23 @@
 #+filetags: :HTB:write-up:hacking:
 #+title: HTB | Explore
 * Introduction
+:PROPERTIES:
+:ID:       b7c3b161-d92f-4d15-a341-51537034bbe2
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 Welcome to this write-up for the easy box named Explore.
 In this write-up we'll attack an android device, showing just how important it is to protect devices other than our pc.
 * Recon
+:PROPERTIES:
+:ID:       51bfa532-a892-4c53-b4b8-3522690fb72c
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 As always we start doing some recon on the box.
 And we'll quickly find that this isn't a normal box, this is an android phone!
 ** Nmap
+:PROPERTIES:
+:ID:       f00e4dec-aa45-461e-99b1-2bb9b992eb3d
+:END:
 The result from ~nmap~ isn't really that useful as it is filled with a lot of noise.
 #+begin_example
 # Nmap 7.91 scan initiated Mon Jul 26 23:11:21 2021 as: nmap -sC -sV -p- -oA nmap/all_ports -v 10.129.161.205
@@ -142,8 +153,15 @@ Now it would make no sense for a smartphone to be running a minecraft bukkit ser
 
 *Spoiler ALERT* it doesn't... But googling the port number quickly tells us about [[https://nvd.nist.gov/vuln/detail/CVE-2019-6447][CVE-2019-6447]], which basically a backdoor in a File manager (ES File Explorer) for android.
 * Exploitation
+:PROPERTIES:
+:ID:       0ccaf40e-4991-481e-aaee-ab900a1ade6b
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 We can use the vulnerability to read files on the machine, and hopefully find some juicy info.
 ** ES File explorer
+:PROPERTIES:
+:ID:       338cb140-b04d-4736-932e-94d20796159f
+:END:
 Metasploit has a handy module for exploiting CVE-2019-6447, that we can use for enumerating all kinds of things on the machine.
 We can start by looking at installed apps:
 #+begin_example
@@ -202,6 +220,9 @@ Bingo!
 : kristi:Kr1sT!5h@Rp3xPl0r3!
 We can now login with using ssh and get a shell!
 ** Getting access
+:PROPERTIES:
+:ID:       7c137573-5488-4e7e-bf26-0e4921a52583
+:END:
 Now that we have credentials, we can just connect through ssh and get user flag!
 #+begin_example
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/explore ]

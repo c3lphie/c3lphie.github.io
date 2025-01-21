@@ -4,11 +4,19 @@
 #+summary: Small update post
 #+filetags: blog
 * TL;DR
+:PROPERTIES:
+:ID:       592e69e2-45c3-427b-a40d-d8cedf0fbcb1
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
  I've realised that doing this just for me, isn't enough motivation to keep doing it.
  Been busy with offline stuff.
  Added a donation page (only taking crypto).
 
 * Motivation
+:PROPERTIES:
+:ID:       2831d8d6-02a9-461e-9236-8689b3452d47
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 When I first started this blog, it was with the purpose having a place to share write-ups from CTF's HackTheBox or other things I find interesting.
 Just a place where I could store information, which others might stumble upon and like.
 
@@ -21,6 +29,10 @@ Which kinda goes against the reason I created this blog in the first place, but 
 I just lack motivation, and I wanted to change this.
 
 * Being Offline
+:PROPERTIES:
+:ID:       1637cef6-aea2-41eb-acb2-e94c4c6a9072
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 Other than not having motivation to just write posts and whatever, I have been busy with my offline life.
 
 Exams are over(thank god), and after having a small vacation where I could forget about everything that wasn't important was nice.
@@ -29,6 +41,10 @@ In the beginning of the year I set myself a challenge of completing 1 HackTheBox
 So that have been a bit of a bummer, but not something worth losing sleep over.
 
 * Give me all your money!!!!! (jk)
+:PROPERTIES:
+:ID:       86b93a75-4a80-4ba6-99b2-b22aa188f529
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 I order to address my lack of motivation, I figured why not accept money!
 The best motivation for anything in our capitalistic world.
 
@@ -55,6 +71,10 @@ Wallet addresses can be found [[https://c3lphie.com/donate.html][HERE]], or on t
 If you happen to use the brave browser I have added myself as a creator, so you can support me through that aswell. (THIS IS NOT AN AD FOR BRAVE, use whatever browser you feel comfortable in)
 
 * Footnotes
+:PROPERTIES:
+:ID:       62875366-73b1-4973-9e81-7d3d43654927
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 
 [fn:1] *Note:* I get the function of ads, and see their meaning and use on the online world, I just don't agree with the way it is done 99% of the time.
 #+include: ../templates/end_block.org :minlevel 1

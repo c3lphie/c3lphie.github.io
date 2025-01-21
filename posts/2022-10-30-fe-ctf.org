@@ -5,6 +5,10 @@
 #+filetags: :ctf:fe-ctf:write-up:
 
 * Introduction
+:PROPERTIES:
+:ID:       4483905d-c8c0-422c-b231-c8db31cea1a6
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Welcome to this write-up for the challenges that my team and I solved during FE-CTF!
 This CTF had some really nice and hard challenges, and was really pwn and rev heavy, but there was a couple of other challenges for those not into pwn or rev.
 
@@ -20,6 +24,10 @@ echo 6a75746c616e646961646d696e73 |  xxd -r -p
 When the CTF finished we placed 17th.
 
 * Dig-host-1                                                            :web:
+:PROPERTIES:
+:ID:       3200e6e9-68ee-44a5-a5db-8e63a348d136
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 This challenge was the first of four in total.
 In this challenge we were presented with simple website, where we can run dig on hosts.
 [[file:assets/2022-10-30_16-30-34_screenshot.png]]
@@ -47,6 +55,10 @@ flag{do people still use php?}
 And there it is:
 ~flag{do people still use php?}~
 * Dig-host-2                                                            :web:
+:PROPERTIES:
+:ID:       ef5bac30-96fd-4711-8006-d6505a2fd5eb
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 This is the second part of in this collection of challenges.
 There is a small hurdle in this challenge, as whitespace is removed.
 But we can bypass this using the ~${IFS}~ environment variable instead of a space character.
@@ -68,6 +80,10 @@ flag{who needs to sanitize input anyway?}
 And there is the second flag:
 ~flag{who needs to sanitize input anyway?}~
 * Dig-host-3                                                            :web:
+:PROPERTIES:
+:ID:       3b1545d6-b05e-481e-97eb-c9a5c12d6d6a
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 This was the second last part of the dig-host challenges.
 The vulnerability was the same but now ~$~ was an illegal character.
 This could be circumvented using bash redirections.
@@ -84,6 +100,9 @@ flag{it's not bug, it's a feature}
 There we got the flag:
 ~flag{it's not bug, it's a feature}~
 ** Bonus flag                                                      :web:rev:
+:PROPERTIES:
+:ID:       8d2fa178-3e7b-42cb-a2a6-d3b34d536fd4
+:END:
 The third dig-host challenge had a bonus flag. But it wasn't readable by normal means.
 If we look at the content of directory we can see a couple of things:
 [[file:assets/2022-10-30_19-31-15_screenshot.png]]
@@ -185,6 +204,10 @@ Put into the following oneliner:
 And there we go the bonus flag:
 ~flag{wait, i thought this was web!}~
 * Tar and feathers                                                :forensics:
+:PROPERTIES:
+:ID:       b126e9b5-80ed-413e-9d0e-53bfbe6ba77f
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 In this challenge we were given tar file containing multiple tar files nested inside.
 
 If we start looking at the content of the contents of the tar file we'll see that it is nested tar files:
@@ -328,6 +351,10 @@ And we have the flag:
 
 
 * Libnotfound                                                           :rev:
+:PROPERTIES:
+:ID:       d4ba1269-5417-4142-b25d-5b1dafb5721e
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 In this challenge we were provided with a binary that was missing library file.
 
 We can look at the needed libraries with ~patchelf~:
@@ -430,6 +457,10 @@ And then get the flag by running the binary:
 flag{hello? yes, this is flag}
 #+end_example
 * Guessing Game                                                      :omgacm:
+:PROPERTIES:
+:ID:       972f202c-a189-419d-ae57-cb33e1b69736
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 In this challenge we were basically only given a domain and port.
 Connecting to it with netcat, we get the following message:
 #+begin_example

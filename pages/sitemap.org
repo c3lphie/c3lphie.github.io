@@ -28,6 +28,8 @@
 <a href='/'><img src='static/c3lphie.png' id='avatar'></img></a>
 #+end_export
 
+- {{{timestamp(20-01-2025)}}} [[file:2025-01-02-a-new-beginning.org][A new beginning]]
+  How I wrote a config extractor Quasar Rat. A backdoor written in .NET, with an encrypted configuration.
 - {{{timestamp(30-10-2022)}}} [[file:2022-10-30-fe-ctf.org][FE-CTF: CyberDemon]]
   Write-ups for this years CTF hosted by FE. This was really high quality CTF, with some hard challenges
 - {{{timestamp(31-07-2022)}}} [[file:2022-07-31-htb-late.org][HTB | Late]]

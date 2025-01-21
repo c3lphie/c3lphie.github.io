@@ -4,6 +4,10 @@
 #+title: C2 your own adventure part 1
 
 * Introduction
+:PROPERTIES:
+:ID:       d84b264f-b70b-4071-8831-c49df1aacced
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 So I recently got the idea that I wanted to create my own Command and Control framework.
 Now why would I ever go down that rabbit hole, when there are multiple different available solutions out there?
 I learn best by doing it myself, also /if/ you want to go undetected on real assessments it's best to use your own tools.
@@ -20,6 +24,10 @@ And part 3... Well I'll keep that a secret until then ;),
 
 ...and yes the title is a corny joke on the "choose your own adventure" game genre
 * What is C2?
+:PROPERTIES:
+:ID:       bdeef488-e3ba-4ef3-9675-26342d570408
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 C2 is an abbreviation of Command and Control, it is a centralised way of controlling a lot of units of some kind.
 From my research, mostly skimming the Wikipedia article, there are today two industries where this is seen[fn:1]:
  1. Military
@@ -35,6 +43,10 @@ Many of these extra features are implemented to make it harder for blueteams to 
 However as this my first dive into creating this, I'll be taking a rather simple aproach and just have a simple server.
 
 * Communication flow
+:PROPERTIES:
+:ID:       61294b26-48a7-4347-91ef-8bf02330ff3e
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 Alright so now that we got the basics down, let's have a look at how the communication flows between the C2 server and the Agent.
 
 I have broken the communication down in the following sequence diagram:
@@ -51,6 +63,10 @@ But whatever it is, the agent *must* be able to handle it, and then send the res
 It's not a complicated communication flow, and there is no reason it should be.
 
 * The Agent
+:PROPERTIES:
+:ID:       cbae6a62-a389-481a-bd5d-b0b49354e019
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 As I said in the beginning, I'll be focusing on the agent in this post.
 There are a couple of choices that needs to be made with regards to the Agent.
 
@@ -78,6 +94,9 @@ In todays age of multiple different OS' and CPU architectures, it would be kind 
 The agent will therefore be written in Rust, as it is fast, cross-compileable and I want to learn it.
 
 ** Components
+:PROPERTIES:
+:ID:       d1704d8c-ad77-4445-8917-9c163f757819
+:END:
 In order to handle the above design decisions I have come up with the following 4 components to the Agent:
 
  1. Communication
@@ -90,6 +109,9 @@ And if you decide to create your own for the sake of learning, I think there is 
 That being said /if/ you want to copy my code, I'll publish the source code once I'm done with this small three part series so stay tuned ;)
  
 *** Communication
+:PROPERTIES:
+:ID:       82c6d4d1-454d-48b3-be1a-0c8a8af6a4d7
+:END:
 To get development started quickly I went with the rust crate [[https://hyper.rs/][~hyper~]] for handling the web requests to the C2 server. As of writing this post, the traffic between the Server and Agent is not encrypted, but will down the line setup encryption using HTTPS.
 
 The code written for this component is fairly simple, and is based on the examples provided by ~hyper~.
@@ -127,6 +149,9 @@ Beside registering the agent, there are also functions for fetching tasks and re
 But they function more or less the same as the above example.
 
 *** Task handling
+:PROPERTIES:
+:ID:       c7f7a34c-0127-42d2-8161-59aa69ea11d3
+:END:
 Right now there are only two types of tasks, those being the ~builtin~ and the ~module~ types.
 To be able to handle those in an elegant way, and be able easily expand it later I created an enum with the possible types.
 This enum is the used with the pattern matching functionality in rust to execute 
@@ -153,6 +178,9 @@ This enum is the used with the pattern matching functionality in rust to execute
 #+end_src
 
 **** Builtins
+:PROPERTIES:
+:ID:       556fedf2-5b4e-4900-8950-349102f7a3a5
+:END:
 I created five simple versions of the shell commands:
  - ls
  - cd
@@ -205,6 +233,9 @@ If the ~path.is_file()~ call returns true, I then open the file and reads the co
 Again the implementation details aren't the is not the focus, so this is just to emphasize that the builtin tasks, as the name suggests, are built into the agent.
 
 **** Modular
+:PROPERTIES:
+:ID:       a8430b97-0560-463e-970b-1a150d37af80
+:END:
 The modular tasks are a tiny bit more complicated, as I need the agent to be able to load and execute arbitrary code.
 This would be /really/ easy in a language like C, where there are no memory restrictions.
 But rust being the language it is, there are one or two hoops we need to jump through.
@@ -249,6 +280,9 @@ You can of course write it manually in assembly, but writing in a higher languag
 I have started on a side project in tandem with this one that will make it a bit easier to create shellcode. But that is not in the scope of this post ;)
 
 **** Future task types
+:PROPERTIES:
+:ID:       b659a40b-3cef-4449-82a7-abfc5f785195
+:END:
 Shellcode is quite modular because it can do whatever it is told, but there is a lot of premade tools that would be nice to be able to be able to run.
 
 There are different ways to do this, it could download the executable to the harddisk and then just run it.
@@ -258,6 +292,10 @@ It could also execute directly from memory, which would also reduce cleanup afte
 Another type of tasks could be shellscripts such as powershell or bash depending on the target system.
 
 * Conclusion
+:PROPERTIES:
+:ID:       4c2532b7-6bad-4b0e-87bf-e4ac6f47a857
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 If you have read this far I really hope enjoyed and learned a little about what goes into creating a agent.
 
 Most of the focus has been on the design, because the implementation will always differ between languages.
@@ -269,6 +307,10 @@ Also persistense isn't a thing yet
 Next post will focus on the server that the agent will make callbacks to.
 
 * Footnotes
+:PROPERTIES:
+:ID:       03ed2960-e4f5-483f-b606-2b6c60aae4ab
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 [fn:2] https://www.offensive-security.com/metasploit-unleashed/about-meterpreter/ 
 
 [fn:1] https://en.wikipedia.org/wiki/Command_and_control 

@@ -35,17 +35,7 @@
 \\
 - [[file:sitemap.org][All posts]]
 * Other links
-- [[file:donate.org][Donate]]
 - [[https://discord.gg/t8tKrgdGWu][Discord newsletter]]
-
-#+attr_html: rel="me"
-#+begin_export html
-<ul class="org-ul">
-  <li>
-    <a rel="mig" href="https://norrebro.space/@c3lphie">Mastodon</a><br>
-  </li>
-</ul>
-#+end_export
 - [[https://github.com/c3lphie][Github Account]]
 - [[https://app.hackthebox.eu/profile/110432][HackTheBox Account]]
 

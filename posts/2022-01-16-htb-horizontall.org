@@ -3,15 +3,26 @@
 #+filetags: :HTB:write-up:hacking:
 #+title: HTB | Horizontall
 * Introduction
+:PROPERTIES:
+:ID:       ce9bdeec-798c-4e5e-a02f-afdbc9b15303
+:PUBDATE:  <2023-03-30 Thu 21:34>
+:END:
 Hello and welcome to my write-up for Horizontall.
 This was an easy box with a webserver running on port 80.
 I do a couple of tricks like ssh tunneling, to exploit a service running locally on the machine.
 But with that said, let's get hacking!
 * Recon
+:PROPERTIES:
+:ID:       eb90f240-a133-4696-b958-e8e182b1808c
+:PUBDATE:  <2023-03-30 Thu 21:34>
+:END:
 First things first, we'll run ~nmap~ to get a better image of the services running on the box.
 After this we can do some web enumeration on the web server running on port 80.
 
 ** Nmap
+:PROPERTIES:
+:ID:       8ddf0074-9f9b-4751-91c0-5425799abe76
+:END:
 I split the scan up into two parts, as I initially wanted to go kinda stealthy on the machine.
 This however went pretty quickly out the window.
 #+caption: Initial scan of the box
@@ -60,11 +71,17 @@ Nmap done: 1 IP address (1 host up) scanned in 11.98 seconds
 Here we get a hostname ~horizontall.htb~, and the version of the web server.
 ~nginx 1.14.0~ which is a reverse proxy, this could mean that there might be more running on the server than first thought.
 ** Web enumeration
+:PROPERTIES:
+:ID:       e1c570a0-6bba-456f-a3f2-ad338cbaa70e
+:END:
 Let's add the hostname to ~/etc/hosts~, before we start exploring the website.
 #+begin_example
 [root@c3lphie-laptop horizontall]# echo "10.129.204.161    horizontall.htb" >> /etc/hosts
 #+end_example
 *** Gobuster
+:PROPERTIES:
+:ID:       27911d3e-31cf-4c23-b9a1-e9d7c0e6107b
+:END:
 Before actually looking at the site, I started ~gobuster~:
 #+begin_example
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
@@ -94,6 +111,9 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 #+end_example
 But as you can see from the output there isn't a lot to come after...
 *** Zaproxy
+:PROPERTIES:
+:ID:       075692f9-392a-45de-8262-cdbd2c1a2989
+:END:
 I used ~zaproxy~'s HUD, which is firefox with some extra stuff for attacking web apps.
 The site index, it is a pretty simple website for some new tech-startup.
 #+attr_org: :width 700
@@ -107,6 +127,9 @@ It has been created in ~vue.js~, but googling around for vulnerabilties won't gi
 #+attr_org: :width 700
 [[file:assets/2021-08-29_18-12-54_screenshot.png]]
 *** App.js
+:PROPERTIES:
+:ID:       c58b39e4-8375-489b-8dde-92eed3a1a7a7
+:END:
 There is a subdomain leaked in the file ~app.js~:
 #+caption: Subdomain leak in ~app.js~
 #+begin_src js
@@ -133,7 +156,13 @@ There is a subdomain leaked in the file ~app.js~:
 #+end_src
 Let's add this to ~/etc/hosts~, and start poking a bit on that.
 *** api-prod.horizontall.htb
+:PROPERTIES:
+:ID:       7e5e424c-6a1d-43f3-8c55-8d05a1f8b129
+:END:
 **** Gobuster
+:PROPERTIES:
+:ID:       bd1bad35-f207-4a3c-a12d-ee33a3a5f7ec
+:END:
 Why don't we start off with ~gobuster~ on the new subdomain:
 #+begin_example
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
@@ -204,7 +233,14 @@ If we duckduckgo this version with exploit, we should find the following link: [
 
 This python script should give us foothold and user flag!
 * Exploitation
+:PROPERTIES:
+:ID:       6377a23e-a5de-4235-807a-54994adf43e1
+:PUBDATE:  <2023-03-30 Thu 21:34>
+:END:
 ** Get user
+:PROPERTIES:
+:ID:       195c728f-a4d2-4d38-9f39-9d5544ea320f
+:END:
 Let's run the exploit script:
 #+begin_example
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/horizontall ]
@@ -281,6 +317,9 @@ It was about this time I remembered this little trick for upgrading you're shell
 
 Now we are ready to root!
 ** Priv esc
+:PROPERTIES:
+:ID:       1b3701e9-1577-4911-8af1-d6b5b754854d
+:END:
 I wanted to run ~linPEAS.sh~ on the box, so I created a quick python web server and downloaded the script from there.
 
 In ~linPEAS.sh~ output, there is something interesting under the active ports section:

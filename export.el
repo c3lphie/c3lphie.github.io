@@ -7,7 +7,7 @@
 ;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (package-initialize)
 
-;;(package-refresh-contents)
+;; (package-refresh-contents)
 ;; Install and load different language modes
 (setq package-selected-packages
       '(rust-mode
@@ -29,7 +29,7 @@
 (load-theme 'sanityinc-tomorrow-night t)
 
 (require 'ox-publish)
-;;(load "~/repositories/blog/ox-rss.el")
+(load "~/blog/ox-rss.el")
 
 (defun get-content (filePath)
   "Returns the content of the file pointed to by filePath"
@@ -168,17 +168,14 @@
          :html-preamble c3lphie/html-preamble
          :html-postamble c3lphie/html-postamble)
         ("blog-rss"
-         :base-directory "~/blog/posts/"
+         :base-directory "~/blog/posts"
          :base-extension "org"
-         :recursive nil
-         :publishing-directory "~/blog/"
-         :publishing-function c3lphie/org-rss-publish-to-rss
+         :publishing-directory "~/blog"
          :rss-extension "xml"
-         :auto-sitemap t
-         :sitemap-title "RSS Feed"
-         :sitemap-filename "~/repositories/blog/posts/rss.org"
-         :sitemap-format-entry c3lphie/format-rss-feed-entry
-         :sitemap-function c3lphie/format-rss-feed)
+         :exclude ".*"
+         :include ("../pages/sitemap.org")
+         :publishing-function (org-rss-publish-to-rss)
+         )
         ("blog-pages"
          :base-directory "~/blog/pages/"
          :base-extension "org"
@@ -196,7 +193,8 @@
          :publishing-function org-publish-attachment)
         ("blog"
          :components ("blog-posts"
-                      ;;"blog-rss"
-                      "blog-pages" "blog-assets"))))
+                      "blog-rss"
+                      "blog-pages"
+                      "blog-assets"))))
 
 (org-publish "blog" t)

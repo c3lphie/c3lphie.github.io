@@ -1,0 +1,302 @@
+#+setupfile: ../templates/level-0.org
+#+title: A new beginning
+#+date: <2025-01-21>
+#+summary: How I wrote a config extractor Quasar Rat. A backdoor written in .NET, with an encrypted configuration.
+#+filetags: :malware:rev:
+* Introduction
+Hello, it has been a while... This is an attempt at kickstarting this blog.
+As of writing this we just entered the year 2025, and one of the new years resolutions I have, is to kickstart this site. But with a focus on one of my new fascinations... Malware!
+
+So without setting too high expectations, I plan releasing a new blog post every 1-2 months, covering different samples.
+
+And the first sample we will look is a Quasar rat, which comes bundled as a RAR sfx.
+I got it from the public malware database "Malware Bazaar" at the following link: [[https://bazaar.abuse.ch/sample/210673b54f64ba4504b4ffb778b245261ba47ba659bfe14cd66290bf9c0f64ba/][Sample download]]
+
+The main focus of this post will be to examine the RAT itself, so the two other files inside the SFX archive will be disregarded.
+
+So without further ado, let dive into this malware!
+* Quasar Client
+Quasar is a backdoor developed in C# using the .NET framework.
+This is nice for reverse engineering, since the bytecode C# compiles into can be decompiled using tools such as dnSpyex.
+
+This sample have been slightly obfuscated by converting all classes, methods, and fiel to random unicode characters.
+
+#+DOWNLOADED: screenshot @ 2025-01-16 20:03:35
+#+attr_org: :width 750px
+[[file:assets/2025-01-16_20-03-35_screenshot.png]]
+
+While no use of control-flow obfuscation was present, this is still rather irritating to work through.
+I used the trusty old ~de4dot~ program to clean up all of the useless names.
+
+
+#+DOWNLOADED: screenshot @ 2025-01-16 20:06:55
+#+attr_org: :width 250px
+[[file:assets/2025-01-16_20-06-55_screenshot.png]]
+
+From here I found the entrypoint, and slowly worked my way through the program code, until I found a static class containing a lot of base64 encoded strings. Do note that field and method names from here on out are a products of reverse engineering.
+
+#+DOWNLOADED: screenshot @ 2025-01-16 20:14:57
+#+attr_org: :width 750px
+[[file:assets/2025-01-16_20-14-57_screenshot.png]]
+
+We could try and decode these strings, but they use a layer of encryption to further hide all their juicy secrets until the program is actually run.
+The decryption happens in an initialization method, which makes use of a helper class that I renamed to ~QuasarCrypto~. 
+
+#+DOWNLOADED: screenshot @ 2025-01-16 20:14:19
+#+attr_org: :width 750px
+[[file:assets/2025-01-16_20-14-19_screenshot.png]]
+
+Let us start by examining the the constructor method for ~QuasarCrypto~.
+It uses the provided ~masterKey~ to derive two new keys using PBKDF2, which was described in Rfc2898[fn:1].
+It is important to note that there are a couple arguments provided to the ~Rfc2898DeriveBytes~ constructor beside the ~masterKey~. I'll get back to these later, but do note that the salt and number of rounds are hardcoded.
+The first key ~key0~ is the one used in the AES cryptography utilized by the encryption/decryption functions.
+The second key ~key1~ is used utilized for message authentication for verifycation of ciphertext.
+
+#+DOWNLOADED: screenshot @ 2025-01-20 21:47:38
+#+attr_org: :width 750px
+[[file:assets/2025-01-20_21-47-38_screenshot.png]]
+
+The methods handling decryption and encryption does basically the same thing.
+Just slightly different uses of the methods provided by .NET's ~AESCryptoProviderService~ object.
+I'll focus on the decryption method, as we can utilize that as a basis for extracting the config.
+In short, the method setups up the cryptoprovider with a keysize of 256 bits and a block size 128 bits, and mode as CBC.
+The first 32 bytes is an HMAC hash that it uses to verify the integrity of what it is decrypting.
+The next 16 bytes is the initialization vector (IV) used by the cryptoprovider.
+And the last section decrypts the content and copies it into ~array6~ which is the decrypted value.
+
+#+DOWNLOADED: screenshot @ 2025-01-20 22:20:20
+#+attr_org: :width 750px
+[[file:assets/2025-01-20_22-20-20_screenshot.png]]
+
+** Extracting the config
+Before diving too deep into how the extractor I wrote worked, I need to give a big shoutout to @ArseneLapin, @RelaxPreppy, and @Washi, from the OALabs Discord server.
+They were a massive help with figuring out how to convert the decrypters logic to python, as well as how CIL worked under the hood.
+
+This is by no means the /best/ config extractor for Quasar that is out there.
+But it does get the job done!
+
+I use the python libraries ~dnfile~ and ~dncil~ for parsing the executable, and its bytecode.
+
+First I loop through all of the method definitions until find the masterkey.
+I also save the ~MethodDef~ to speed up the decryption, as the masterkey is present in the ~QuasarConfigs~ class constructor ".cctor" along with all the other config options.
+#+begin_src python
+  method_defs = [x for x in pe.net.mdtables.MethodDef]
+
+  master_key = None
+  config_md = None
+
+  print("Searching for master key")
+  for md in tqdm(method_defs):
+      try:
+          body: CilMethodBody = read_method_body(pe, md)
+      except MethodBodyFormatError as e:
+          # print(e)
+          continue
+
+      if not body.instructions:
+          continue
+
+      if md.Name == ".cctor":
+          for insn in body.instructions:
+              if insn.opcode == OpCodes.Ldstr:
+                  res_string = resolve_token(pe, insn.operand)
+                  if res_string.isalnum():
+                      master_key = res_string
+                      config_md = md
+                      break
+
+          if master_key:
+              break
+#+end_src
+
+Once I have found the masterkey, I begin searching for the other important values.
+These being the variables declared in the beginning.
+I use different heuristics to grab each of the values from CIL instructions provided by ~dncil~.
+Getting the key lengths and number of rounds are fairly straight forward, as their values can be grabbed based on offsets from certain method calls.
+#+begin_src python
+  pbkdf_rounds = 0
+
+  salt = b""
+  salt_token = None
+
+  key1_len = None
+  key2_len = None
+  print("Gathering important fields")
+  for md in tqdm(method_defs):
+      try:
+          body: CilMethodBody = read_method_body(pe, md)
+      except MethodBodyFormatError as e:
+          # print(e)
+          continue
+
+      if not body.instructions:
+          continue
+
+      tmp_insn = []
+      for insn in body.instructions:
+
+          tmp_insn.append(insn)
+          if "DeriveBytes::.ctor" in format_operand(pe, insn.operand):
+              pbkdf_rounds = tmp_insn[-2].operand
+
+              salt_token = resolve_token(pe, tmp_insn[-3].operand)
+
+          elif "DeriveBytes::GetBytes" in format_operand(pe, insn.operand):
+              if not key1_len:
+                  key1_len = tmp_insn[-2].operand
+                  continue
+              if not key2_len:
+                  key2_len = tmp_insn[-2].operand
+                  continue
+#+end_src
+
+The salt is not as straight forward since it is a bytearray, and we need to get its embedded data another place.
+If we examine the class constructor method for ~QuasarCrypto~ as IL, we see that its data is loaded from another token at runtime ~Struct1~.
+#+DOWNLOADED: screenshot @ 2025-01-21 18:31:42
+#+attr_org: :width 750px
+[[file:assets/2025-01-21_18-31-42_screenshot.png]]
+
+So to extract the salt dynamically we need to find the class constructor which tries to store something in the token we found along with the pbkdf rounds.
+Once found we can trace back to the ~ldtoken~ instruction, and use its operand to calculate the offset in the raw file where we find the salt.
+#+begin_src python
+      if md.Name == ".cctor":
+          tmp_insn = []
+          for insn in body.instructions:
+              tmp_insn.append(insn)
+
+              if insn.opcode == OpCodes.Stsfld:
+                  token = resolve_token(pe, insn.operand)
+                  if token != salt_token:
+                      continue
+
+                  ld_token = tmp_insn[-3]
+                  table_name = DOTNET_META_TABLES_BY_INDEX.get(
+                      ld_token.operand.table
+                  )
+                  table: Any = getattr(pe.net.mdtables, table_name)
+
+                  field = table[ld_token.operand.rid - 1]
+
+                  for frva in field_rva_list:
+                      if frva["field"] == field:
+                          salt_offset = pe.get_offset_from_rva(
+                              frva["fieldrva"].Rva
+                          )
+                          salt = raw_file[salt_offset : salt_offset + 0x20]
+                          break
+#+end_src
+
+Now that we have all the components it is possible to decrypt the rest of the strings in the ~QuasarConfig~ class.
+So the next code snippet is fairly long, but pretty simple!
+After generating the two keys, we then loop over the instructions in the saved function.
+Whenever we encounter an instruction which loads a string (Ldstr), we check that the operand isn't empty and isn't equal to the masterkey.
+Throwout the first 32 bytes, since we don't care about the HMAC hash, and use the next 16 as our IV.
+I use ~malducks~ AES CBC module to decrypt the ciphertext, and store the plaintext string in a list.
+Finally I zip the decrypted strings with the labels, and print the resulting dictionary as a json string.
+#+begin_src python
+  keys = PBKDF2(master_key, salt, dkLen=key1_len + key2_len, count=pbkdf_rounds)
+  key1 = keys[:key1_len]
+  key2 = keys[key1_len:key2_len]
+
+  config_labels = [
+      "version",
+      "c2channels",
+      "subdirectory",
+      "executablename",
+      "guid",
+      "scheduled task name",
+      "tag",
+      "log folder",
+      "signature",
+      "x509cert"
+  ]
+
+  decrypted_strings = []
+  print("Decrypting config")
+  try:
+      body: CilMethodBody = read_method_body(pe, config_md)
+  except MethodBodyFormatError as e:
+      print(e)
+      exit(1)
+
+
+  tmp_insn = []
+  for insn in body.instructions:
+      if insn.opcode == OpCodes.Stsfld:
+          prev_insn = tmp_insn[-1]
+          if prev_insn.opcode != OpCodes.Ldstr:
+              continue
+        
+          res_string = resolve_token(pe, prev_insn.operand)
+          if res_string == "":
+              continue
+        
+          if res_string == master_key:
+              continue
+        
+          try:
+              cipher_bytes = b64decode(res_string)[32:]
+              iv_size = int(128 / 8)
+              decrypted = malduck.aes.cbc.decrypt(
+                  key1, cipher_bytes[:iv_size], cipher_bytes[iv_size:]
+              )
+              decrypted = decrypted.decode("utf-8", errors="ignore")
+              decrypted = "".join(filter(lambda x: x in string.printable, decrypted))
+              decrypted_strings.append(
+                  decrypted.strip()
+              )
+          except Exception as e:
+              pass
+          if len(config_labels) == len(decrypted_strings):
+              break
+
+      tmp_insn.append(insn)
+      if len(config_labels) == len(decrypted_strings):
+          break
+
+
+  config = {a: b for a, b in zip(config_labels, decrypted_strings)}
+  print(json.dumps(config, indent=4))
+#+end_src
+
+The full code can be found on my github here: https://github.com/c3lphie/MalwareExtractors/tree/main/quasar
+
+
+
+* IoC's
+** Hashes
+Dropper (SHA256):
+210673b54f64ba4504b4ffb778b245261ba47ba659bfe14cd66290bf9c0f64ba
+
+Quasar RAT (SHA256):
+19fd26fa3f76141cc05ef0c0c96ea91dcf900e760b57195f216a113b1cf69100
+
+*** Other files
+There were a couple of other files, which I didn't cover as I wanted to focus on the config extraction.
+Here are their hashes
+
+agfiKDLgr58thy4d.exe:
+92133787af66e6d68a301ef087e4116f5cab3f538d8ec5e5e0eb95cecc68ea8
+GR55Qg1hth.exe:
+de83dd82da3ebaa2c09fd75a7307ad5e2031ad8c911cd75753ffef3eb1571f0a
+** Config
+#+begin_example
+  {
+      "version": "1.4.0",
+      "c2channels": "185[.]148[.]3[.]216:4000;",
+      "subdirectory": "SubDir",
+      "executablename": "Client.exe",
+      "guid": "c3557859-56ac-475e-b44d-e1b60c20d0d0",
+      "scheduled task name": "3dfx Startup",
+      "tag": "4Drun",
+      "log folder": "Logs",
+      "signature": "ByDUofMLQgqnSGeOoX50tM6eeQAY6MnNxiJiCC2eBiopyUWH0YzcY77mquaFlZFbJe+38QvhEP/EAKjpyNkSr9UvnaryvxtQUwALlvCXHOGiNngnRu2hMr/1f0tz67zN18GMoSfHpJxFCHUK4WUxULNz0glbmSVe4ncwv+jbZbxMRRT56cMS4iTsAsFWkWmMpXur9SZ3DC0DYaCrzJvKTXc58ZrOonYZNRBeKqyo0/sOCemzsOb8naHm0x6g1/Diyy1ho3oAEFQGe9pJT6NVcSJWgQcC4iw/grOiXINkcPgxf3tZvyoWgqoqGe+XAcasrtShVc/ElGUL2t47gnpO4vv+GCLZNpHjF4Pf/dkmGI1e0A2SF8wZMdBEq9u5OFkm76yrhMbcr3vZ6llaOmacAAw15WMROR99+hlay+URdz9Jkosj2KyAJp2kadJdpIDbADhrkfNXcLiAvSiu/Ipq38fNaeuPsQrCM57cdkDIq2GcJxewNTwJjSZCA9cIfmsLX0SI6rbg5zNn/1iP91G85Q6YnP1GvDTFrXK1SPyIZ9EQphv+JgWaEQY+oMRRJ7URaBOpzI9S27fdLt9bIihX586pBXgIPkxh4p01DUiWBpLQCB11i+FLiNoGk0NBU18TyqUZAanaKKhINDrAXhzDPNpAa3BXBiA4nFAtVPPG1uo=",
+      "x509cert": "MIIE9DCCAtygAwIBAgIQAKWNJoTS10sH5BABHyM5HzANBgkqhkiG9w0BAQ0FADAbMRkwFwYDVQQDDBBRdWFzYXIgU2VydmVyIENBMCAXDTIyMTExMDE4NDMzNVoYDzk5OTkxMjMxMjM1OTU5WjAbMRkwFwYDVQQDDBBRdWFzYXIgU2VydmVyIENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAm92HKLljPJb4f6L85f4QrRcSQyEf3DaBQjsnJRIJ1ztwf8iM2PpWh3CX2qtf5/oXqUzxuWRvO5J294PWlS1ifPQFKfkMZD3QCJDLpC/BczpAaX2cFR7+0QxbA8UXamHv1vnsQkhhUK12XivJp/Dd2DscCFGtVEdu3agMAgFN6Tf4SaItTLQI27DhYrchhgsv3wWUoB2+L4ld3V79yuLwVBEohXSVrowIzDhnztDWyZAJau7i26StPIGWOla83Kb8frqxgpGjxEbc6vpq1S9iD9NjWVhKTqBYNkYXYYODgt3QS6IrSkoNfeXvgAa9+fxzPg7PY75VPYrXf6pGiiWhRVXi94bYBQuQRqOU+Pr4fjpBtDiktO3P0zlYA8qpNyJm1L6BWc08UXJKKzzIH75jYEdRSQlqf5SUcn4QNzcOZZ2aJh5b9jmPCI2JfqDQItpweLYiunFE9V9/LPXGm/TRC6h/XXqEoRJo8JSNygyqI4YxAS7vaUQbrHed/JcQV35tPpBlsAjWfDVqTXKD4pchapgmTb0ywKE+dOLrHoisEgrbbH8gAxTffzAX73QY4F1ANxz7i210NYaErMqlUeNYfGvXVjJRwQSYuCJpznQJEF4QSLglvrFpWQqpkw5+EQqFW19DOu6sm5Oli7WRlC1CgBkthgC4IJpFKDqqAGLaVMECAwEAAaMyMDAwHQYDVR0OBBYEFI/zHrJ05quZpAGRo21xNO1iBVtdMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQENBQADggIBAGEFg70IC24qMiR6gg0fAllHDJZFRM4VBaoqmoclx/KEaSiD0fYcnwW6CBkK10Un+KEYUm4aLemIyExYxeMKrpsXLZ7jAgEXaZXQFtXUYzdlf/O8VrNgqAca2jq1ywmMyuZ8JqD3GSaAa4/9ihgOSklK3aNicX10jqw8ptnnShyKQRl5RQXHndhKP63Dw05vsNdzSlzxD8nc3g9AEXfeZXqpu02n8rlxJWtp2m3vpi+NpbQ4SWoMEvQNXKxK9vqOEMi6q13zyp0nOfGGsbh/++NElBKF+c0MdbAStXGF53T/WIZrwOBWOkOioffsP6qIjLMwrh+3B+4z3nacRiAEXnfvi1hxvblkeZsb0pCOr1ctFg+GI/Xb2VRf+inljt+5DKBcMwLg0zix3+WZlNV/P92W3zRVVqBFsdcAeLqbk7TvOtp4XGnRTUtJzCYqOSPJexJcZy3sxceNxaJnkNL0P4T3MQTzOFtxsmwGzXY2jhfSIBqWZKNk7m+GCH74MjhwSmqTpXk8szIRBKRzQyDxzefy1pm/NxwGMH09nrRCiWruxInEZAOz1jpVrFdShH8G2YI3D/JIcnLuMEwJb+zCWxx4YESJkz+Rbbo58Fpt4FVnjGFx12whwlEVckq+TyA51WGuLPEkQJCjJPpY/fEOQeBsJksB2O3YXFqMEw9P88mz"
+  }
+#+end_example
+
+#+include: ../templates/end_block.org :minlevel 1
+
+* Footnotes
+
+[fn:1] https://en.wikipedia.org/wiki/PBKDF2 

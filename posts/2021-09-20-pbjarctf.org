@@ -4,6 +4,10 @@
 #+summary: Write-up about the different challenges I completed in the PBjar ctf.
 #+filetags: :pbjar:write-up:hacking:
 * Introduction
+:PROPERTIES:
+:ID:       282bde50-6cfd-4618-aea4-b0ff5db67df0
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 This weekend I competed in the PBjar ctf, where I landed on 76 place.
 Which isn't half bad if i'd say so myself.
 
@@ -12,6 +16,10 @@ I won't cover all the challenges I completed, as I didn't write notes for all of
 
 Hope you'll enjoy the reading, or find any of this useful one way or another.
 * DONE cOrL                                                             :web:
+:PROPERTIES:
+:ID:       cde26028-423d-4479-b130-53e58bbd5efc
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 This was a fairly easy web challenge, where you had to bypass a login form to get the flag.
 The description gave us the user name ~admin~, supplying the password ~admin~ gives us the following message:
 [[file:assets/2021-09-18_15-59-54_screenshot.png]]
@@ -71,6 +79,10 @@ This can also be done quite easily with(as the challenge name implies), ~curl~:
 </html>
 #+end_example
 * DONE ProgrammersHateProgramming                                       :web:
+:PROPERTIES:
+:ID:       cc12b115-650e-49f3-b4ee-9ad5fa6bb642
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 This challenge was a fun PHP bypass challenge.
 The vulnerable source code was available for download, and can be seen below:
 #+begin_src php
@@ -132,6 +144,10 @@ Ran: cat ../../../flag.php | Ret: 0
 <pre>flag{server_side_php_xss_is_less_known_but_considering_almost_80%_of_websites_use_php_it_is_good_to_know_thank_me_later_i_dont_want_to_stop_typing_this_flagg_is_getting_long_but_i_feel_like_we're_developing_a_really_meaningful_connection}</pre>
 #+end_example
 * DONE ProgrammersHateProgramming 2                                     :web:
+:PROPERTIES:
+:ID:       de17488b-8b05-4efd-8bb3-556f01681f7f
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 This was a follow challenge, which builds on [[*ProgrammersHateProgramming][ProgrammersHateProgramming]].
 Again we have the vulnerable source code available:
 #+begin_src php
@@ -208,6 +224,10 @@ Ran: cat ../../../flag.php | Ret: 0
 <pre>flag{wow_that_was_a_lot_of_filters_anyways_how_about_that_meaningful_connection_i_mentioned_earlier_:)}</pre>
 #+end_example
 * DONE Hack NASA With HTML Mr. Inspector Sherlock                       :web:
+:PROPERTIES:
+:ID:       bf22569e-9088-44ed-be8f-39723ac38d5b
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 This challenge had a flag split into 3 parts, where each part is hidden somewhere on this beautiful site:
 [[file:assets/2021-09-21_09-00-19_screenshot.png]]
 
@@ -237,6 +257,10 @@ The ~old.html~ endpoint loads the javascript file ~animate.js~, which contains t
 Now all that was need to do is concatenate the flag parts together:
 : flag{wA1t_a_m1nUt3_I_th0ugh1_sh3l0ck_w2s_a_d3t3ct1iv3????!?!?!}
 * DONE Convert                                                       :crypto:
+:PROPERTIES:
+:ID:       8aa6346e-c67c-4477-8432-437cd96a6575
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 Convert the hexvalue in [[file:convert/file.txt]] to ascii representation
 : 666c61677b6469735f69735f615f666c346767675f68317d
 
@@ -247,6 +271,10 @@ This can quickly be done using ~xxd~:
 flag{dis_is_a_fl4ggg_h1}%
 #+end_example
 * DONE polymer                                                          :rev:
+:PROPERTIES:
+:ID:       29bd6faf-fff0-4783-a121-fc94a770578d
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 In this challenge a binary was supplied.
 This binary would print a lot of text containing fake flags, an just one real flag.
 
@@ -257,6 +285,10 @@ To find the real flag I ran ~strings~ on the binary and chained a couple of ~gre
 flag{ju5t_4n0th3r_str1ng5_pr0bl3m_0159394921}
 #+end_example
 * DONE Luna Guesser                                               :forensics:
+:PROPERTIES:
+:ID:       584b2741-22e5-4366-8d12-b7ed7e0f4298
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 In this challenge I was given a sound file, ~LunaGuesser.wav~, which if opened played a very annoying sound.
 If run through a spectrum analyzer, it looks a lot like it starts with a header before sending more data.
 
@@ -271,6 +303,10 @@ This gave the following picture:
 The flag was the name of the place in this picture, so after googling ~moon landing place name~, I found the flag to be:
 : flag{mare_tranquillitatis}
 * DONE Stegosaurus stenops                                        :forensics:
+:PROPERTIES:
+:ID:       ff3fffb0-8fed-4eeb-a833-84e6f75147ef
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 In this challenge we were given the following picture:
 [[file:assets/stegosaurus.jpg]]
 
@@ -293,6 +329,10 @@ Once the script is done, we can look in the ~output~ file and we got the flag:
 flag{ungulatus_better_than_stenops}
 #+end_example
 * DONE tippy tappies                                              :forensics:
+:PROPERTIES:
+:ID:       c845b152-ea39-465d-8357-ba0957d65223
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 In this challenge, the file ~tippytappies.pcapng~ was provided.
 Opening this file in wireshark, showed that it contained USB traffic:
 [[file:assets/2021-09-21_14-58-26_screenshot.png]]
@@ -369,6 +409,10 @@ flag SPC wowgoodusbdetectivework RET RET RET RET RET RET RET RET RET RET RET RET
 And the flag turned out to be:
 : flag{wowgoodusbdetectivework}
 * DONE memedium                                                   :forensics:
+:PROPERTIES:
+:ID:       35a53dc0-ffe4-45e1-8097-428e21c05794
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 In this challenge there were provided with the ~mememachinememory.vmem~ file, which is a VMware memory file.
 They store a snapshot of the memory for the virtual machine.
 
@@ -475,6 +519,10 @@ Meaning the flag is:
 : flag{superman83}
 
 * DONE Mr. Robot and Friends                                      :forensics:
+:PROPERTIES:
+:ID:       973e28b7-a411-418d-ace1-f41aab793d2d
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 In this challenge, I had to find the name of the person which sent a phising mail.
 The challenge provided the file ~mrrobotandfriends.vmss~, which is a VMware Suspended State file.
 Which more or less means that it is a suspended virtual machine.

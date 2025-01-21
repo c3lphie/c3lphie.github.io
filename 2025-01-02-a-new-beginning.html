@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-01-21 Tue 19:16 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A new beginning</title>
+<meta name="author" content="C3lphie" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="static/style.css" />
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+// @license-end
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="index.html">Home</a>
+    <a href="https://github.com/c3lphie">Github</a>
+</div>
+</div>
+<div id="content" class="content">
+<header>
+<h1 class="title">A new beginning</h1>
+</header><nav id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgbb171d7">1. Introduction</a></li>
+<li><a href="#org433b41c">2. Quasar Client</a>
+<ul>
+<li><a href="#org0f2d110">2.1. Extracting the config</a></li>
+</ul>
+</li>
+<li><a href="#org09c1aaf">3. IoC's</a>
+<ul>
+<li><a href="#org7fc801b">3.1. Hashes</a>
+<ul>
+<li><a href="#orgebada79">3.1.1. Other files</a></li>
+</ul>
+</li>
+<li><a href="#org2c78248">3.2. Config</a></li>
+</ul>
+</li>
+<li><a href="#orgd994066">4. Final words</a></li>
+</ul>
+</div>
+</nav>
+<div id="outline-container-orgbb171d7" class="outline-2">
+<h2 id="orgbb171d7"><span class="section-number-2">1.</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Hello, it has been a while&#x2026; This is an attempt at kickstarting this blog.<br>
+As of writing this we just entered the year 2025, and one of the new years resolutions I have, is to kickstart this site. But with a focus on one of my new fascinations&#x2026; Malware!<br>
+</p>
+
+<p>
+So without setting too high expectations, I plan releasing a new blog post every 1-2 months, covering different samples.<br>
+</p>
+
+<p>
+And the first sample we will look is a Quasar rat, which comes bundled as a RAR sfx.<br>
+I got it from the public malware database "Malware Bazaar" at the following link: <a href="https://bazaar.abuse.ch/sample/210673b54f64ba4504b4ffb778b245261ba47ba659bfe14cd66290bf9c0f64ba/">Sample download</a><br>
+</p>
+
+<p>
+The main focus of this post will be to examine the RAT itself, so the two other files inside the SFX archive will be disregarded.<br>
+</p>
+
+<p>
+So without further ado, let dive into this malware!<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org433b41c" class="outline-2">
+<h2 id="org433b41c"><span class="section-number-2">2.</span> Quasar Client</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Quasar is a backdoor developed in C# using the .NET framework.<br>
+This is nice for reverse engineering, since the bytecode C# compiles into can be decompiled using tools such as dnSpyex.<br>
+</p>
+
+<p>
+This sample have been slightly obfuscated by converting all classes, methods, and fiel to random unicode characters.<br>
+</p>
+
+
+<figure id="orgb7b4ad5">
+<img src="assets/2025-01-16_20-03-35_screenshot.png" alt="2025-01-16_20-03-35_screenshot.png"><br>
+
+</figure>
+
+<p>
+While no use of control-flow obfuscation was present, this is still rather irritating to work through.<br>
+I used the trusty old <code>de4dot</code> program to clean up all of the useless names.<br>
+</p>
+
+
+
+<figure id="orgeaaaf84">
+<img src="assets/2025-01-16_20-06-55_screenshot.png" alt="2025-01-16_20-06-55_screenshot.png"><br>
+
+</figure>
+
+<p>
+From here I found the entrypoint, and slowly worked my way through the program code, until I found a static class containing a lot of base64 encoded strings. Do note that field and method names from here on out are a products of reverse engineering.<br>
+</p>
+
+
+<figure id="org1910269">
+<img src="assets/2025-01-16_20-14-57_screenshot.png" alt="2025-01-16_20-14-57_screenshot.png"><br>
+
+</figure>
+
+<p>
+We could try and decode these strings, but they use a layer of encryption to further hide all their juicy secrets until the program is actually run.<br>
+The decryption happens in an initialization method, which makes use of a helper class that I renamed to <code>QuasarCrypto</code>.<br>
+</p>
+
+
+<figure id="org9bc41c1">
+<img src="assets/2025-01-16_20-14-19_screenshot.png" alt="2025-01-16_20-14-19_screenshot.png"><br>
+
+</figure>
+
+<p>
+Let us start by examining the the constructor method for <code>QuasarCrypto</code>.<br>
+It uses the provided <code>masterKey</code> to derive two new keys using PBKDF2, which was described in Rfc2898<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>.<br>
+It is important to note that there are a couple arguments provided to the <code>Rfc2898DeriveBytes</code> constructor beside the <code>masterKey</code>. I'll get back to these later, but do note that the salt and number of rounds are hardcoded.<br>
+The first key <code>key0</code> is the one used in the AES cryptography utilized by the encryption/decryption functions.<br>
+The second key <code>key1</code> is used utilized for message authentication for verifycation of ciphertext.<br>
+</p>
+
+
+<figure id="org00c89bf">
+<img src="assets/2025-01-20_21-47-38_screenshot.png" alt="2025-01-20_21-47-38_screenshot.png"><br>
+
+</figure>
+
+<p>
+The methods handling decryption and encryption does basically the same thing.<br>
+Just slightly different uses of the methods provided by .NET's <code>AESCryptoProviderService</code> object.<br>
+I'll focus on the decryption method, as we can utilize that as a basis for extracting the config.<br>
+In short, the method setups up the cryptoprovider with a keysize of 256 bits and a block size 128 bits, and mode as CBC.<br>
+The first 32 bytes is an HMAC hash that it uses to verify the integrity of what it is decrypting.<br>
+The next 16 bytes is the initialization vector (IV) used by the cryptoprovider.<br>
+And the last section decrypts the content and copies it into <code>array6</code> which is the decrypted value.<br>
+</p>
+
+
+<figure id="org6808d0d">
+<img src="assets/2025-01-20_22-20-20_screenshot.png" alt="2025-01-20_22-20-20_screenshot.png"><br>
+
+</figure>
+</div>
+
+<div id="outline-container-org0f2d110" class="outline-3">
+<h3 id="org0f2d110"><span class="section-number-3">2.1.</span> Extracting the config</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Before diving too deep into how the extractor I wrote worked, I need to give a big shoutout to @ArseneLapin, @RelaxPreppy, and @Washi, from the OALabs Discord server.<br>
+They were a massive help with figuring out how to convert the decrypters logic to python, as well as how CIL worked under the hood.<br>
+</p>
+
+<p>
+This is by no means the <i>best</i> config extractor for Quasar that is out there.<br>
+But it does get the job done!<br>
+</p>
+
+<p>
+I use the python libraries <code>dnfile</code> and <code>dncil</code> for parsing the executable, and its bytecode.<br>
+</p>
+
+<p>
+First I loop through all of the method definitions until find the masterkey.<br>
+I also save the <code>MethodDef</code> to speed up the decryption, as the masterkey is present in the <code>QuasarConfigs</code> class constructor ".cctor" along with all the other config options.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-py-variable-name">method_defs</span> = [x <span class="org-keyword">for</span> x <span class="org-keyword">in</span> pe.net.mdtables.MethodDef]
+
+<span class="org-py-variable-name">master_key</span> = <span class="org-py-pseudo-keyword">None</span>
+<span class="org-py-variable-name">config_md</span> = <span class="org-py-pseudo-keyword">None</span>
+
+<span class="org-keyword">print</span>(<span class="org-string">"Searching for master key"</span>)
+<span class="org-keyword">for</span> md <span class="org-keyword">in</span> tqdm(method_defs):
+    <span class="org-py-try-if">try</span>:
+        <span class="org-py-variable-name">body</span>: <span class="org-py-variable-name">CilMethodBody</span> = read_method_body(pe, md)
+    <span class="org-keyword">except</span> MethodBodyFormatError <span class="org-keyword">as</span> <span class="org-py-variable-name">e</span>:
+        <span class="org-comment"># print(e)</span>
+        <span class="org-keyword">continue</span>
+
+    <span class="org-keyword">if</span> <span class="org-keyword">not</span> <span class="org-py-variable-name">body.instructions</span>:
+        <span class="org-keyword">continue</span>
+
+    <span class="org-keyword">if</span> <span class="org-py-variable-name">md.Name</span> == <span class="org-string">".cctor"</span>:
+        <span class="org-keyword">for</span> insn <span class="org-keyword">in</span> <span class="org-py-variable-name">body.instructions</span>:
+            <span class="org-keyword">if</span> <span class="org-py-variable-name">insn.opcode</span> == <span class="org-py-variable-name">OpCodes.Ldstr</span>:
+                <span class="org-py-variable-name">res_string</span> = resolve_token(pe, insn.operand)
+                <span class="org-keyword">if</span> res_string.isalnum():
+                    <span class="org-py-variable-name">master_key</span> = res_string
+                    <span class="org-py-variable-name">config_md</span> = md
+                    <span class="org-keyword">break</span>
+
+        <span class="org-keyword">if</span> <span class="org-py-variable-name">master_key</span>:
+            <span class="org-keyword">break</span>
+</pre>
+</div>
+
+<p>
+Once I have found the masterkey, I begin searching for the other important values.<br>
+These being the variables declared in the beginning.<br>
+I use different heuristics to grab each of the values from CIL instructions provided by <code>dncil</code>.<br>
+Getting the key lengths and number of rounds are fairly straight forward, as their values can be grabbed based on offsets from certain method calls.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-py-variable-name">pbkdf_rounds</span> = <span class="org-py-number">0</span>
+
+<span class="org-py-variable-name">salt</span> = b<span class="org-string">""</span>
+<span class="org-py-variable-name">salt_token</span> = <span class="org-py-pseudo-keyword">None</span>
+
+<span class="org-py-variable-name">key1_len</span> = <span class="org-py-pseudo-keyword">None</span>
+<span class="org-py-variable-name">key2_len</span> = <span class="org-py-pseudo-keyword">None</span>
+<span class="org-keyword">print</span>(<span class="org-string">"Gathering important fields"</span>)
+<span class="org-keyword">for</span> md <span class="org-keyword">in</span> tqdm(method_defs):
+    <span class="org-py-try-if">try</span>:
+        <span class="org-py-variable-name">body</span>: <span class="org-py-variable-name">CilMethodBody</span> = read_method_body(pe, md)
+    <span class="org-keyword">except</span> MethodBodyFormatError <span class="org-keyword">as</span> <span class="org-py-variable-name">e</span>:
+        <span class="org-comment"># print(e)</span>
+        <span class="org-keyword">continue</span>
+
+    <span class="org-keyword">if</span> <span class="org-keyword">not</span> <span class="org-py-variable-name">body.instructions</span>:
+        <span class="org-keyword">continue</span>
+
+    <span class="org-py-variable-name">tmp_insn</span> = []
+    <span class="org-keyword">for</span> insn <span class="org-keyword">in</span> <span class="org-py-variable-name">body.instructions</span>:
+
+        tmp_insn.append(insn)
+        <span class="org-keyword">if</span> <span class="org-string">"DeriveBytes::.ctor"</span> <span class="org-keyword">in</span> format_operand(pe, insn.operand):
+            <span class="org-py-variable-name">pbkdf_rounds</span> = tmp_insn[-<span class="org-py-number">2</span>].operand
+
+            <span class="org-py-variable-name">salt_token</span> = resolve_token(pe, tmp_insn[-<span class="org-py-number">3</span>].operand)
+
+        <span class="org-keyword">elif</span> <span class="org-string">"DeriveBytes::GetBytes"</span> <span class="org-keyword">in</span> format_operand(pe, insn.operand):
+            <span class="org-keyword">if</span> <span class="org-keyword">not</span> <span class="org-py-variable-name">key1_len</span>:
+                <span class="org-py-variable-name">key1_len</span> = tmp_insn[-<span class="org-py-number">2</span>].operand
+                <span class="org-keyword">continue</span>
+            <span class="org-keyword">if</span> <span class="org-keyword">not</span> <span class="org-py-variable-name">key2_len</span>:
+                <span class="org-py-variable-name">key2_len</span> = tmp_insn[-<span class="org-py-number">2</span>].operand
+                <span class="org-keyword">continue</span>
+</pre>
+</div>
+
+<p>
+The salt is not as straight forward since it is a bytearray, and we need to get its embedded data another place.<br>
+If we examine the class constructor method for <code>QuasarCrypto</code> as IL, we see that its data is loaded from another token at runtime <code>Struct1</code>.<br>
+</p>
+
+<figure id="org18662d0">
+<img src="assets/2025-01-21_18-31-42_screenshot.png" alt="2025-01-21_18-31-42_screenshot.png"><br>
+
+</figure>
+
+<p>
+So to extract the salt dynamically we need to find the class constructor which tries to store something in the token we found along with the pbkdf rounds.<br>
+Once found we can trace back to the <code>ldtoken</code> instruction, and use its operand to calculate the offset in the raw file where we find the salt.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-keyword">if</span> <span class="org-py-variable-name">md.Name</span> == <span class="org-string">".cctor"</span>:
+    <span class="org-py-variable-name">tmp_insn</span> = []
+    <span class="org-keyword">for</span> insn <span class="org-keyword">in</span> <span class="org-py-variable-name">body.instructions</span>:
+        tmp_insn.append(insn)
+
+        <span class="org-keyword">if</span> <span class="org-py-variable-name">insn.opcode</span> == <span class="org-py-variable-name">OpCodes.Stsfld</span>:
+            <span class="org-py-variable-name">token</span> = resolve_token(pe, insn.operand)
+            <span class="org-keyword">if</span> token != <span class="org-py-variable-name">salt_token</span>:
+                <span class="org-keyword">continue</span>
+
+            <span class="org-py-variable-name">ld_token</span> = tmp_insn[-<span class="org-py-number">3</span>]
+            <span class="org-py-variable-name">table_name</span> = DOTNET_META_TABLES_BY_INDEX.get(
+                ld_token.operand.table
+            )
+            <span class="org-py-variable-name">table</span>: <span class="org-py-variable-name">Any</span> = <span class="org-py-builtins">getattr</span>(pe.net.mdtables, table_name)
+
+            <span class="org-py-variable-name">field</span> = table[ld_token.operand.rid - <span class="org-py-number">1</span>]
+
+            <span class="org-keyword">for</span> frva <span class="org-keyword">in</span> <span class="org-py-variable-name">field_rva_list</span>:
+                <span class="org-keyword">if</span> frva[<span class="org-string">"field"</span>] == <span class="org-py-variable-name">field</span>:
+                    <span class="org-py-variable-name">salt_offset</span> = pe.get_offset_from_rva(
+                        frva[<span class="org-string">"fieldrva"</span>].Rva
+                    )
+                    <span class="org-py-variable-name">salt</span> = raw_file[salt_offset : salt_offset + 0x20]
+                    <span class="org-keyword">break</span>
+</pre>
+</div>
+
+<p>
+Now that we have all the components it is possible to decrypt the rest of the strings in the <code>QuasarConfig</code> class.<br>
+So the next code snippet is fairly long, but pretty simple!<br>
+After generating the two keys, we then loop over the instructions in the saved function.<br>
+Whenever we encounter an instruction which loads a string (Ldstr), we check that the operand isn't empty and isn't equal to the masterkey.<br>
+Throwout the first 32 bytes, since we don't care about the HMAC hash, and use the next 16 as our IV.<br>
+I use <code>malducks</code> AES CBC module to decrypt the ciphertext, and store the plaintext string in a list.<br>
+Finally I zip the decrypted strings with the labels, and print the resulting dictionary as a json string.<br>
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-py-variable-name">keys</span> = PBKDF2(master_key, salt, dkLen=key1_len + key2_len, count=pbkdf_rounds)
+<span class="org-py-variable-name">key1</span> = keys[:key1_len]
+<span class="org-py-variable-name">key2</span> = keys[key1_len:key2_len]
+
+<span class="org-py-variable-name">config_labels</span> = [
+    <span class="org-string">"version"</span>,
+    <span class="org-string">"c2channels"</span>,
+    <span class="org-string">"subdirectory"</span>,
+    <span class="org-string">"executablename"</span>,
+    <span class="org-string">"guid"</span>,
+    <span class="org-string">"scheduled task name"</span>,
+    <span class="org-string">"tag"</span>,
+    <span class="org-string">"log folder"</span>,
+    <span class="org-string">"signature"</span>,
+    <span class="org-string">"x509cert"</span>
+]
+
+<span class="org-py-variable-name">decrypted_strings</span> = []
+<span class="org-keyword">print</span>(<span class="org-string">"Decrypting config"</span>)
+<span class="org-py-try-if">try</span>:
+    <span class="org-py-variable-name">body</span>: <span class="org-py-variable-name">CilMethodBody</span> = read_method_body(pe, config_md)
+<span class="org-keyword">except</span> MethodBodyFormatError <span class="org-keyword">as</span> <span class="org-py-variable-name">e</span>:
+    <span class="org-keyword">print</span>(e)
+    exit(<span class="org-py-number">1</span>)
+
+
+<span class="org-py-variable-name">tmp_insn</span> = []
+<span class="org-keyword">for</span> insn <span class="org-keyword">in</span> <span class="org-py-variable-name">body.instructions</span>:
+    <span class="org-keyword">if</span> <span class="org-py-variable-name">insn.opcode</span> == <span class="org-py-variable-name">OpCodes.Stsfld</span>:
+        <span class="org-py-variable-name">prev_insn</span> = tmp_insn[-<span class="org-py-number">1</span>]
+        <span class="org-keyword">if</span> prev_insn.opcode != <span class="org-py-variable-name">OpCodes.Ldstr</span>:
+            <span class="org-keyword">continue</span>
+
+        <span class="org-py-variable-name">res_string</span> = resolve_token(pe, prev_insn.operand)
+        <span class="org-keyword">if</span> <span class="org-py-variable-name">res_string</span> == <span class="org-string">""</span>:
+            <span class="org-keyword">continue</span>
+
+        <span class="org-keyword">if</span> <span class="org-py-variable-name">res_string</span> == <span class="org-py-variable-name">master_key</span>:
+            <span class="org-keyword">continue</span>
+
+        <span class="org-py-try-if">try</span>:
+            <span class="org-py-variable-name">cipher_bytes</span> = b64decode(res_string)[<span class="org-py-number">32</span>:]
+            <span class="org-py-variable-name">iv_size</span> = <span class="org-py-builtins">int</span>(<span class="org-py-number">128</span> / <span class="org-py-number">8</span>)
+            <span class="org-py-variable-name">decrypted</span> = malduck.aes.cbc.decrypt(
+                key1, cipher_bytes[:iv_size], cipher_bytes[iv_size:]
+            )
+            <span class="org-py-variable-name">decrypted</span> = decrypted.decode(<span class="org-string">"utf-8"</span>, errors=<span class="org-string">"ignore"</span>)
+            <span class="org-py-variable-name">decrypted</span> = <span class="org-string">""</span>.join(<span class="org-py-builtins">filter</span>(<span class="org-keyword">lambda</span> x: x <span class="org-keyword">in</span> string.printable, decrypted))
+            decrypted_strings.append(
+                decrypted.strip()
+            )
+        <span class="org-keyword">except</span> <span class="org-py-exception-name">Exception</span> <span class="org-keyword">as</span> <span class="org-py-variable-name">e</span>:
+            <span class="org-keyword">pass</span>
+        <span class="org-keyword">if</span> <span class="org-py-builtins">len</span>(config_labels) == <span class="org-py-builtins">len</span>(decrypted_strings):
+            <span class="org-keyword">break</span>
+
+    tmp_insn.append(insn)
+    <span class="org-keyword">if</span> <span class="org-py-builtins">len</span>(config_labels) == <span class="org-py-builtins">len</span>(decrypted_strings):
+        <span class="org-keyword">break</span>
+
+
+<span class="org-py-variable-name">config</span> = {a: b <span class="org-keyword">for</span> a, b <span class="org-keyword">in</span> <span class="org-py-builtins">zip</span>(config_labels, decrypted_strings)}
+<span class="org-keyword">print</span>(json.dumps(config, indent=<span class="org-py-number">4</span>))
+</pre>
+</div>
+
+<p>
+The full code can be found on my github here: <a href="https://github.com/c3lphie/MalwareExtractors/tree/main/quasar">https://github.com/c3lphie/MalwareExtractors/tree/main/quasar</a><br>
+</p>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-org09c1aaf" class="outline-2">
+<h2 id="org09c1aaf"><span class="section-number-2">3.</span> IoC's</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-org7fc801b" class="outline-3">
+<h3 id="org7fc801b"><span class="section-number-3">3.1.</span> Hashes</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Dropper (SHA256):<br>
+210673b54f64ba4504b4ffb778b245261ba47ba659bfe14cd66290bf9c0f64ba<br>
+</p>
+
+<p>
+Quasar RAT (SHA256):<br>
+19fd26fa3f76141cc05ef0c0c96ea91dcf900e760b57195f216a113b1cf69100<br>
+</p>
+</div>
+
+<div id="outline-container-orgebada79" class="outline-4">
+<h4 id="orgebada79"><span class="section-number-4">3.1.1.</span> Other files</h4>
+<div class="outline-text-4" id="text-3-1-1">
+<p>
+There were a couple of other files, which I didn't cover as I wanted to focus on the config extraction.<br>
+Here are their hashes<br>
+</p>
+
+<p>
+agfiKDLgr58thy4d.exe:<br>
+92133787af66e6d68a301ef087e4116f5cab3f538d8ec5e5e0eb95cecc68ea8<br>
+GR55Qg1hth.exe:<br>
+de83dd82da3ebaa2c09fd75a7307ad5e2031ad8c911cd75753ffef3eb1571f0a<br>
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org2c78248" class="outline-3">
+<h3 id="org2c78248"><span class="section-number-3">3.2.</span> Config</h3>
+<div class="outline-text-3" id="text-3-2">
+<pre class="example" id="org4efdfd9">
+{
+    "version": "1.4.0",
+    "c2channels": "185[.]148[.]3[.]216:4000;",
+    "subdirectory": "SubDir",
+    "executablename": "Client.exe",
+    "guid": "c3557859-56ac-475e-b44d-e1b60c20d0d0",
+    "scheduled task name": "3dfx Startup",
+    "tag": "4Drun",
+    "log folder": "Logs",
+    "signature": "ByDUofMLQgqnSGeOoX50tM6eeQAY6MnNxiJiCC2eBiopyUWH0YzcY77mquaFlZFbJe+38QvhEP/EAKjpyNkSr9UvnaryvxtQUwALlvCXHOGiNngnRu2hMr/1f0tz67zN18GMoSfHpJxFCHUK4WUxULNz0glbmSVe4ncwv+jbZbxMRRT56cMS4iTsAsFWkWmMpXur9SZ3DC0DYaCrzJvKTXc58ZrOonYZNRBeKqyo0/sOCemzsOb8naHm0x6g1/Diyy1ho3oAEFQGe9pJT6NVcSJWgQcC4iw/grOiXINkcPgxf3tZvyoWgqoqGe+XAcasrtShVc/ElGUL2t47gnpO4vv+GCLZNpHjF4Pf/dkmGI1e0A2SF8wZMdBEq9u5OFkm76yrhMbcr3vZ6llaOmacAAw15WMROR99+hlay+URdz9Jkosj2KyAJp2kadJdpIDbADhrkfNXcLiAvSiu/Ipq38fNaeuPsQrCM57cdkDIq2GcJxewNTwJjSZCA9cIfmsLX0SI6rbg5zNn/1iP91G85Q6YnP1GvDTFrXK1SPyIZ9EQphv+JgWaEQY+oMRRJ7URaBOpzI9S27fdLt9bIihX586pBXgIPkxh4p01DUiWBpLQCB11i+FLiNoGk0NBU18TyqUZAanaKKhINDrAXhzDPNpAa3BXBiA4nFAtVPPG1uo=",
+    "x509cert": "MIIE9DCCAtygAwIBAgIQAKWNJoTS10sH5BABHyM5HzANBgkqhkiG9w0BAQ0FADAbMRkwFwYDVQQDDBBRdWFzYXIgU2VydmVyIENBMCAXDTIyMTExMDE4NDMzNVoYDzk5OTkxMjMxMjM1OTU5WjAbMRkwFwYDVQQDDBBRdWFzYXIgU2VydmVyIENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAm92HKLljPJb4f6L85f4QrRcSQyEf3DaBQjsnJRIJ1ztwf8iM2PpWh3CX2qtf5/oXqUzxuWRvO5J294PWlS1ifPQFKfkMZD3QCJDLpC/BczpAaX2cFR7+0QxbA8UXamHv1vnsQkhhUK12XivJp/Dd2DscCFGtVEdu3agMAgFN6Tf4SaItTLQI27DhYrchhgsv3wWUoB2+L4ld3V79yuLwVBEohXSVrowIzDhnztDWyZAJau7i26StPIGWOla83Kb8frqxgpGjxEbc6vpq1S9iD9NjWVhKTqBYNkYXYYODgt3QS6IrSkoNfeXvgAa9+fxzPg7PY75VPYrXf6pGiiWhRVXi94bYBQuQRqOU+Pr4fjpBtDiktO3P0zlYA8qpNyJm1L6BWc08UXJKKzzIH75jYEdRSQlqf5SUcn4QNzcOZZ2aJh5b9jmPCI2JfqDQItpweLYiunFE9V9/LPXGm/TRC6h/XXqEoRJo8JSNygyqI4YxAS7vaUQbrHed/JcQV35tPpBlsAjWfDVqTXKD4pchapgmTb0ywKE+dOLrHoisEgrbbH8gAxTffzAX73QY4F1ANxz7i210NYaErMqlUeNYfGvXVjJRwQSYuCJpznQJEF4QSLglvrFpWQqpkw5+EQqFW19DOu6sm5Oli7WRlC1CgBkthgC4IJpFKDqqAGLaVMECAwEAAaMyMDAwHQYDVR0OBBYEFI/zHrJ05quZpAGRo21xNO1iBVtdMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQENBQADggIBAGEFg70IC24qMiR6gg0fAllHDJZFRM4VBaoqmoclx/KEaSiD0fYcnwW6CBkK10Un+KEYUm4aLemIyExYxeMKrpsXLZ7jAgEXaZXQFtXUYzdlf/O8VrNgqAca2jq1ywmMyuZ8JqD3GSaAa4/9ihgOSklK3aNicX10jqw8ptnnShyKQRl5RQXHndhKP63Dw05vsNdzSlzxD8nc3g9AEXfeZXqpu02n8rlxJWtp2m3vpi+NpbQ4SWoMEvQNXKxK9vqOEMi6q13zyp0nOfGGsbh/++NElBKF+c0MdbAStXGF53T/WIZrwOBWOkOioffsP6qIjLMwrh+3B+4z3nacRiAEXnfvi1hxvblkeZsb0pCOr1ctFg+GI/Xb2VRf+inljt+5DKBcMwLg0zix3+WZlNV/P92W3zRVVqBFsdcAeLqbk7TvOtp4XGnRTUtJzCYqOSPJexJcZy3sxceNxaJnkNL0P4T3MQTzOFtxsmwGzXY2jhfSIBqWZKNk7m+GCH74MjhwSmqTpXk8szIRBKRzQyDxzefy1pm/NxwGMH09nrRCiWruxInEZAOz1jpVrFdShH8G2YI3D/JIcnLuMEwJb+zCWxx4YESJkz+Rbbo58Fpt4FVnjGFx12whwlEVckq+TyA51WGuLPEkQJCjJPpY/fEOQeBsJksB2O3YXFqMEw9P88mz"
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd994066" class="outline-2">
+<h2 id="orgd994066"><span class="section-number-2">4.</span> Final words</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Thank you for taking some time out of your day to read this post.<br>
+If you enjoyed this post, feel free to join my <a href="https://discord.gg/t8tKrgdGWu">Discord server</a> to get notification whenever I post something and ask questions if there are any.<br>
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+<a href="https://en.wikipedia.org/wiki/PBKDF2">https://en.wikipedia.org/wiki/PBKDF2</a> <br>
+</p></div></div>
+
+
+</div>
+</div></div>
+<div id="postamble" class="status">
+<div class="footer">
+    <div id="copyright">
+        <small>&copy; Copyright 2022, C3lphie</small>
+    </div>
+</div>
+</div>
+</body>
+</html>

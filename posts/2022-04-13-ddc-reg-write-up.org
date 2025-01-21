@@ -4,10 +4,18 @@
 #+summary: A collection of write-up for the danish cyber championships 2022 regional ctf.
 #+filetags: :write-ups:ddc22-regionals:danish:
 * Introduktion
+:PROPERTIES:
+:ID:       ffca88bd-3aa4-4c67-a63c-6a70d93e0d39
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Velkommen til denne write-up samling for de opgaver jeg klarede til den regionale del af De Danske Cybermesterskaber 2022.
 Jeg skriver denne post på dansk, da jeg følte det var passende givet det er en dansk konkurrence.
 Jeg klarede 6 opgaver i alt i den regionale del af konkurrencen, og fik med 800 point kvalificeret mig til finalen den 9. maj.
 * Secret Squirrels Telekinetic Injector :web:
+:PROPERTIES:
+:ID:       eb37c385-53af-46d0-b1b2-5036d2782deb
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Antal point: 50
 Beskrivelse:
 #+begin_example
@@ -42,6 +50,10 @@ Hvis vi istedet bruger payloaded ~{{config}}~ istedet for ~{{7*7}}~ så skulle v
 [[file:assets/2022-04-14_13-58-39_screenshot.png]]
 Og der har vi jo flaget: ~DDC{SSTI_1n_fl45k_15_wh3r3_7h3_squ1rr3l_h1d3_7h3_nutz}~
 * Baking Cookies :web:
+:PROPERTIES:
+:ID:       bde60e73-6334-42dd-affb-9fd99970d3b7
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Antal point: 50
 Beskrivelse:
 #+begin_example
@@ -71,6 +83,10 @@ Det virkede! Hvis vi scroller længere ned på siden finder vi flaget:
 : DDC{f1x_th4t_c00k1e_vuln_0r_cl0se_th3_b4k3ry}
 
 * Searching Outside the Box :web:
+:PROPERTIES:
+:ID:       aa0bc14e-52be-4e6a-8c7e-bca0fdfa1cab
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Antal point: 200
 Beskrivelse:
 #+begin_example
@@ -292,6 +308,10 @@ Og vi har også flaget:
 : DDC{b3tt3r_f1x_th4t_SQLi_vuln_GDPR_4ud1t_1s_cl0s3}
 
 * Bare request amok :web:
+:PROPERTIES:
+:ID:       e1f3079c-2738-4cab-8e87-62be4c843a46
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Antal point: 100
 Beskrivelse:
 #+begin_example
@@ -493,6 +513,10 @@ Får vi flaget ~DDC{scr1pt_d1g_ud_4f_d3t_b4re_r3qu3st_am4k}~ efter omkring 40 se
 #+end_src
 
 * URL Parse :pwn:
+:PROPERTIES:
+:ID:       5416efbf-a7ab-4334-a048-f283a0185d56
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Antal point: 100
 Beskrivelse:
 #+begin_example
@@ -575,6 +599,10 @@ Så får vi flaget:
 : DDC{dsABxVLqOC}
 
 * Mr Beefs Bestilling :boot2root:
+:PROPERTIES:
+:ID:       9aafaf54-567e-40d3-884d-7177b706a28a
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Antal point: 300
 Beskrivelse:
 #+begin_example
@@ -742,6 +770,9 @@ Hvilket gør at vi kan lave et PHP deserialization angreb, og køre vores egen k
 Det var første gang jeg var stødt på sådan en fejl, så havde ikke helt styr på hvordan det helt fungerede...
 
 ** Unintended løsning
+:PROPERTIES:
+:ID:       57af52f3-ad51-4dae-801d-cb8f274ea372
+:END:
 Så efter at have bikset rundt med det i lidt tid besluttede jeg mig for at se hvad der var i backup folderen.
 Og her fandt jeg /GULD/, eller en unintended løsning...
 
@@ -835,6 +866,9 @@ Herefter ville vi så kunne bruge ~verycool.php~ til at få adgang til systemet.
 Men har efter konkurrencen, fået det tiltænkte angreb til at virke!
 
 ** Serialize from scratch
+:PROPERTIES:
+:ID:       a75eee6a-647b-4aa7-9529-cf548b13fa49
+:END:
 For at kunne angribe maskinen ved hjælp af PHP deserialization har jeg lavet følgende PHP script:
 #+caption: ~exploit_class.php~
 #+begin_src php

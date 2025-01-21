@@ -67,7 +67,6 @@ body{
 }
 p{
     color: var(--fg-color);
-    text-align: justify
 }
 
 img{

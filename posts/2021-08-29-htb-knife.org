@@ -4,14 +4,25 @@
 #+summary: Write-up for knife! The easy linux box from Hack the Box. It has a webserver running a php version containing a backdoor.
 #+filetags: :HTB:write-up:hacking:
 * DONE Introduction
+:PROPERTIES:
+:ID:       6c699c68-3d59-496e-b359-2740a5d54247
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 Welcome back to another write-up for another Hack the Box machine.
 This time we'll look at the easy linux box Knife.
 This machine was running a webserver with an old PHP version on it, but we'll dive deeper into that later.
 
 * DONE Recon
+:PROPERTIES:
+:ID:       d65a157b-a8c6-4d21-b3ed-76105c5bfba0
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 First things first, let's get to know this machine a little better shall we?
 We'll start by examining what services the machine has running.
 ** DONE Nmap all ports
+:PROPERTIES:
+:ID:       bb8190a0-1f17-4c11-9312-5362141397b7
+:END:
 Below we see the output from the ~nmap~ scan.
 #+caption: Nmap scan targeting all ports
 #+begin_example
@@ -39,8 +50,14 @@ We see the webserver mentioned earlier running on port 80, which is ~Apache http
 There is also an open ~ssh~ daemon running on port 22.
 
 ** DONE Web enumeration
+:PROPERTIES:
+:ID:       14101ce3-e58d-40a2-a87f-f2ad8f450c96
+:END:
 All right let us enumerate the webserver
 *** DONE Gobuster
+:PROPERTIES:
+:ID:       d90737e0-fda8-4deb-b795-1920d4d4f9be
+:END:
 ~gobuster~ didn't really give us anything of use other than ~/index.php~.
 #+caption: gobuster result
 #+begin_example
@@ -69,6 +86,9 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 ===============================================================
 #+end_example
 *** DONE ~/index.php~
+:PROPERTIES:
+:ID:       84e29098-6f06-4066-9fff-f86ac536db40
+:END:
 If we open up the site with a browser connected to a proxy like ~zap~ or ~burp~, and navigate to ~/index.php~.
 #+attr_org: :width 700
 #+caption: Rendered html of ~/index.php~
@@ -90,7 +110,14 @@ Here we again see the server version as ~Apache/2.4.41~, but more importantly th
 If you look at the ~X-Powered-By:~ header, we see that it's is running ~PHP/8.1.0-dev~.
 
 * DONE Exploitation
+:PROPERTIES:
+:ID:       da7858ed-f8a8-4985-91ba-fbda57cd8bfa
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 ** Finding the vulnerability
+:PROPERTIES:
+:ID:       9e3b9700-04c5-43d1-a91d-c0e80be94060
+:END:
 Now that we're done gathering all information possible about the target, mainly the version numbers of the softare running on the server.
 
 Googling the PHP version, you'll quickly find that there is a backdoor in that version[fn:1].
@@ -122,6 +149,9 @@ It essentially builds the command:
 
 Which is then injected into the special header "User-Agentt", inside the parentheses of ~"zerodiumsystem();"~.
 ** Popping shell
+:PROPERTIES:
+:ID:       8554abaf-cc33-449a-95ad-7d890f23beeb
+:END:
 First we setup a ~netcat~ listener on our machine:
 : $ nc -nlvp 4444
 
@@ -155,6 +185,10 @@ james@knife:~$
 #+end_example
 
 * DONE Priv-esc
+:PROPERTIES:
+:ID:       3d8bba21-249e-4b03-b2cb-e817d8c7b936
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 Now that we got a shell, we must escalate our privileges to get ~root~.
 
 By using the linux enumeration tool ~linpeas~, we will find that ~james~, our user, has nopassword permissions for the binary ~/usr/bin/knife~.
@@ -183,6 +217,10 @@ cat root.txt
 #+end_example
 
 * Footnotes
+:PROPERTIES:
+:ID:       9637d0a5-7c97-4e48-aa8e-4bfd295cb078
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 
 [fn:1] Read more here: https://flast101.github.io/php-8.1.0-dev-backdoor-rce/ 
 #+include: ../templates/end_block.org :minlevel 1

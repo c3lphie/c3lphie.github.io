@@ -5,6 +5,10 @@
 #+filetags: :ROPemporium:overflow:write-up:exploitation:
 
 * Introduction
+:PROPERTIES:
+:ID:       873f5786-ddfc-4353-bbc9-8a7808989f38
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 Welcome to this little write-up on the very first challenge from [[https://ropemporium.com][ROPemporium]].
 
 ROPemporium is a platform for learning the mystic art of return-oriented programming(ROP).
@@ -13,6 +17,9 @@ This is accomplished by going through 8 challenges in total, with increasing dif
 But before we begin this little eight-part adventure, let's take a closer look at what ROP is for a thing.
 
 ** Buffer overflows
+:PROPERTIES:
+:ID:       4281a262-7708-4ab6-bda4-924daa8ffba6
+:END:
 I know that I just said i would explain ROP, but before we get into that.
 Let us quickly brushup on what a buffer overflow is.
 
@@ -37,6 +44,9 @@ Again this was a veeeery short overview, if you want to read more about buffer o
 Eventually I'll create a series focused just on buffer overflows, but for now you'll have to make do.
 
 ** Return Oriented Programming
+:PROPERTIES:
+:ID:       8ee58d20-cc45-4d67-b2c8-b63d839250d5
+:END:
 Again we look towards Wikipedia for more knowledge.
 The first paragraph on [[https://en.wikipedia.org/wiki/Return-oriented_programming][Wikipedia]]:
 #+begin_quote
@@ -51,9 +61,16 @@ But how does one control which the software will return to?
 That is exactly what this challenge is about.
 
 * Recon
+:PROPERTIES:
+:ID:       02317a77-8266-4e5b-844c-c29f23156e8b
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 Before anything is done you should always to some reconnaissance on your target.
 The more you know about the target, the easier it will be to model an attack towards it.
 ** File
+:PROPERTIES:
+:ID:       303ac63d-cab8-4179-a9c0-a7ba03111cda
+:END:
 The first thing you should do with any compiled binary that you want to pwn(professionel language for defeating security), is to run the ~file~ command on the the binary.
 #+begin_example
 ┌────[~/ha/bi/ropemporium/ret2win on  master [?]
@@ -66,6 +83,9 @@ It is not stripped, which means that if there is any debugging information in th
 It also means symbols are left in so we can see function names.
 
 ** Checksec
+:PROPERTIES:
+:ID:       4451852a-a5b5-4abe-93c7-a84e5ea9e0a6
+:END:
 After looking at what ~file~ gives outputs, the next nifty tool we should use is: ~checksec~.
 It is a part of ~pwntools~, [[https://github.com/Gallopsled/pwntools][a CTF framework and exploit development library]], and can tell us about what kind of security measures that the binary is compiled with.
 #+begin_example
@@ -93,12 +113,18 @@ The architecture this binary was compiled for was ~amd64-64-little~, let's split
 Which you can read more about [[https://www.section.io/engineering-education/what-is-little-endian-and-big-endian/][here]].
 
 ** Reversing the binary
+:PROPERTIES:
+:ID:       b55c6fdc-b5ca-4645-a6de-39e029f3b206
+:END:
 Now there are probably a ton of other tools that you could use to find other things about the binary.
 But at this point I know enough about the target for now.
 
 I have chosen [[https://binary.ninja/][Binary ninja]] for reverse engineering software.
 But use what-ever you're most comfortable in, and if you don't have the economy to buy a piece of software, then there are opensource software available like [[https://cutter.re/][cutter]] or [[https://ghidra-sre.org/][ghidra]](if you're not afraid of the NSA ;)).
 *** Main function
+:PROPERTIES:
+:ID:       7bef1138-d4f5-4326-b5b9-e3768eab3739
+:END:
 #+caption: main function disassembled 
 #+begin_src asm
   push    rbp {__saved_rbp}
@@ -125,6 +151,9 @@ Here we see the main function disassembled, there isn't anything interesting to 
 What we want is the function pwnme, which is called on line 14.
 So let's take a look at that instead shall we?
 *** pwnme function
+:PROPERTIES:
+:ID:       4dd68ee7-7314-4cb3-9f61-a1c1475ceba3
+:END:
 #+caption: pwnme function disassembled
 #+begin_src asm
   push    rbp {__saved_rbp}
@@ -195,6 +224,9 @@ Well if you look at the last two lines of the disassembly version of ~pwnme~
 If we somehow managed to overwrite ~__return_addr~ we potentially have the ability to make arbitrary code calls.
 
 *** ret2win function
+:PROPERTIES:
+:ID:       2c5db587-e712-4b3f-a9c7-fc94cf6cc4b7
+:END:
 #+caption: ret2win function disassembled
 #+begin_src asm
   push    rbp {__saved_rbp}
@@ -212,10 +244,17 @@ This is the function we must aim the ~ret~ instruction towards in the ~pwnme~ fu
 And as we can see it just executes ~/bin/cat flag.txt~ on the system.
 
 * Exploit
+:PROPERTIES:
+:ID:       5901c43e-35ea-4e29-b2b5-536b69890d56
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 When writing the actual exploit I used 3 tools: ~emacs~, a ~terminal~ and ~gdb~.
 The first one being my text editor ;), the second is pretty self explanatory and the last is Gnu Debugger.
 
 ** Overflowing the buffer
+:PROPERTIES:
+:ID:       9de425ca-f9f0-451a-a112-d700b76e8d60
+:END:
 As I wrote earlier we need to do a bufferoverflow.
 We know that from Binary Ninja that we have an input buffer that is 32 bytes long.
 But the ~read~ function can read up to 56 bytes into the buffer.
@@ -318,6 +357,9 @@ And as you can see we managed to overwrite ~$rbp~, so now we just need to contro
 To do this we need to figure out how much data to insert before address.
 
 *** Cyclic patterns
+:PROPERTIES:
+:ID:       cee2c239-1286-4c7d-a655-291ee0f45a31
+:END:
 Using cyclic patterns, we can relatively easy find the padding length of our payload.
 
 #+begin_src python 
@@ -418,6 +460,9 @@ $cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000
 And if I could point your attention to ~$rbp~, you should see that we have indeed control over the base pointer.
 
 ** Useful addresses
+:PROPERTIES:
+:ID:       a4482dfa-83e6-4a2d-b33e-ab42c4d656cf
+:END:
 Since we already know which function we need to execute, and the binary doesn't have PIE enabled, I went ahead and grabbed the address from Binary Ninja.
 |---------+----------|
 | Name    |  Address |
@@ -426,6 +471,9 @@ Since we already know which function we need to execute, and the binary doesn't 
 |---------+----------|
 
 ** Final exploit
+:PROPERTIES:
+:ID:       04a658cf-9f3a-4508-b966-a59fc3b79a38
+:END:
 So know that we have control over the base pointer let's make it point towards ~ret2win~ and finish this challenge.
 #+begin_src python
   from pwn import *
@@ -464,6 +512,10 @@ $
 #+end_example
 
 * Conclusion
+:PROPERTIES:
+:ID:       3e1c9f68-8789-4f43-9705-4b25f9fdebb7
+:PUBDATE:  <2023-03-30 Thu 21:37>
+:END:
 First of all thank you for reading my first proper write-up.
 I hope it won't be the last, as I want to publish a new post/write-up/whatever-you-call-it every other week.
 

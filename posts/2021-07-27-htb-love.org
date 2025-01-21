@@ -4,13 +4,24 @@
 #+summary: Write-up for the easy hackthebox machine called love. It's a windows machine, which hosts a voting system that has an authorized insecure file upload vulnerability. There is also an exposed staging area that is vulnerable to ssrf, which leads to gaining the admin credentials for the voting system.
 #+filetags: :HTB:write-up:hacking:
 * Introduction
+:PROPERTIES:
+:ID:       ceb1eed4-496d-4a34-b652-98ec3cde39de
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Welcome to this write-up for the Hack the Box machine: Love.
 Love was an easy rated Windows machine, running a webserver for a voting system and a file scanner located on a staging subdomain.
 
 * Recon
+:PROPERTIES:
+:ID:       57a7e350-f275-418f-8ab8-954de119ed8e
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 First thing we should do is to get as much information about the box as possible.
 First we'll scan for open ports using ~nmap~, once we know what's running on the machine we can tailor the rest of the reconnaissance to better fit.
 ** Nmap
+:PROPERTIES:
+:ID:       d9478f2d-48da-4d1d-aaa8-3530c5b9eb46
+:END:
 Since this is just a challenge there is no reason to go super stealthy.
 I used the following command to enumerate all open ports, and check which version is running on the port:
 : $ sudo nmap -sV -p- -oA nmap/version_scan_all_ports 10.129.48.103
@@ -78,9 +89,15 @@ We also got the hostname ~love.htb~ from the scan results, so let's add that to 
 : $ sudo echo "10.129.48.103 love.htb" >> /etc/hosts
 
 ** Web enumeration
+:PROPERTIES:
+:ID:       df636c03-f170-4c93-ab30-c36e981b5508
+:END:
 Since there are more than one webserver running, there is the possibility that they are mapped to virtual hosts.
 So let's start ~gobuster~ in virtual host mode and start enumerating.
 *** Virtual host enumeration
+:PROPERTIES:
+:ID:       484e7600-4245-48ba-80bf-27895453bcdc
+:END:
 For this enumeration I used the ~subdomains-top1million-20000.txt~ DNS wordlist from the [[https://github.com/danielmiessler/SecLists][SecLists repository]].
 #+begin_example
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love ]
@@ -113,6 +130,9 @@ This gives us the two targets:
 
 Let's start enumerating files and directories with ~gobuster~.
 *** Enumerating ~http://love.htb~
+:PROPERTIES:
+:ID:       5229a621-11a0-40b8-89d1-323be8267cf0
+:END:
 As you can see on the image below, there isn't a lot we can do regarding the homepage of this site.
 #+attr_org: :width 700
 #+caption: Index of ~http://love.htb~
@@ -120,6 +140,9 @@ As you can see on the image below, there isn't a lot we can do regarding the hom
 
 Let us start by enumerating the main site using ~gobuster~, and hope that we get something more useful than that login page.
 **** Gobuster
+:PROPERTIES:
+:ID:       aa270d90-83da-401e-8048-bbdcdd2c7afb
+:END:
 #+caption: Scan of ~/~
 #+begin_example
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/hackthebox/machines/love ]
@@ -158,6 +181,9 @@ Looking at the scan results from ~gobuster~, we can see that there is an admin i
 But it can only be accessed using matching credentials.
 
 *** Enumerating ~http://staging.love.htb~
+:PROPERTIES:
+:ID:       924c481d-5f86-4437-9f8c-a6234e2c0e2e
+:END:
 As you can see there isn't a whole lot going on homepage for the staging site.
 #+attr_org: :width 700
 #+caption: Index page
@@ -167,6 +193,9 @@ There is a user input, but looking at the source code of the page we'll see that
 
 Just to be sure that we don't miss anything, I'll enumerate this server with ~gobuster~.
 **** Gobuster
+:PROPERTIES:
+:ID:       b530473a-4b64-48c4-b9ea-2e2cccb4526b
+:END:
 As can be seen on the results below, there isn't anything of interest except for ~/beta.php~.
 So let us take a closer look at that!
 #+caption: Result from ~gobuster~ on ~staging.love.htb~
@@ -199,6 +228,9 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 #+end_example
 
 **** ~/beta.php~
+:PROPERTIES:
+:ID:       93d58370-4e62-4f46-b192-1f1ee010d1e4
+:END:
 This accepts a url pointing to a specific file somewhere on the internet.
 #+attr_org: :width 700
 #+caption: Image of ~/beta.php~
@@ -207,9 +239,16 @@ This accepts a url pointing to a specific file somewhere on the internet.
 This could be vulnerable to a Server Side Request Forgery (SSRF) attack.
 
 * Exploitation
+:PROPERTIES:
+:ID:       1e0ceaf7-c446-416e-837e-8e56dc512ac1
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 We have done all necessary reconnaissance up to this point.
 So let us begin attacking this box, by first gaining access to the voting systems admin page.
 ** Getting admin credentials from ssrf
+:PROPERTIES:
+:ID:       0d7d504b-2799-4744-ae05-c4290f0105c9
+:END:
 If we point the site to ~http://127.0.0.1/index.php~, we will see that some of the target website is rendered.
 #+caption: SSRF pointing to voter login page
 [[file:assets/2021-07-26_00-05-39_screenshot.png]]
@@ -244,6 +283,9 @@ Let's us try the webserver running on port ~5000~, just to see if there is anyth
 And we got our first set of credentials!
 ~admin:@LoveIsInTheAir!!!!~
 ** Logging into ~/admin/~
+:PROPERTIES:
+:ID:       a0f7b5f9-05b9-4b64-9919-5f0632dba32e
+:END:
 Now that we have the username and password for the admin area of the voting system, let's login and start poking around at the different functionalities.
 
 Logging in as ~admin~ gives the following interface
@@ -259,6 +301,9 @@ On this site I poked around found the following three vulnerabilties on this end
  - Insecure File upload
 
 *** XSS
+:PROPERTIES:
+:ID:       f9eba336-89ef-44fb-8406-45a4783f3354
+:END:
 All of the fields for candidates seem, vulnerable to XSS attacks.
 It was possible to pop an alert in the description of a candidate.
 
@@ -267,6 +312,9 @@ It was possible to pop an alert in the description of a candidate.
 However, it didn't seem to be affecting the voters.
 And since we are already admin, there is not a that we could gain from this.
 *** SQL injection
+:PROPERTIES:
+:ID:       3079be68-109b-4e13-9ed2-204b450b70a0
+:END:
 There was also an error in the implementation of SQL, but I couldn't put it to any use.
 #+attr_org: :width 700
 #+caption: Error in SQL syntax
@@ -297,12 +345,18 @@ id=18&firstname=test&lastname=test&position=8&platform=%27--&edit=
 Since SQL injection isn't my strongest attack, I tested the parameter using ~SQLmap~.
 But without success.
 *** File-upload
+:PROPERTIES:
+:ID:       36e9f955-9d90-49d2-a58d-c6d464dd904e
+:END:
 This brings us to the last vulnerability, which is also the most powerful.
 
 When creating a candidate, it is possible to upload a photo of the candidate.
 But there isn't any checks on what the filetype actually is, meaning we can upload any file we that we want to.
 This is the vulnerability we will use to get a shell on the system.
 ** File-upload on ~/admin/candidates.php~
+:PROPERTIES:
+:ID:       1b97f6ad-e061-4e7e-b1ec-cff9811b60e7
+:END:
 Because this is a Windows box, I'll be taking the liberty of using the Metasploit framework.
 I'll do this in two parts, first we'll create a reverse meterpreter shell.
 And a small php script which will execute our meterpreter shell.
@@ -353,10 +407,17 @@ meterpreter > cat user.txt
 meterpreter >
 #+end_example
 * Priv esc
+:PROPERTIES:
+:ID:       5d21f1d8-2abc-4bc4-af52-36db4c92cce2
+:PUBDATE:  <2023-03-30 Thu 21:36>
+:END:
 Now that we have a normal user shell, we should do some enumeration to figure out how we should go about gaining a root shell.
 
 Since this is done through meterpreter, we can use a lot of modules from metasploit.
 ** Local auto-suggest
+:PROPERTIES:
+:ID:       7823d615-850d-413a-8e89-cc2346c1328f
+:END:
 This is a very nifty little module, which will suggest local exploits that can be used to elevate privileges.
 #+begin_example
 meterpreter > run post/multi/recon/local_exploit_suggester
@@ -372,6 +433,9 @@ meterpreter > run post/multi/recon/local_exploit_suggester
 #+end_example
 As you can see the target is vulnerable to the ~always_install_elevated~ exploit.
 ** Always install elevated
+:PROPERTIES:
+:ID:       babd2c4f-8940-498e-bf8a-c2297259809c
+:END:
 Since the autosuggester mentioned this exploit, let's test if it is correct.
 This is done by running the following commands:
 #+begin_example

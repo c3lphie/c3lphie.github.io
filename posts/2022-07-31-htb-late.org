@@ -4,13 +4,24 @@
 #+filetags: :HTB:write-up:hacking:
 #+title: HTB | Late
 * Introduction
+:PROPERTIES:
+:ID:       8ce3e9fa-7bbd-420a-bfb8-120eeade7125
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 Welcome to this write-up for the Late box from HackTheBox.
 During the reconnaissance of this box, I found an ~nginx~ webserver with a virtual host.
 This virtual host was an image scanning service, that returned the text on the image as a text file.
 This service was vulnerable to Server Side Template Injection, shortened to SSTI, which was used to gain foothold using an exposed ssh private key.
 After enumerating the machine I found a script that activates on ssh connections, which due to some misconfiguration could be used to elevate privileges.
 * Recon
+:PROPERTIES:
+:ID:       b5e01351-88c9-4494-95db-96782ebd43c5
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 ** Nmap
+:PROPERTIES:
+:ID:       0c864795-f180-4ca3-a242-b1586536e54e
+:END:
 For recon I started with ~nmap~ to get a basic understanding of the machine.
 I started with scanning ALL the ports, so that I didn't miss anything that might be hiding outside the standard range.
 #+begin_example
@@ -49,7 +60,13 @@ Service detection performed. Please report any incorrect results at https://nmap
 From this we can see that the webserver is an ~nginx~ server, of version 1.14.0.
 And that the box is most likely running Ubuntu as OS, due to both the webserver header and the openssh version.
 ** Web enumeration
+:PROPERTIES:
+:ID:       b6bfc87a-dfed-4d6f-bc9c-65e6c6ca0e1d
+:END:
 *** Manual enumeration
+:PROPERTIES:
+:ID:       6e98cbd2-0d96-4cf4-b321-e7d2fa42774c
+:END:
 The front page was rather simple, and hinted at some image utilities:
 [[file:assets/2022-04-27_22-04-06_screenshot.png]]
 
@@ -58,6 +75,9 @@ Looking through the source of the page we have some hostname leak:
 
 I added both ~late.htb~ and ~images.late.htb~ to my ~/etc/hosts~.
 **** images.late.htb
+:PROPERTIES:
+:ID:       500e3a07-dc03-4e76-b456-3623b89d1e5e
+:END:
 This page was quite interesting, as it scans images for text using some kind of optical character recognition aka ocr.
 [[file:assets/2022-04-28_19-08-12_screenshot.png]]
 
@@ -100,6 +120,9 @@ Which returned the following result after uploading it to the server:
 #+end_example
 Confirming the SSTI vulnerability.
 *** Gobuster
+:PROPERTIES:
+:ID:       ae7d0105-a365-4a0d-aff7-c8eda4c178a5
+:END:
 While I explored the website manually I ran ~gobuster~ in the background in case I missed anything.
 I didn't get the full command run for ~gobuster~, but I ran two different enumerations:
  - Directory
@@ -110,6 +133,9 @@ Which means it can redirect the request to different webservices on different lo
 Instead of creating a real subdomain that points to a different IP address.
 
 **** Vhost enumeration
+:PROPERTIES:
+:ID:       3b7afdf8-a872-4b14-bcb6-8efd259e7926
+:END:
 For the enumeration of the virtual hosts I used ~subdomains-top1million-5000.txt~ from SecLists.
 Which only found got one hit:
 #+begin_example
@@ -117,6 +143,9 @@ Found: images.late.htb (Status: 200) [Size: 2187]
 #+end_example
 
 **** Directory enumeration
+:PROPERTIES:
+:ID:       473a8a43-f739-4325-b1ab-1a4ab3f9170c
+:END:
 For the directories I used ~raft-small-words.txt~, with ~html~ and ~php~ as extensions, again from SecLists.
 Which found the following files and directories:
 #+begin_example
@@ -133,7 +162,14 @@ I also ran ~gobuster~ on the subdomain found during the virtual host scan:
 
 So it turned out that I didn't miss anything during the manual exploration, but you can never be too certain.
 * Exploitation
+:PROPERTIES:
+:ID:       55854e07-6324-4492-8bdf-07b156dda3fc
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 ** Foothold
+:PROPERTIES:
+:ID:       c5f4d586-f095-4a77-8578-81bd85325066
+:END:
 The first thing you usually look at after confirming SSTI is the config object for flask:
 [[file:assets/late_ssti_config.png]]
 
@@ -253,6 +289,9 @@ svc_acc@late:~$ cat user.txt
 #+end_example
 And there is the user flag!
 ** Priv esc
+:PROPERTIES:
+:ID:       98400127-c335-4d95-9fcd-0173b02c9a31
+:END:
 I uploaded ~linpeas.sh~ to the server using ~scp~, to speedup enumeration for the privilege escalation.
 
 ~linpeas.sh~ found this file in our path, which I (svc_acc) owned.

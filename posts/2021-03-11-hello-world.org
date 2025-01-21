@@ -4,11 +4,19 @@
 #+summary: Introduction post about me and this blog.
 #+filetags: blog
 * Whoami
+:PROPERTIES:
+:ID:       3a38e495-0011-41f7-b3bd-1cc7a9d4a628
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 I'm a 21, soon to be 22, year old danish tech nerd that loves hacking, programming and all things tech!
 I study computer engineering, and plan on specializing in the security field.
 I don't have any certifications yet, but I do have the PTSv4 course from eLearnsecurity which i just need to finish.
 I don't plan being too personal on this blog, so enough about who I am.
 * WTF is this
+:PROPERTIES:
+:ID:       a056b83b-8cc6-448f-b79c-658a72bf2ecf
+:PUBDATE:  <2023-03-30 Thu 21:35>
+:END:
 That is a great question!
 This is my little spot on the internet where I can upload and share things I interesting.
 It will most likely contain write-ups for [[https://hackthebox.eu][HackTheBox]], [[https://tryhackme.com][TryHackMe]] or other CTF's I join([[https://ctftime.org/ctf-wtf][Wtf is a CTF]]).
