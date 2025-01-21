@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-21 Tue 19:16 -->
+<!-- 2025-01-21 Tue 21:22 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>A new beginning</title>
@@ -98,11 +98,11 @@ This is nice for reverse engineering, since the bytecode C# compiles into can be
 </p>
 
 <p>
-This sample have been slightly obfuscated by converting all classes, methods, and fiel to random unicode characters.<br>
+This sample have been slightly obfuscated by converting all classes, methods, and fields to random unicode characters.<br>
 </p>
 
 
-<figure id="orgb7b4ad5">
+<figure id="org96d6af5">
 <img src="assets/2025-01-16_20-03-35_screenshot.png" alt="2025-01-16_20-03-35_screenshot.png"><br>
 
 </figure>
@@ -114,7 +114,7 @@ I used the trusty old <code>de4dot</code> program to clean up all of the useless
 
 
 
-<figure id="orgeaaaf84">
+<figure id="orgfd434ba">
 <img src="assets/2025-01-16_20-06-55_screenshot.png" alt="2025-01-16_20-06-55_screenshot.png"><br>
 
 </figure>
@@ -124,7 +124,7 @@ From here I found the entrypoint, and slowly worked my way through the program c
 </p>
 
 
-<figure id="org1910269">
+<figure id="org36699e1">
 <img src="assets/2025-01-16_20-14-57_screenshot.png" alt="2025-01-16_20-14-57_screenshot.png"><br>
 
 </figure>
@@ -135,7 +135,7 @@ The decryption happens in an initialization method, which makes use of a helper 
 </p>
 
 
-<figure id="org9bc41c1">
+<figure id="orgbd7ca8d">
 <img src="assets/2025-01-16_20-14-19_screenshot.png" alt="2025-01-16_20-14-19_screenshot.png"><br>
 
 </figure>
@@ -149,7 +149,7 @@ The second key <code>key1</code> is used utilized for message authentication for
 </p>
 
 
-<figure id="org00c89bf">
+<figure id="org34eead6">
 <img src="assets/2025-01-20_21-47-38_screenshot.png" alt="2025-01-20_21-47-38_screenshot.png"><br>
 
 </figure>
@@ -165,7 +165,7 @@ And the last section decrypts the content and copies it into <code>array6</code>
 </p>
 
 
-<figure id="org6808d0d">
+<figure id="orgd36803e">
 <img src="assets/2025-01-20_22-20-20_screenshot.png" alt="2025-01-20_22-20-20_screenshot.png"><br>
 
 </figure>
@@ -272,7 +272,7 @@ The salt is not as straight forward since it is a bytearray, and we need to get 
 If we examine the class constructor method for <code>QuasarCrypto</code> as IL, we see that its data is loaded from another token at runtime <code>Struct1</code>.<br>
 </p>
 
-<figure id="org18662d0">
+<figure id="orgec4ca59">
 <img src="assets/2025-01-21_18-31-42_screenshot.png" alt="2025-01-21_18-31-42_screenshot.png"><br>
 
 </figure>
@@ -433,7 +433,7 @@ de83dd82da3ebaa2c09fd75a7307ad5e2031ad8c911cd75753ffef3eb1571f0a<br>
 <div id="outline-container-org2c78248" class="outline-3">
 <h3 id="org2c78248"><span class="section-number-3">3.2.</span> Config</h3>
 <div class="outline-text-3" id="text-3-2">
-<pre class="example" id="org4efdfd9">
+<pre class="example" id="org9ee6a9c">
 {
     "version": "1.4.0",
     "c2channels": "185[.]148[.]3[.]216:4000;",

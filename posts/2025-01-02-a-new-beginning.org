@@ -19,7 +19,7 @@ So without further ado, let dive into this malware!
 Quasar is a backdoor developed in C# using the .NET framework.
 This is nice for reverse engineering, since the bytecode C# compiles into can be decompiled using tools such as dnSpyex.
 
-This sample have been slightly obfuscated by converting all classes, methods, and fiel to random unicode characters.
+This sample have been slightly obfuscated by converting all classes, methods, and fields to random unicode characters.
 
 #+DOWNLOADED: screenshot @ 2025-01-16 20:03:35
 #+attr_org: :width 750px
